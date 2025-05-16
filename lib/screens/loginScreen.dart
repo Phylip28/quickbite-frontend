@@ -19,24 +19,19 @@ class _LoginScreenState extends State<LoginScreen> {
     final String password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Los campos no pueden estar vacíos')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Los campos no pueden estar vacíos')));
       return;
     }
 
-    final Uri url = Uri.parse('http://127.0.0.1:8000/login');
+    final Uri url = Uri.parse('http://192.168.159.36:8000/login');
 
     try {
       final response = await http.post(
         url,
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, String>{
-          'correo': email,
-          'contrasena': password,
-        }),
+        headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+        body: jsonEncode(<String, String>{'correo': email, 'contrasena': password}),
       );
 
       if (response.statusCode == 200) {
@@ -52,28 +47,28 @@ class _LoginScreenState extends State<LoginScreen> {
           Navigator.pushReplacementNamed(context, '/home'); // Navegar a la HomeScreen
         } else {
           // El backend devolvió un código 200 pero el mensaje no es el esperado
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Error en la autenticación')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Error en la autenticación')));
           print('Respuesta inesperada del backend: ${response.body}');
         }
       } else if (response.statusCode == 401) {
         // Credenciales inválidas
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Credenciales inválidas')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Credenciales inválidas')));
       } else {
         // Otro error
         print('Error en el login: ${response.statusCode}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error al iniciar sesión')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Error al iniciar sesión')));
       }
     } catch (e) {
       print('Error de conexión: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo conectar al servidor')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('No se pudo conectar al servidor')));
     }
   }
 
@@ -83,10 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset(
-            'assets/images/fondoSemiTransparente.png',
-            fit: BoxFit.cover,
-          ),
+          Image.asset('assets/images/fondoSemiTransparente.png', fit: BoxFit.cover),
           Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
@@ -97,10 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 50),
                   FractionallySizedBox(
                     widthFactor: 0.5,
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      height: 80,
-                    ),
+                    child: Image.asset('assets/images/logo.png', height: 80),
                   ),
                   const SizedBox(height: 20),
                   const Text(
@@ -116,10 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const Text(
                     'Log in to your account',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                   const SizedBox(height: 20),
                   TextField(
@@ -150,14 +136,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       backgroundColor: Colors.orange[700],
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
-                    child: const Text(
-                      'Login',
-                      style: TextStyle(fontSize: 16),
-                    ),
+                    child: const Text('Login', style: TextStyle(fontSize: 16)),
                   ),
                   const SizedBox(height: 10),
                   TextButton(
