@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../loginScreen.dart';
-import 'menuTierraQuerida.dart'; // Importa la nueva pantalla
+import '../loginScreen.dart';
+import 'TierraQuerida/menuTierraQuerida.dart'; // Importa la pantalla del menú de Tierra Querida
+import 'profile.dart'; // Importa la pantalla de perfil
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
@@ -171,9 +172,7 @@ class HomeScreen extends StatelessWidget {
         ],
         currentIndex: 1,
         selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.orange.withAlpha(
-          100,
-        ), // Ajusta el valor de alpha para la opacidad deseada
+        unselectedItemColor: Colors.orange.withAlpha(100),
         showSelectedLabels: false,
         showUnselectedLabels: false,
         onTap: (index) {
@@ -182,6 +181,8 @@ class HomeScreen extends StatelessWidget {
               context,
               MaterialPageRoute(builder: (context) => HomeScreen()),
             );
+          } else if (index == 2) {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileClient()));
           }
         },
       ),

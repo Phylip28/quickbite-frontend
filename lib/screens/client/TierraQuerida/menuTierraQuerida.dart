@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'productDetail.dart';
-import 'homeScreen.dart';
+import '../homeScreen.dart';
 
 class MenuTierraQuerida extends StatelessWidget {
   MenuTierraQuerida({super.key});
@@ -8,18 +8,67 @@ class MenuTierraQuerida extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: true,
-        title: const Text('Tierra Querida Menu'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(color: Colors.grey[200], height: 1),
-        ),
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    spreadRadius: 1,
+                    blurRadius: 3,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(8.0),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEEAE6),
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child: const Icon(Icons.arrow_back_ios_new, color: Colors.orange, size: 20),
+                    ),
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Deliver to',
+                          style: TextStyle(fontSize: 14, color: Colors.black54),
+                        ),
+                        const SizedBox(height: 2),
+                        const Text(
+                          'Add address',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.orange,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 40),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
             Center(
               child: Container(
                 width: 120,
@@ -53,6 +102,7 @@ class MenuTierraQuerida extends StatelessWidget {
               itemBuilder: (context, index) {
                 final item = _menuItems[index];
                 return Card(
+                  color: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
@@ -130,28 +180,27 @@ class MenuTierraQuerida extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white, // Establece el color de fondo a blanco
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage('assets/icons/cart.png')), // Sin color definido aquí
+            icon: ImageIcon(AssetImage('assets/icons/cart.png')),
             activeIcon: ImageIcon(AssetImage('assets/icons/cart.png'), color: Colors.orange),
             label: 'Cart',
           ),
           BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage('assets/icons/home.png')), // Sin color definido aquí
+            icon: ImageIcon(AssetImage('assets/icons/home.png')),
             activeIcon: ImageIcon(AssetImage('assets/icons/home.png'), color: Colors.orange),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage('assets/icons/profile.png')), // Sin color definido aquí
+            icon: ImageIcon(AssetImage('assets/icons/profile.png')),
             activeIcon: ImageIcon(AssetImage('assets/icons/profile.png'), color: Colors.orange),
             label: 'Account',
           ),
         ],
         currentIndex: 1,
         selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.orange.withAlpha(
-          100,
-        ), // Ajusta el valor de alpha para la opacidad deseada
+        unselectedItemColor: Colors.orange.withAlpha(100),
         showSelectedLabels: false,
         showUnselectedLabels: false,
         onTap: (index) {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'homeScreen.dart'; // Importa tu pantalla principal
+import '../homeScreen.dart'; // Importa tu pantalla principal
 
 class ProductDetailTQ extends StatelessWidget {
   final String productName;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/client/TierraQuerida/homeScreen.dart';
+import 'screens/client/homeScreen.dart';
 
 void main() {
   runApp(const MyApp());

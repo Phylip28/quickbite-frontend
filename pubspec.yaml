@@ -54,6 +54,7 @@ dev_dependencies:
 flutter:
   assets:
     - assets/images/
+    - assets/images/cliente/
     - assets/images/cliente/tierraQuerida/
     - assets/icons/
     - assets/logos/
