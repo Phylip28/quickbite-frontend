@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../homeScreen.dart'; // Importa tu pantalla principal
+import 'homeScreen.dart'; // Importa tu pantalla principal
 
 class ProductDetailTQ extends StatelessWidget {
   final String productName;
@@ -132,17 +132,17 @@ class ProductDetailTQ extends StatelessWidget {
             child: BottomNavigationBar(
               items: const <BottomNavigationBarItem>[
                 BottomNavigationBarItem(
-                  icon: ImageIcon(AssetImage('assets/icons/cart.png'), color: Colors.grey),
+                  icon: ImageIcon(AssetImage('assets/icons/cart.png')), // Sin color aquí
                   activeIcon: ImageIcon(AssetImage('assets/icons/cart.png'), color: Colors.orange),
                   label: 'Cart',
                 ),
                 BottomNavigationBarItem(
-                  icon: ImageIcon(AssetImage('assets/icons/home.png'), color: Colors.grey),
+                  icon: ImageIcon(AssetImage('assets/icons/home.png')), // Sin color aquí
                   activeIcon: ImageIcon(AssetImage('assets/icons/home.png'), color: Colors.orange),
                   label: 'Home',
                 ),
                 BottomNavigationBarItem(
-                  icon: ImageIcon(AssetImage('assets/icons/profile.png'), color: Colors.grey),
+                  icon: ImageIcon(AssetImage('assets/icons/profile.png')), // Sin color aquí
                   activeIcon: ImageIcon(
                     AssetImage('assets/icons/profile.png'),
                     color: Colors.orange,
@@ -152,7 +152,7 @@ class ProductDetailTQ extends StatelessWidget {
               ],
               currentIndex: 1,
               selectedItemColor: Colors.orange,
-              unselectedItemColor: Colors.grey,
+              unselectedItemColor: Colors.orange.withAlpha(100), // Opacidad deseada
               showSelectedLabels: false,
               showUnselectedLabels: false,
               onTap: (index) {

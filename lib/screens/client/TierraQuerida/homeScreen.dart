@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../loginScreen.dart';
-import 'TierraQuerida/menuTierraQuerida.dart'; // Importa la nueva pantalla
+import '../../loginScreen.dart';
+import 'menuTierraQuerida.dart'; // Importa la nueva pantalla
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
@@ -152,45 +152,37 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: <BottomNavigationBarItem>[
+        items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage('assets/icons/cart.png'), color: Colors.grey),
-            activeIcon: ImageIcon(
-              AssetImage('assets/icons/cart.png'),
-              color: Colors.orange,
-            ), // Puedes tener un ícono activo diferente si lo deseas
+            icon: ImageIcon(AssetImage('assets/icons/cart.png')),
+            activeIcon: ImageIcon(AssetImage('assets/icons/cart.png'), color: Colors.orange),
             label: 'Cart',
           ),
           BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage('assets/icons/home.png'), color: Colors.grey),
+            icon: ImageIcon(AssetImage('assets/icons/home.png')),
             activeIcon: ImageIcon(AssetImage('assets/icons/home.png'), color: Colors.orange),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage('assets/icons/profile.png'), color: Colors.grey),
-            activeIcon: ImageIcon(
-              AssetImage('assets/icons/profile.png'),
-              color: Colors.orange,
-            ), // Puedes tener un ícono activo diferente
+            icon: ImageIcon(AssetImage('assets/icons/profile.png')),
+            activeIcon: ImageIcon(AssetImage('assets/icons/profile.png'), color: Colors.orange),
             label: 'Account',
           ),
         ],
         currentIndex: 1,
-        selectedItemColor: Colors.orange, // Puede ser redundante
-        unselectedItemColor: Colors.grey, // Puede ser redundante
+        selectedItemColor: Colors.orange,
+        unselectedItemColor: Colors.orange.withAlpha(
+          100,
+        ), // Ajusta el valor de alpha para la opacidad deseada
         showSelectedLabels: false,
         showUnselectedLabels: false,
         onTap: (index) {
-          // Tu lógica de navegación aquí
           if (index == 1) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(
-                builder: (context) => HomeScreen(),
-              ), // Asegúrate de importar HomeScreen
+              MaterialPageRoute(builder: (context) => HomeScreen()),
             );
           }
-          // Lógica para otros índices
         },
       ),
     );

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'productDetail.dart';
-import '../homeScreen.dart';
+import 'homeScreen.dart';
 
 class MenuTierraQuerida extends StatelessWidget {
   MenuTierraQuerida({super.key});
@@ -132,24 +132,26 @@ class MenuTierraQuerida extends StatelessWidget {
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage('assets/icons/cart.png'), color: Colors.grey),
+            icon: ImageIcon(AssetImage('assets/icons/cart.png')), // Sin color definido aquí
             activeIcon: ImageIcon(AssetImage('assets/icons/cart.png'), color: Colors.orange),
             label: 'Cart',
           ),
           BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage('assets/icons/home.png'), color: Colors.grey),
+            icon: ImageIcon(AssetImage('assets/icons/home.png')), // Sin color definido aquí
             activeIcon: ImageIcon(AssetImage('assets/icons/home.png'), color: Colors.orange),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage('assets/icons/profile.png'), color: Colors.grey),
+            icon: ImageIcon(AssetImage('assets/icons/profile.png')), // Sin color definido aquí
             activeIcon: ImageIcon(AssetImage('assets/icons/profile.png'), color: Colors.orange),
             label: 'Account',
           ),
         ],
         currentIndex: 1,
         selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.grey,
+        unselectedItemColor: Colors.orange.withAlpha(
+          100,
+        ), // Ajusta el valor de alpha para la opacidad deseada
         showSelectedLabels: false,
         showUnselectedLabels: false,
         onTap: (index) {
