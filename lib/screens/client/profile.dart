@@ -149,6 +149,7 @@ class ProfileClient extends StatelessWidget {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white, // Establece el color de fondo a blanco
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: ImageIcon(AssetImage('assets/icons/cart.png')),

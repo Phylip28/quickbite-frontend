@@ -130,6 +130,7 @@ class ProductDetailTQ extends StatelessWidget {
           Align(
             alignment: Alignment.bottomCenter,
             child: BottomNavigationBar(
+              backgroundColor: Colors.white, // Establece el color de fondo a blanco
               items: const <BottomNavigationBarItem>[
                 BottomNavigationBarItem(
                   icon: ImageIcon(AssetImage('assets/icons/cart.png')), // Sin color aquí
