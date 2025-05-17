@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'loginScreen.dart';
+import '../auth/auth.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -51,10 +52,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
         if (response.statusCode == 201) {
           final Map<String, dynamic> data = jsonDecode(response.body);
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Registro exitoso')));
-          Navigator.pop(context); // Volver a la pantalla de login
+          print('Cuerpo de la respuesta del registro: $data'); // <-- ¡AÑADIDO PARA INSPECCIÓN!
+          if (data.containsKey('user_id') && // Asegúrate de que las claves coincidan con tu backend
+              data.containsKey('nombre_cliente') &&
+              data.containsKey('apellido_cliente') &&
+              data.containsKey('direccion_cliente') &&
+              data.containsKey('telefono_cliente') &&
+              data.containsKey('correo_cliente')) {
+            print('Registro exitoso (info de usuario recibida)'); // Mensaje de depuración
+            await saveUserId(data['user_id']);
+            await saveUserName(data['nombre_cliente']);
+            await saveUserLastName(data['apellido_cliente']);
+            await saveUserAddress(data['direccion_cliente']);
+            await saveUserPhone(data['telefono_cliente']);
+            await saveUserEmail(data['correo_cliente']);
+            print('Información del usuario guardada localmente');
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Registro exitoso')));
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const LoginScreen(),
+              ), // Asegúrate de importar HomeScreen
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Error en el registro: Falta información del usuario en la respuesta',
+                ),
+              ), // Mensaje más específico
+            );
+            print('Respuesta incompleta del backend (falta info de usuario): ${response.body}');
+          }
         } else {
           final Map<String, dynamic> errorData = jsonDecode(response.body);
           ScaffoldMessenger.of(

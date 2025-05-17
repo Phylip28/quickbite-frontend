@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'homeScreen.dart';
+import '../loginScreen.dart';
 import 'customBottomNavigationBar.dart';
 import 'cart/shoppingCart.dart';
+import '../../auth/auth.dart'; // Importa tu archivo auth.dart
 
 class ProfileClient extends StatefulWidget {
   const ProfileClient({super.key});
@@ -12,6 +14,23 @@ class ProfileClient extends StatefulWidget {
 
 class _ProfileClientState extends State<ProfileClient> {
   int _selectedIndex = 2;
+  String? _userName;
+  String? _userEmail;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    final userName = await getUserName();
+    final userEmail = await getUserEmail();
+    setState(() {
+      _userName = userName;
+      _userEmail = userEmail;
+    });
+  }
 
   void _onTabTapped(int index) {
     setState(() {
@@ -48,7 +67,6 @@ class _ProfileClientState extends State<ProfileClient> {
                       InkWell(
                         onTap: () {
                           Navigator.pushReplacement(
-                            // Usamos pushReplacement para evitar volver a la pantalla de perfil desde el Home con el botón de atrás
                             context,
                             MaterialPageRoute(builder: (context) => HomeScreen()),
                           );
@@ -79,13 +97,15 @@ class _ProfileClientState extends State<ProfileClient> {
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
+                            children: [
                               Text(
-                                'Carolina Osorio Lopez',
+                                _userName ??
+                                    'Nombre no disponible', // Muestra el nombre o un texto por defecto
                                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                               ),
                               Text(
-                                'carolopez24@gmail.com',
+                                _userEmail ??
+                                    'Correo no disponible', // Muestra el correo o un texto por defecto
                                 style: TextStyle(fontSize: 16, color: Colors.grey),
                               ),
                             ],
@@ -95,6 +115,7 @@ class _ProfileClientState extends State<ProfileClient> {
                     ),
                   ),
                   const SizedBox(height: 32),
+                  // El resto de tu código para la sección 'Account' y 'Support' se mantiene igual
                   Container(
                     padding: const EdgeInsets.all(16.0),
                     decoration: BoxDecoration(
@@ -153,8 +174,14 @@ class _ProfileClientState extends State<ProfileClient> {
                           child: const Text('Delete account', style: TextStyle(color: Colors.red)),
                         ),
                         ElevatedButton(
-                          onPressed: () {
-                            print('Log Out pressed');
+                          onPressed: () async {
+                            await deleteAuthToken(); // Elimina el token al cerrar sesión
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LoginScreen(),
+                              ), // Navega a la pantalla de login
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.orange,

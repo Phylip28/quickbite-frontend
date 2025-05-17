@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'registerScreen.dart';
+import 'client/homeScreen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../auth/auth.dart';
@@ -43,24 +44,42 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
         print('Cuerpo de la respuesta del login: $data'); // <-- ¡AÑADIDO PARA INSPECCIÓN!
-        if (data.containsKey('access_token')) {
-          // <-- ¡MODIFICACIÓN CLAVE AQUÍ!
-          print('Login exitoso (token recibido)'); // Mensaje de depuración
+        if (data.containsKey('access_token') &&
+            data.containsKey('id_cliente') &&
+            data.containsKey('nombre_cliente') &&
+            data.containsKey('apellido_cliente') &&
+            data.containsKey('direccion_cliente') &&
+            data.containsKey('telefono_cliente') &&
+            data.containsKey('correo_cliente')) {
+          print('Login exitoso (token e info de usuario recibida)'); // Mensaje de depuración
           final String accessToken = data['access_token'];
           await saveAuthToken(accessToken);
-          print('Token guardado: $accessToken');
+          await saveUserId(data['id_cliente']);
+          await saveUserName(data['nombre_cliente']);
+          await saveUserLastName(data['apellido_cliente']);
+          await saveUserAddress(data['direccion_cliente']);
+          await saveUserPhone(data['telefono_cliente']);
+          await saveUserEmail(data['correo_cliente']);
+          print('Información del usuario guardada localmente');
           // Mostrar un mensaje de éxito antes de navegar
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text('Inicio de sesión exitoso')));
-          Navigator.pop(context); // Vuelve a la pantalla anterior
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const HomeScreen(),
+            ), // Asegúrate de importar HomeScreen
+          );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Error en la autenticación: Respuesta inesperada'),
-            ), // Mensaje más genérico
+              content: Text(
+                'Error en la autenticación: Falta información del usuario en la respuesta',
+              ),
+            ), // Mensaje más específico
           );
-          print('Respuesta inesperada del backend (sin access_token): ${response.body}');
+          print('Respuesta incompleta del backend (falta info de usuario): ${response.body}');
         }
       } else if (response.statusCode == 401) {
         ScaffoldMessenger.of(
