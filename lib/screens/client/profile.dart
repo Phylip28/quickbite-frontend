@@ -1,21 +1,41 @@
 import 'package:flutter/material.dart';
 import 'homeScreen.dart';
+import 'customBottomNavigationBar.dart';
+import 'cart/shoppingCart.dart';
 
-class ProfileClient extends StatelessWidget {
+class ProfileClient extends StatefulWidget {
   const ProfileClient({super.key});
+
+  @override
+  State<ProfileClient> createState() => _ProfileClientState();
+}
+
+class _ProfileClientState extends State<ProfileClient> {
+  int _selectedIndex = 2;
+
+  void _onTabTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    if (index == 0) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+      );
+      print('Navegar al carrito');
+    } else if (index == 1) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen()));
+    }
+    // El índice 2 ya es la ProfileClient
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
-        // Usamos Stack para colocar la imagen de fondo
         children: [
           Positioned.fill(
-            // Asegura que la imagen cubra todo el fondo
-            child: Image.asset(
-              'assets/images/fondoSemiTransparente.png', // Reemplaza con la ruta de tu imagen de fondo
-              fit: BoxFit.cover, // Cubre toda la pantalla
-            ),
+            child: Image.asset('assets/images/fondoSemiTransparente.png', fit: BoxFit.cover),
           ),
           SafeArea(
             child: SingleChildScrollView(
@@ -27,7 +47,11 @@ class ProfileClient extends StatelessWidget {
                     children: [
                       InkWell(
                         onTap: () {
-                          Navigator.pop(context);
+                          Navigator.pushReplacement(
+                            // Usamos pushReplacement para evitar volver a la pantalla de perfil desde el Home con el botón de atrás
+                            context,
+                            MaterialPageRoute(builder: (context) => HomeScreen()),
+                          );
                         },
                         child: Image.asset('assets/icons/backArrow.png', height: 40, width: 40),
                       ),
@@ -45,7 +69,7 @@ class ProfileClient extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(14.0),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.8), // Fondo blanco con ligera transparencia
+                      color: Color.fromRGBO(255, 255, 255, 0.8),
                       borderRadius: BorderRadius.circular(10.0),
                     ),
                     child: Row(
@@ -74,7 +98,7 @@ class ProfileClient extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(16.0),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.8), // Fondo blanco con ligera transparencia
+                      color: Color.fromRGBO(255, 255, 255, 0.8),
                       borderRadius: BorderRadius.circular(10.0),
                     ),
                     child: Column(
@@ -148,38 +172,10 @@ class ProfileClient extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.white, // Establece el color de fondo a blanco
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage('assets/icons/cart.png')),
-            activeIcon: ImageIcon(AssetImage('assets/icons/cart.png'), color: Colors.orange),
-            label: 'Cart',
-          ),
-          BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage('assets/icons/home.png')),
-            activeIcon: ImageIcon(AssetImage('assets/icons/home.png'), color: Colors.orange),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage('assets/icons/profile.png')),
-            activeIcon: ImageIcon(AssetImage('assets/icons/profile.png'), color: Colors.orange),
-            label: 'Account',
-          ),
-        ],
-        currentIndex: 2,
-        selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.orange.withAlpha(100),
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        onTap: (index) {
-          if (index == 1) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => HomeScreen()),
-            );
-          }
-        },
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTabChanged: _onTabTapped,
+        backgroundColor: Colors.white,
       ),
     );
   }

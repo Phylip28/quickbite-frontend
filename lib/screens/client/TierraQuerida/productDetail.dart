@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import '../homeScreen.dart'; // Importa tu pantalla principal
+import '../customBottomNavigationBar.dart'; // Importa la navbar personalizada
+import '../profile.dart'; // Importa la pantalla de perfil
+import '../cart/shoppingCart.dart'; // Importa la pantalla del carrito
 
-class ProductDetailTQ extends StatelessWidget {
+class ProductDetailTQ extends StatefulWidget {
   final String productName;
   final String productDescription;
   final double productPrice;
@@ -14,6 +17,35 @@ class ProductDetailTQ extends StatelessWidget {
     required this.productPrice,
     required this.imageUrl,
   });
+
+  @override
+  State<ProductDetailTQ> createState() => _ProductDetailTQState();
+}
+
+class _ProductDetailTQState extends State<ProductDetailTQ> {
+  int _selectedIndex = 1; // El índice de "Home" es 1 (asumimos que vienes del menú)
+
+  void _onTabTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    if (index == 0) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const ShoppingCartScreen()),
+      );
+    } else if (index == 1) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+    } else if (index == 2) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const ProfileClient()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +68,7 @@ class ProductDetailTQ extends StatelessWidget {
                             BoxShadow(color: Colors.black12, blurRadius: 5, offset: Offset(0, 3)),
                           ],
                         ),
-                        child: Image.asset(imageUrl, fit: BoxFit.cover),
+                        child: Image.asset(widget.imageUrl, fit: BoxFit.cover),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -55,18 +87,18 @@ class ProductDetailTQ extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          productName,
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                          widget.productName,
+                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          productDescription,
-                          style: TextStyle(fontSize: 16, color: Colors.black87),
+                          widget.productDescription,
+                          style: const TextStyle(fontSize: 16, color: Colors.black87),
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          '\$${productPrice.toStringAsFixed(3)}',
-                          style: TextStyle(
+                          '\$${widget.productPrice.toStringAsFixed(3)}',
+                          style: const TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
@@ -129,41 +161,10 @@ class ProductDetailTQ extends StatelessWidget {
           ),
           Align(
             alignment: Alignment.bottomCenter,
-            child: BottomNavigationBar(
-              backgroundColor: Colors.white, // Establece el color de fondo a blanco
-              items: const <BottomNavigationBarItem>[
-                BottomNavigationBarItem(
-                  icon: ImageIcon(AssetImage('assets/icons/cart.png')), // Sin color aquí
-                  activeIcon: ImageIcon(AssetImage('assets/icons/cart.png'), color: Colors.orange),
-                  label: 'Cart',
-                ),
-                BottomNavigationBarItem(
-                  icon: ImageIcon(AssetImage('assets/icons/home.png')), // Sin color aquí
-                  activeIcon: ImageIcon(AssetImage('assets/icons/home.png'), color: Colors.orange),
-                  label: 'Home',
-                ),
-                BottomNavigationBarItem(
-                  icon: ImageIcon(AssetImage('assets/icons/profile.png')), // Sin color aquí
-                  activeIcon: ImageIcon(
-                    AssetImage('assets/icons/profile.png'),
-                    color: Colors.orange,
-                  ),
-                  label: 'Account',
-                ),
-              ],
-              currentIndex: 1,
-              selectedItemColor: Colors.orange,
-              unselectedItemColor: Colors.orange.withAlpha(100), // Opacidad deseada
-              showSelectedLabels: false,
-              showUnselectedLabels: false,
-              onTap: (index) {
-                if (index == 1) {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => HomeScreen()),
-                  );
-                }
-              },
+            child: CustomBottomNavigationBar(
+              currentIndex: _selectedIndex,
+              onTabChanged: _onTabTapped,
+              backgroundColor: Colors.white,
             ),
           ),
         ],

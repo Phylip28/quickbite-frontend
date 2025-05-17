@@ -2,9 +2,54 @@ import 'package:flutter/material.dart';
 import '../loginScreen.dart';
 import 'TierraQuerida/menuTierraQuerida.dart';
 import 'profile.dart';
+import 'customBottomNavigationBar.dart';
+import 'cart/shoppingCart.dart';
 
-class HomeScreen extends StatelessWidget {
-  HomeScreen({super.key});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _selectedIndex = 1; // El índice de "Home" es 1
+
+  void _onTabTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    if (index == 0) {
+      // Navegar a la pantalla del carrito
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ShoppingCartScreen(),
+        ), // Reemplaza CartScreen() con tu implementación real
+      );
+      print('Navegar al carrito');
+    } else if (index == 2) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const ProfileClient()),
+      );
+    }
+    // El índice 1 ya es la HomeScreen
+  }
+
+  final List<Map<String, String>> _categories = [
+    {'name': 'Ice cream', 'image': 'assets/images/cliente/iceCream.png'},
+    {'name': 'Sushi', 'image': 'assets/images/cliente/sushi.png'},
+    {'name': 'Hamburgers', 'image': 'assets/images/cliente/hamburger.png'},
+  ];
+
+  final List<Map<String, String>> _restaurants = [
+    {'name': 'Subway', 'image': 'assets/logos/subway.png'},
+    {'name': 'KFC', 'image': 'assets/logos/kfc.png'},
+    {'name': 'Starbucks', 'image': 'assets/logos/starbucks.png'},
+    {'name': 'Tierra Querida', 'image': 'assets/logos/tierraQuerida.png'},
+    {'name': 'Popsy', 'image': 'assets/logos/popsy.png'},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +60,6 @@ class HomeScreen extends StatelessWidget {
           Positioned.fill(child: Image.asset('assets/images/fondoCarga.png', fit: BoxFit.cover)),
           SafeArea(
             child: Column(
-              // Cambiamos SingleChildScrollView por Column para controlar mejor el espacio
               children: <Widget>[
                 // Recuadro blanco superior
                 Container(
@@ -27,7 +71,7 @@ class HomeScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8.0),
                     boxShadow: [
                       BoxShadow(
-                        color: Color.fromRGBO(0, 0, 0, 0.2), // Reemplazo de withOpacity
+                        color: Color.fromRGBO(0, 0, 0, 0.2),
                         spreadRadius: 1,
                         blurRadius: 3,
                         offset: const Offset(0, 2),
@@ -66,7 +110,6 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 Expanded(
-                  // Usamos Expanded para que el contenido principal ocupe el espacio restante
                   child: SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,70 +226,15 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                // BottomNavigationBar fuera del SingleChildScrollView para que esté siempre abajo
-                BottomNavigationBar(
-                  backgroundColor: Colors.white,
-                  items: const <BottomNavigationBarItem>[
-                    BottomNavigationBarItem(
-                      icon: ImageIcon(AssetImage('assets/icons/cart.png')),
-                      activeIcon: ImageIcon(
-                        AssetImage('assets/icons/cart.png'),
-                        color: Colors.orange,
-                      ),
-                      label: 'Cart',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: ImageIcon(AssetImage('assets/icons/home.png')),
-                      activeIcon: ImageIcon(
-                        AssetImage('assets/icons/home.png'),
-                        color: Colors.orange,
-                      ),
-                      label: 'Home',
-                    ),
-                    BottomNavigationBarItem(
-                      icon: ImageIcon(AssetImage('assets/icons/profile.png')),
-                      activeIcon: ImageIcon(
-                        AssetImage('assets/icons/profile.png'),
-                        color: Colors.orange,
-                      ),
-                      label: 'Account',
-                    ),
-                  ],
-                  currentIndex: 1,
-                  selectedItemColor: Colors.orange,
-                  unselectedItemColor: Colors.orange.withAlpha(100),
-                  showSelectedLabels: false,
-                  showUnselectedLabels: false,
-                  onTap: (index) {
-                    if (index == 1) {
-                      // No es necesario navegar a la misma pantalla
-                    } else if (index == 2) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const ProfileClient()),
-                      );
-                    }
-                  },
-                ),
               ],
             ),
           ),
         ],
       ),
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTabChanged: _onTabTapped,
+      ),
     );
   }
-
-  final List<Map<String, String>> _categories = [
-    {'name': 'Ice cream', 'image': 'assets/images/cliente/iceCream.png'},
-    {'name': 'Sushi', 'image': 'assets/images/cliente/sushi.png'},
-    {'name': 'Hamburgers', 'image': 'assets/images/cliente/hamburger.png'},
-  ];
-
-  final List<Map<String, String>> _restaurants = [
-    {'name': 'Subway', 'image': 'assets/logos/subway.png'},
-    {'name': 'KFC', 'image': 'assets/logos/kfc.png'},
-    {'name': 'Starbucks', 'image': 'assets/logos/starbucks.png'},
-    {'name': 'Tierra Querida', 'image': 'assets/logos/tierraQuerida.png'},
-    {'name': 'Popsy', 'image': 'assets/logos/popsy.png'},
-  ];
 }

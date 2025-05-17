@@ -1,9 +1,41 @@
 import 'package:flutter/material.dart';
 import 'productDetail.dart';
 import '../homeScreen.dart';
+import '../customBottomNavigationBar.dart'; // Importa la navbar personalizada
+import '../profile.dart'; // Importa la pantalla de perfil
+import '../cart/shoppingCart.dart'; // Importa la pantalla del carrito
 
-class MenuTierraQuerida extends StatelessWidget {
-  MenuTierraQuerida({super.key});
+class MenuTierraQuerida extends StatefulWidget {
+  const MenuTierraQuerida({super.key});
+
+  @override
+  State<MenuTierraQuerida> createState() => _MenuTierraQueridaState();
+}
+
+class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
+  int _selectedIndex = 1; // El índice de "Home" es 1
+
+  void _onTabTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    if (index == 0) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const ShoppingCartScreen()),
+      );
+    } else if (index == 1) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()), // Navega a HomeScreen
+      );
+    } else if (index == 2) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const ProfileClient()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +52,7 @@ class MenuTierraQuerida extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8.0),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.2),
+                    color: Color.fromRGBO(255, 255, 255, 0.2),
                     spreadRadius: 1,
                     blurRadius: 3,
                     offset: const Offset(0, 2),
@@ -78,7 +110,7 @@ class MenuTierraQuerida extends StatelessWidget {
                   border: Border.all(color: Colors.black, width: 2),
                 ),
                 child: ClipOval(
-                  child: Image.asset('assets/images/tierraQueridaLogo.png', fit: BoxFit.cover),
+                  child: Image.asset('assets/logos/tierraQuerida.png', fit: BoxFit.cover),
                 ),
               ),
             ),
@@ -179,38 +211,10 @@ class MenuTierraQuerida extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.white, // Establece el color de fondo a blanco
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage('assets/icons/cart.png')),
-            activeIcon: ImageIcon(AssetImage('assets/icons/cart.png'), color: Colors.orange),
-            label: 'Cart',
-          ),
-          BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage('assets/icons/home.png')),
-            activeIcon: ImageIcon(AssetImage('assets/icons/home.png'), color: Colors.orange),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: ImageIcon(AssetImage('assets/icons/profile.png')),
-            activeIcon: ImageIcon(AssetImage('assets/icons/profile.png'), color: Colors.orange),
-            label: 'Account',
-          ),
-        ],
-        currentIndex: 1,
-        selectedItemColor: Colors.orange,
-        unselectedItemColor: Colors.orange.withAlpha(100),
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        onTap: (index) {
-          if (index == 1) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => HomeScreen()),
-            );
-          }
-        },
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTabChanged: _onTabTapped,
+        backgroundColor: Colors.white,
       ),
     );
   }

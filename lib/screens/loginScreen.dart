@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'registerScreen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../auth/auth.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,6 +14,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false; // Para mostrar un indicador de carga
 
   Future<void> _attemptLogin(BuildContext context) async {
     final String email = _emailController.text.trim();
@@ -25,7 +27,11 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final Uri url = Uri.parse('http://192.168.159.36:8000/login');
+    setState(() {
+      _isLoading = true; // Mostrar indicador de carga
+    });
+
+    final Uri url = Uri.parse('http://192.168.1.7:8000/login');
 
     try {
       final response = await http.post(
@@ -36,29 +42,31 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        if (data['mensaje'] == 'Login exitoso') {
-          // ¡Autenticación exitosa!
-          print('Login exitoso: ${data['mensaje']}');
-          if (data.containsKey('cliente')) {
-            print('Datos del cliente: ${data['cliente']}');
-            // Aquí podrías guardar los datos del cliente en tu estado de la aplicación
-            // (Provider, BLoC, etc.) para usarlos en otras pantallas.
-          }
-          Navigator.pushReplacementNamed(context, '/home'); // Navegar a la HomeScreen
-        } else {
-          // El backend devolvió un código 200 pero el mensaje no es el esperado
+        print('Cuerpo de la respuesta del login: $data'); // <-- ¡AÑADIDO PARA INSPECCIÓN!
+        if (data.containsKey('access_token')) {
+          // <-- ¡MODIFICACIÓN CLAVE AQUÍ!
+          print('Login exitoso (token recibido)'); // Mensaje de depuración
+          final String accessToken = data['access_token'];
+          await saveAuthToken(accessToken);
+          print('Token guardado: $accessToken');
+          // Mostrar un mensaje de éxito antes de navegar
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(const SnackBar(content: Text('Error en la autenticación')));
-          print('Respuesta inesperada del backend: ${response.body}');
+          ).showSnackBar(const SnackBar(content: Text('Inicio de sesión exitoso')));
+          Navigator.pop(context); // Vuelve a la pantalla anterior
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Error en la autenticación: Respuesta inesperada'),
+            ), // Mensaje más genérico
+          );
+          print('Respuesta inesperada del backend (sin access_token): ${response.body}');
         }
       } else if (response.statusCode == 401) {
-        // Credenciales inválidas
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Credenciales inválidas')));
       } else {
-        // Otro error
         print('Error en el login: ${response.statusCode}');
         ScaffoldMessenger.of(
           context,
@@ -69,6 +77,10 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('No se pudo conectar al servidor')));
+    } finally {
+      setState(() {
+        _isLoading = false; // Ocultar indicador de carga
+      });
     }
   }
 
@@ -89,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 50),
                   FractionallySizedBox(
                     widthFactor: 0.5,
-                    child: Image.asset('assets/images/logo.png', height: 80),
+                    child: Image.asset('assets/logos/logo.png', height: 80),
                   ),
                   const SizedBox(height: 20),
                   const Text(
@@ -131,14 +143,24 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: () => _attemptLogin(context),
+                    onPressed:
+                        _isLoading
+                            ? null
+                            : () => _attemptLogin(context), // Deshabilitar botón durante la carga
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange[700],
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
-                    child: const Text('Login', style: TextStyle(fontSize: 16)),
+                    child:
+                        _isLoading
+                            ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                            )
+                            : const Text('Login', style: TextStyle(fontSize: 16)),
                   ),
                   const SizedBox(height: 10),
                   TextButton(
@@ -176,7 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: const Padding(
                             padding: EdgeInsets.all(8.0),
                             child: Image(
-                              image: AssetImage('assets/images/googleLogo.png'),
+                              image: AssetImage('assets/logos/googleLogo.png'),
                               height: 25,
                             ),
                           ),
