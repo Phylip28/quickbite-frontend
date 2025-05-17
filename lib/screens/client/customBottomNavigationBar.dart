@@ -19,23 +19,23 @@ class CustomBottomNavigationBar extends StatelessWidget {
       items: const <BottomNavigationBarItem>[
         BottomNavigationBarItem(
           icon: ImageIcon(AssetImage('assets/icons/cart.png')),
-          activeIcon: ImageIcon(AssetImage('assets/icons/cart.png'), color: Colors.orange),
+          activeIcon: ImageIcon(AssetImage('assets/icons/cart.png'), color: Color(0xFFf05000)),
           label: 'Cart',
         ),
         BottomNavigationBarItem(
           icon: ImageIcon(AssetImage('assets/icons/home.png')),
-          activeIcon: ImageIcon(AssetImage('assets/icons/home.png'), color: Colors.orange),
+          activeIcon: ImageIcon(AssetImage('assets/icons/home.png'), color: Color(0xFFf05000)),
           label: 'Home',
         ),
         BottomNavigationBarItem(
           icon: ImageIcon(AssetImage('assets/icons/profile.png')),
-          activeIcon: ImageIcon(AssetImage('assets/icons/profile.png'), color: Colors.orange),
+          activeIcon: ImageIcon(AssetImage('assets/icons/profile.png'), color: Color(0xFFf05000)),
           label: 'Account',
         ),
       ],
       currentIndex: currentIndex,
-      selectedItemColor: Colors.orange,
-      unselectedItemColor: Colors.orange.withAlpha(100),
+      selectedItemColor: const Color(0xFFf05000),
+      unselectedItemColor: const Color(0xFFf05000).withAlpha(100),
       showSelectedLabels: false,
       showUnselectedLabels: false,
       onTap: onTabChanged,

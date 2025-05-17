@@ -72,7 +72,11 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
                         color: const Color(0xFFFEEAE6),
                         borderRadius: BorderRadius.circular(8.0),
                       ),
-                      child: const Icon(Icons.arrow_back_ios_new, color: Colors.orange, size: 20),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new,
+                        color: Color(0xFFf05000),
+                        size: 20,
+                      ),
                     ),
                   ),
                   Expanded(
@@ -89,7 +93,7 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
                           'Add address',
                           style: TextStyle(
                             fontSize: 16,
-                            color: Colors.orange,
+                            color: Color(0xFFf05000),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -146,7 +150,7 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
                           children: [
                             Row(
                               children: [
-                                const Icon(Icons.star, color: Colors.amber, size: 16),
+                                const Icon(Icons.star, color: Color(0xFFf05000), size: 16),
                                 const SizedBox(width: 4),
                                 Text(item['rating']!, style: const TextStyle(fontSize: 12)),
                               ],
@@ -193,10 +197,10 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
                           children: [
                             Text(
                               '\$ ${item['price']}',
-                              style: const TextStyle(color: Colors.orange, fontSize: 12),
+                              style: const TextStyle(color: Color(0xFFf05000), fontSize: 12),
                             ),
                             CircleAvatar(
-                              backgroundColor: Colors.orange,
+                              backgroundColor: const Color(0xFFf05000),
                               radius: 14,
                               child: const Icon(Icons.add, color: Colors.white, size: 16),
                             ),

@@ -148,7 +148,7 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
                             ),
                             child: const Icon(
                               Icons.arrow_back_ios_new,
-                              color: Colors.orange,
+                              color: Color(0xFFf05000),
                               size: 24,
                             ),
                           ),
@@ -212,7 +212,7 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
                                     ),
                                     Text(
                                       '\$${item.price.toStringAsFixed(0)}',
-                                      style: const TextStyle(color: Colors.orange),
+                                      style: const TextStyle(color: Color(0xFFf05000)),
                                     ),
                                   ],
                                 ),
@@ -316,7 +316,7 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
                           width: double.infinity,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange,
+                              backgroundColor: const Color(0xFFf05000),
                               padding: const EdgeInsets.symmetric(vertical: 16),
                             ),
                             onPressed: () {

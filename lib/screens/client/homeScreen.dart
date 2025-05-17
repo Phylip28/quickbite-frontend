@@ -103,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                         child: const Text(
                           'Register to get started',
-                          style: TextStyle(color: Colors.orange, fontSize: 12),
+                          style: TextStyle(color: Color(0xFFf05000), fontSize: 12),
                         ),
                       ),
                     ],

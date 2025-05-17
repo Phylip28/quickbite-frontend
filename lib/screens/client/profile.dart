@@ -184,7 +184,7 @@ class _ProfileClientState extends State<ProfileClient> {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
+                            backgroundColor: const Color(0xFFf05000),
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           ),
                           child: const Text('Log Out', style: TextStyle(color: Colors.white)),

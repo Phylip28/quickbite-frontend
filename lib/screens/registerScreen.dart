@@ -34,7 +34,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final String correo = _correoController.text.trim();
       final String contrasenia = _contraseniaController.text.trim();
 
-      final Uri url = Uri.parse('http://192.168.1.7:8000/users/register');
+      final Uri url = Uri.parse('http://192.168.159.36:8000/users/register');
 
       try {
         final response = await http.post(
@@ -305,7 +305,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ElevatedButton(
                     onPressed: _isLoading ? null : (_termsAndConditionsChecked ? _register : null),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange[700],
+                      backgroundColor: const Color(0xFFf05000),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -386,7 +386,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           'Sign in',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.orange,
+                            color: Color(0xFFf05000),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
