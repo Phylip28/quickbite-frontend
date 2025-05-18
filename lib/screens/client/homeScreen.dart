@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../loginScreen.dart';
+import '../registerScreen.dart';
 import 'TierraQuerida/menuTierraQuerida.dart';
 import 'account/profile.dart';
 import 'customBottomNavigationBar.dart';
@@ -128,7 +128,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const LoginScreen()),
+                          MaterialPageRoute(
+                            builder: (context) => const RegisterScreen(),
+                          ), // CAMBIADO a RegisterScreen()
                         );
                       },
                       child: const Text(

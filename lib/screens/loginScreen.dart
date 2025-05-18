@@ -32,13 +32,15 @@ class _LoginScreenState extends State<LoginScreen> {
       _isLoading = true; // Mostrar indicador de carga
     });
 
-    final Uri url = Uri.parse('http://192.168.1.7:8000/login');
+    final Uri url = Uri.parse('http://192.168.1.7:8000/auth');
 
     try {
       final response = await http.post(
         url,
-        headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
-        body: jsonEncode(<String, String>{'correo': email, 'contrasena': password}),
+        headers: <String, String>{
+          'Content-Type': 'application/x-www-form-urlencoded', // CAMBIADO
+        },
+        body: <String, String>{'username': email, 'password': password},
       );
 
       if (response.statusCode == 200) {

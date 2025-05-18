@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'loginScreen.dart';
 import '../auth/auth.dart';
+import 'client/homeScreen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -23,89 +24,101 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _isLoading = false; // Para mostrar un indicador de carga
 
   Future<void> _register() async {
-    if (_formKey.currentState!.validate() && _termsAndConditionsChecked) {
-      setState(() {
-        _isLoading = true;
-      });
-      final String nombre = _nombreController.text.trim();
-      final String apellido = _apellidoController.text.trim();
-      final String direccion = _direccionController.text.trim();
-      final String telefono = _telefonoController.text.trim();
-      final String correo = _correoController.text.trim();
-      final String contrasenia = _contraseniaController.text.trim();
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    if (!_termsAndConditionsChecked) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('You must accept the terms and conditions.')));
+      }
+      return;
+    }
 
-      final Uri url = Uri.parse('http://192.168.1.7:8000/users/register');
+    setState(() {
+      _isLoading = true;
+    });
 
-      try {
-        final response = await http.post(
-          url,
-          headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
-          body: jsonEncode(<String, String>{
-            'nombre_cliente': nombre,
-            'apellido_cliente': apellido,
-            'direccion_cliente': direccion,
-            'telefono_cliente': telefono,
-            'correo_cliente': correo,
-            'contrasenia': contrasenia,
-          }),
-        );
+    final String nombre = _nombreController.text.trim();
+    final String apellido = _apellidoController.text.trim();
+    final String direccion = _direccionController.text.trim();
+    final String telefono = _telefonoController.text.trim();
+    final String correo = _correoController.text.trim();
+    final String contrasenia = _contraseniaController.text.trim();
 
+    final Uri url = Uri.parse('http://192.168.1.7:8000/users/register');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
+        body: jsonEncode(<String, String>{
+          'nombre_cliente': nombre,
+          'apellido_cliente': apellido,
+          'direccion_cliente': direccion,
+          'telefono_cliente': telefono,
+          'correo_cliente': correo,
+          'contrasenia': contrasenia,
+        }),
+      );
+
+      if (mounted) {
         if (response.statusCode == 201) {
           final Map<String, dynamic> data = jsonDecode(response.body);
-          print('Cuerpo de la respuesta del registro: $data'); // <-- ¡AÑADIDO PARA INSPECCIÓN!
-          if (data.containsKey('user_id') && // Asegúrate de que las claves coincidan con tu backend
+
+          if (data.containsKey('id_cliente') &&
               data.containsKey('nombre_cliente') &&
               data.containsKey('apellido_cliente') &&
               data.containsKey('direccion_cliente') &&
               data.containsKey('telefono_cliente') &&
               data.containsKey('correo_cliente')) {
-            print('Registro exitoso (info de usuario recibida)'); // Mensaje de depuración
-            await saveUserId(data['user_id']);
+            await saveUserId(data['id_cliente']);
             await saveUserName(data['nombre_cliente']);
             await saveUserLastName(data['apellido_cliente']);
             await saveUserAddress(data['direccion_cliente']);
             await saveUserPhone(data['telefono_cliente']);
             await saveUserEmail(data['correo_cliente']);
-            print('Información del usuario guardada localmente');
+
+            if (data.containsKey('access_token')) {
+              await saveAuthToken(data['access_token']);
+            }
+
             ScaffoldMessenger.of(
               context,
-            ).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Registro exitoso')));
+            ).showSnackBar(const SnackBar(content: Text('Registration successful!')));
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(
-                builder: (context) => const LoginScreen(),
-              ), // Asegúrate de importar HomeScreen
+              MaterialPageRoute(builder: (context) => const HomeScreen()),
             );
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text(
-                  'Error en el registro: Falta información del usuario en la respuesta',
-                ),
-              ), // Mensaje más específico
+                content: Text('Registration error: Missing user information in response.'),
+              ),
             );
-            print('Respuesta incompleta del backend (falta info de usuario): ${response.body}');
           }
         } else {
           final Map<String, dynamic> errorData = jsonDecode(response.body);
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(errorData['detail'] ?? 'Error al registrar')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorData['detail'] ?? 'Registration failed. Please try again.'),
+            ),
+          );
         }
-      } catch (e) {
+      }
+    } catch (e) {
+      if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('No se pudo conectar al servidor')));
-        print('Error de conexión: $e');
-      } finally {
+        ).showSnackBar(SnackBar(content: Text('Error during registration: $e')));
+      }
+    } finally {
+      if (mounted) {
         setState(() {
           _isLoading = false;
         });
       }
-    } else if (!_termsAndConditionsChecked) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Debes aceptar los términos y condiciones')));
     }
   }
 
@@ -171,7 +184,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   TextFormField(
                     controller: _nombreController,
                     decoration: const InputDecoration(
-                      labelText: 'Nombre',
+                      labelText: 'First Name', // CAMBIADO
                       hintText: 'Enter your first name',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.person_outline, size: 20),
@@ -180,7 +193,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Por favor ingresa tu nombre';
+                        return 'Please enter your first name'; // CAMBIADO
                       }
                       return null;
                     },
@@ -189,7 +202,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   TextFormField(
                     controller: _apellidoController,
                     decoration: const InputDecoration(
-                      labelText: 'Apellido',
+                      labelText: 'Last Name', // CAMBIADO
                       hintText: 'Enter your last name',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.person_outline, size: 20),
@@ -198,7 +211,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Por favor ingresa tu apellido';
+                        return 'Please enter your last name'; // CAMBIADO
                       }
                       return null;
                     },
@@ -207,7 +220,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   TextFormField(
                     controller: _direccionController,
                     decoration: const InputDecoration(
-                      labelText: 'Dirección',
+                      labelText: 'Address', // CAMBIADO
                       hintText: 'Enter your address',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.home_outlined, size: 20),
@@ -216,7 +229,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Por favor ingresa tu dirección';
+                        return 'Please enter your address'; // CAMBIADO
                       }
                       return null;
                     },
@@ -225,7 +238,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   TextFormField(
                     controller: _telefonoController,
                     decoration: const InputDecoration(
-                      labelText: 'Teléfono',
+                      labelText: 'Phone', // CAMBIADO
                       hintText: 'Enter your phone number',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.phone_outlined, size: 20),
@@ -235,7 +248,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     keyboardType: TextInputType.phone,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Por favor ingresa tu número de teléfono';
+                        return 'Please enter your phone number'; // CAMBIADO
                       }
                       return null;
                     },
@@ -254,10 +267,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Por favor ingresa tu correo electrónico';
+                        return 'Please enter your email'; // CAMBIADO
                       }
                       if (!value.contains('@')) {
-                        return 'Por favor ingresa un correo electrónico válido';
+                        return 'Please enter a valid email'; // CAMBIADO
                       }
                       return null;
                     },
@@ -276,10 +289,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     obscureText: true,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Por favor ingresa una contraseña';
+                        return 'Please enter a password'; // CAMBIADO
                       }
                       if (value.length < 8) {
-                        return 'La contraseña debe tener al menos 8 caracteres';
+                        return 'Password must be at least 8 characters'; // CAMBIADO
                       }
                       return null;
                     },
