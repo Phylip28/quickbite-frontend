@@ -66,23 +66,47 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (mounted) {
         if (response.statusCode == 201) {
           final Map<String, dynamic> data = jsonDecode(response.body);
+          print("[RegisterScreen] Response data from server: $data");
 
           if (data.containsKey('id_cliente') &&
               data.containsKey('nombre_cliente') &&
               data.containsKey('apellido_cliente') &&
               data.containsKey('direccion_cliente') &&
               data.containsKey('telefono_cliente') &&
-              data.containsKey('correo_cliente')) {
-            await saveUserId(data['id_cliente']);
-            await saveUserName(data['nombre_cliente']);
-            await saveUserLastName(data['apellido_cliente']);
-            await saveUserAddress(data['direccion_cliente']);
-            await saveUserPhone(data['telefono_cliente']);
-            await saveUserEmail(data['correo_cliente']);
+              data.containsKey('correo_cliente') &&
+              data.containsKey('access_token')) {
+            // Es buena idea verificar el token también aquí
 
-            if (data.containsKey('access_token')) {
-              await saveAuthToken(data['access_token']);
-            }
+            // Guardar todos los datos del usuario
+            // Asegúrate que el tipo de dato de id_cliente coincida con lo que espera saveUserId
+            // o conviértelo. SharedPreferences usualmente guarda int como int, String como String.
+            // Si saveUserId espera String:
+            await saveUserId(data['id_cliente']);
+            // Si saveUserId espera int (y SharedPreferences lo guarda como int):
+            // await saveUserId(data['id_cliente']);
+            print("[RegisterScreen] UserID saved: ${data['id_cliente']}");
+
+            await saveUserName(data['nombre_cliente']);
+            print("[RegisterScreen] UserName saved: ${data['nombre_cliente']}");
+
+            await saveUserLastName(data['apellido_cliente']);
+            print("[RegisterScreen] UserLastName saved: ${data['apellido_cliente']}");
+
+            await saveUserAddress(data['direccion_cliente']);
+            print("[RegisterScreen] Address saved: ${data['direccion_cliente']}");
+
+            await saveUserPhone(data['telefono_cliente']); // <--- AÑADIDO
+            print("[RegisterScreen] UserPhone saved: ${data['telefono_cliente']}");
+
+            await saveUserEmail(data['correo_cliente']); // <--- AÑADIDO
+            print("[RegisterScreen] UserEmail saved: ${data['correo_cliente']}");
+
+            await saveAuthToken(data['access_token']);
+            print("[RegisterScreen] Token saved: ${data['access_token']}");
+
+            // Los prints de verificación de token pueden ir aquí si lo deseas
+            // final tempToken = await getAuthToken();
+            // print("[RegisterScreen] Token read back immediately after save: $tempToken");
 
             ScaffoldMessenger.of(
               context,
@@ -92,9 +116,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
               MaterialPageRoute(builder: (context) => const HomeScreen()),
             );
           } else {
+            // Construye un mensaje de error más específico
+            String missingKeys = "";
+            if (!data.containsKey('id_cliente')) missingKeys += "id_cliente, ";
+            if (!data.containsKey('nombre_cliente')) missingKeys += "nombre_cliente, ";
+            if (!data.containsKey('apellido_cliente')) missingKeys += "apellido_cliente, ";
+            if (!data.containsKey('direccion_cliente')) missingKeys += "direccion_cliente, ";
+            if (!data.containsKey('telefono_cliente')) missingKeys += "telefono_cliente, ";
+            if (!data.containsKey('correo_cliente')) missingKeys += "correo_cliente, ";
+            if (!data.containsKey('access_token')) missingKeys += "access_token, ";
+
+            if (missingKeys.isNotEmpty) {
+              missingKeys = missingKeys.substring(
+                0,
+                missingKeys.length - 2,
+              ); // Remover la última coma y espacio
+            }
+
+            print("[RegisterScreen] Error: Missing keys in response: $missingKeys");
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Registration error: Missing user information in response.'),
+              SnackBar(
+                content: Text(
+                  'Registration error: Missing user information in response. Missing: $missingKeys',
+                ),
               ),
             );
           }

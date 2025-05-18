@@ -17,32 +17,48 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 1; // El índice de "Home" es 1
-
+  int _selectedIndex = 1;
   bool _isLoggedIn = false;
   String? _userAddress;
 
   @override
   void initState() {
     super.initState();
+    print("[HomeScreen] initState called"); // DEBUG
     _checkLoginStatusAndLoadData();
   }
 
   Future<void> _checkLoginStatusAndLoadData() async {
+    print("[HomeScreen] _checkLoginStatusAndLoadData called"); // DEBUG
     final token = await getAuthToken();
+    print("[HomeScreen] Token from SharedPreferences: $token"); // DEBUG
+
     if (token != null && token.isNotEmpty) {
       final address = await getUserAddress();
+      print("[HomeScreen] Address from SharedPreferences: $address"); // DEBUG
       if (mounted) {
         setState(() {
           _isLoggedIn = true;
           _userAddress = address;
+          print(
+            "[HomeScreen] setState called: _isLoggedIn=true, _userAddress=$_userAddress",
+          ); // DEBUG
         });
+      } else {
+        print("[HomeScreen] NOT MOUNTED when trying to setState after getting address."); // DEBUG
       }
     } else {
+      print("[HomeScreen] No valid token found."); // DEBUG
       if (mounted) {
         setState(() {
           _isLoggedIn = false;
+          _userAddress = null;
+          print(
+            "[HomeScreen] setState called: _isLoggedIn=false, _userAddress=null (no token)",
+          ); // DEBUG
         });
+      } else {
+        print("[HomeScreen] NOT MOUNTED when trying to setState (no token)."); // DEBUG
       }
     }
   }
@@ -54,15 +70,11 @@ class _HomeScreenState extends State<HomeScreen> {
     if (index == 0) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder:
-              (context) => const ShoppingCartScreen(), // Asegúrate que ShoppingCartScreen() exista
-        ),
+        MaterialPageRoute(builder: (context) => const ShoppingCartScreen()),
       );
-      print('Navegar al carrito');
+      // print('Navegar al carrito'); // Puedes mantener o quitar este print
     } else if (index == 1) {
-      // Ya estamos en HomeScreen, no es necesario hacer nada si se presiona Home de nuevo,
-      // a menos que quieras un comportamiento específico como recargar.
+      // Ya estamos en HomeScreen
     } else if (index == 2) {
       Navigator.pushReplacement(
         context,
@@ -79,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Map<String, String>> _restaurants = [
     {'name': 'Subway', 'image': 'assets/logos/subway.png'},
-    {'name': 'KFC', 'image': 'assets/logos/kfc.png'}, // Asegúrate que el nombre sea 'KFC'
+    {'name': 'KFC', 'image': 'assets/logos/kfc.png'},
     {'name': 'Starbucks', 'image': 'assets/logos/starbucks.png'},
     {'name': 'Tierra Querida', 'image': 'assets/logos/tierraQuerida.png'},
     {'name': 'Popsy', 'image': 'assets/logos/popsy.png'},
@@ -87,6 +99,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print(
+      "[HomeScreen] build method called. _isLoggedIn: $_isLoggedIn, _userAddress: $_userAddress",
+    ); // DEBUG
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -101,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(8.0),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color.fromRGBO(0, 0, 0, 0.2), // Ya estaba usando Color.fromRGBO
+                    color: const Color.fromRGBO(0, 0, 0, 0.2),
                     spreadRadius: 1,
                     blurRadius: 3,
                     offset: const Offset(0, 2),
@@ -116,21 +131,23 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        _isLoggedIn ? (_userAddress ?? 'Your Location') : 'Your Location',
+                        // Lógica para mostrar la dirección o 'Your Location'
+                        _isLoggedIn && _userAddress != null && _userAddress!.isNotEmpty
+                            ? _userAddress!
+                            : 'Your Location',
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       const Icon(Icons.arrow_drop_down),
                     ],
                   ),
                   const SizedBox(height: 10),
+                  // Lógica para mostrar "Register to get started" o un Container vacío
                   if (!_isLoggedIn)
                     InkWell(
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => const RegisterScreen(),
-                          ), // CAMBIADO a RegisterScreen()
+                          MaterialPageRoute(builder: (context) => const RegisterScreen()),
                         );
                       },
                       child: const Text(
@@ -139,7 +156,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     )
                   else
-                    Container(height: 14), // Para mantener el espacio
+                    // Si está logueado, no mostramos el mensaje "Register to get started"
+                    // Mostramos un Container para mantener el espacio si es necesario,
+                    // o simplemente nada si la dirección ya se muestra arriba.
+                    // El Container(height:14) que tenías podría ser para esto.
+                    Container(height: 14), // O ajusta según tu diseño
                 ],
               ),
             ),
@@ -156,12 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color.fromRGBO(
-                              158,
-                              158,
-                              158,
-                              0.1,
-                            ), // CAMBIADO Colors.grey.withOpacity(0.1)
+                            color: const Color.fromRGBO(158, 158, 158, 0.1),
                             spreadRadius: 1,
                             blurRadius: 3,
                             offset: const Offset(0, 1),
@@ -214,12 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color.fromRGBO(
-                              158,
-                              158,
-                              158,
-                              0.1,
-                            ), // CAMBIADO Colors.grey.withOpacity(0.1)
+                            color: const Color.fromRGBO(158, 158, 158, 0.1),
                             spreadRadius: 1,
                             blurRadius: 3,
                             offset: const Offset(0, 1),
@@ -276,11 +287,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                         );
                                       } else {
-                                        print('Clicked on ${restaurant['name']}');
+                                        // print('Clicked on ${restaurant['name']}');
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           SnackBar(
                                             content: Text(
-                                              'Menu for ${restaurant['name']} not available yet.', // Mensaje en inglés
+                                              'Menu for ${restaurant['name']} not available yet.',
                                             ),
                                             duration: const Duration(seconds: 2),
                                           ),
