@@ -22,40 +22,40 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
 
   final List<Map<String, String>> _kfcMenuItems = [
     {
-      'name': 'Mega Familiar',
+      'name': 'Mega Family', // Nombre corregido de 'Mega Familiar' si es necesario
       'price': '22.99',
       'rating': '4.8',
-      'image': 'assets/images/kfc/kfc_mega_familiar.png', // Reemplaza con tus rutas de imagen
+      'image': 'assets/images/cliente/kfc/megaFamily.png',
     },
     {
       'name': 'Wow Duo Deluxe Nuggets',
       'price': '25.99',
       'rating': '4.7',
-      'image': 'assets/images/kfc/kfc_wow_duo.png',
+      'image': 'assets/images/cliente/kfc/wowDuoDeluxeNuggets.png',
     },
     {
       'name': 'Combo Nuggets',
       'price': '11.50',
       'rating': '4.8',
-      'image': 'assets/images/kfc/kfc_combo_nuggets.png',
+      'image': 'assets/images/cliente/kfc/comboNuggets.png',
     },
     {
-      'name': 'Parte y Comparte Alas',
+      'name': 'Share and Split Wings', // Nombre corregido de 'Parte y Comparte Alas'
       'price': '25.99',
       'rating': '4.7',
-      'image': 'assets/images/kfc/kfc_comparte_alas.png',
+      'image': 'assets/images/cliente/kfc/shareAndSplitWings.png',
     },
     {
       'name': 'BigBox Kentucky Coronel',
       'price': '21.99',
       'rating': '4.8',
-      'image': 'assets/images/kfc/kfc_bigbox_coronel.png',
+      'image': 'assets/images/cliente/kfc/bigBoxKentuckyCoronel.png',
     },
     {
       'name': 'Combo Pop Corn',
       'price': '14.99',
       'rating': '4.7',
-      'image': 'assets/images/kfc/kfc_combo_popcorn.png',
+      'image': 'assets/images/cliente/kfc/comboPopCorn.png',
     },
     // Puedes añadir más productos aquí si es necesario
   ];
@@ -63,16 +63,14 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
   String _getProductDescription(String productName) {
     // Devuelve descripciones específicas para cada producto para la página de detalles
     switch (productName) {
-      case 'Mega Familiar':
-        return '8 Chicken Pieces + 4 Small Potatoes.'; // Assuming "Prey" was a typo for "Pieces"
+      case 'Mega Family': // Asegúrate que coincida con el nombre en _kfcMenuItems
+        return '8 Chicken Pieces + 4 Small Potatoes.';
       case 'Wow Duo Deluxe Nuggets':
         return '2 Deluxe BBQ Sandwiches (Brioche bread, 120gr breast, tomato, lettuce, Mayonnaise Sauce, 1 slice of American cheese) + 5 Nuggets + 2 Small Potatoes + 2 Pet Sodas + Colonel\'s Sauce.';
       case 'Combo Nuggets':
         return '10 Nuggets + 1 Small Potato + 1 Pet Soda 400ml + 1 BBQ Sauce + 1 Colonel\'s Sauce.';
-      case 'Parte y Comparte Alas':
-        // Using the description provided, though it's similar to Combo Nuggets.
-        // Consider if this product should have a more distinct description for "Alas" (Wings).
-        return '10 Nuggets + 1 Small Potato + 1 Pet Soda 400ml + 1 BBQ Sauce + 1 Colonel\'s Sauce.';
+      case 'Share and Split Wings': // Asegúrate que coincida con el nombre en _kfcMenuItems
+        return '10 Chicken Wings + 1 Small Potato + 1 Pet Soda 400ml + 1 BBQ Sauce + 1 Colonel\'s Sauce.'; // Descripción ajustada para alas
       case 'BigBox Kentucky Coronel':
         return '1 Kentucky Colonel Hamburger / Sandwich (1 Breaded Chicken Breast Fillet, Coleslaw, BBQ and Butter) + 1 Small Pop Corn + 1 Small Potato + 1 PET Soda 400ml.';
       case 'Combo Pop Corn':
@@ -92,7 +90,6 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
         MaterialPageRoute(builder: (context) => const ShoppingCartScreen()),
       );
     } else if (index == 1) {
-      // Si el índice 1 (Home en BottomNavBar) debe llevar al HomeScreen principal
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -105,59 +102,84 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
     }
   }
 
+  // Definición del método _buildHeader
   Widget _buildHeader(BuildContext context) {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.only(top: 10.0, left: 15, right: 15),
+          padding: const EdgeInsets.only(
+            top: 10.0,
+            left: 15,
+            right: 15,
+            bottom: 0,
+          ), // Ajustado el padding
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               InkWell(
                 onTap:
                     () => Navigator.pushReplacement(
-                      // Cambiado para navegar a HomeScreen
                       context,
                       MaterialPageRoute(builder: (context) => const HomeScreen()),
                     ),
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: lightAccentColor, // Color de fondo suave
+                    color: lightAccentColor,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(Icons.arrow_back_ios_new, color: primaryColor, size: 20),
                 ),
               ),
-              const Column(
-                children: [
-                  Text("Deliver to", style: TextStyle(fontSize: 12, color: Colors.grey)),
-                  Row(
-                    children: [
-                      Text(
-                        "Transversal 51a #67B - 90",
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: primaryColor,
-                        ),
+              Expanded(
+                // Para que la columna de "Deliver to" pueda centrarse si es necesario
+                child: Column(
+                  mainAxisSize:
+                      MainAxisSize.min, // Para que la columna no ocupe más espacio del necesario
+                  crossAxisAlignment: CrossAxisAlignment.center, // Centra el texto "Deliver to"
+                  children: [
+                    const Text("Deliver to", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                    InkWell(
+                      // Para hacer la dirección clickeable si se desea en el futuro
+                      onTap: () {
+                        // Lógica para cambiar dirección si se implementa
+                        print("Change address tapped");
+                      },
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min, // Para centrar la fila
+                        children: [
+                          Text(
+                            "Transversal 51a #67B - 90", // Dirección
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: primaryColor,
+                            ),
+                          ),
+                          Icon(Icons.keyboard_arrow_down, color: primaryColor, size: 16),
+                        ],
                       ),
-                      Icon(Icons.keyboard_arrow_down, color: primaryColor, size: 16),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(width: 40), // Espacio para balancear el botón de retroceso
+              const SizedBox(
+                width: 48,
+              ), // Espacio para balancear el botón de retroceso (ajustar si es necesario)
             ],
           ),
         ),
         const SizedBox(height: 20),
         Image.asset(
-          'assets/logos/kfc.png', // Reemplaza con la ruta de tu logo de KFC
+          'assets/logos/kfc.png', // Asegúrate que esta ruta sea correcta
           height: 80,
         ),
         const SizedBox(height: 10),
-        const Text("Welcome to KFC", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        const Text(
+          "Welcome to KFC",
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+        ),
         const SizedBox(height: 5),
         const Text(
           "Life tastes better with KFC.",
@@ -258,21 +280,20 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100], // Un fondo ligeramente gris para la pantalla
+      backgroundColor: Colors.grey[100],
       body: SafeArea(
-        // SafeArea para evitar que el contenido se superponga con la barra de estado/notches
         child: SingleChildScrollView(
           child: Column(
             children: [
-              _buildHeader(context),
+              _buildHeader(context), // Asegúrate de llamar a _buildHeader aquí
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
                 child: GridView.builder(
                   shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(), // Desactiva el scroll del GridView
+                  physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2, // Dos columnas
-                    childAspectRatio: 0.70, // Ajusta para el tamaño de tus tarjetas
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.70,
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
                   ),

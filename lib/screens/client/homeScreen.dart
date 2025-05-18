@@ -5,7 +5,8 @@ import 'profile.dart';
 import 'customBottomNavigationBar.dart';
 import 'cart/shoppingCart.dart';
 import 'Starbucks/menuStarbucks.dart';
-import 'Subway/menuSubway.dart'; // Asegúrate que la ruta sea correcta
+import 'Subway/menuSubway.dart';
+import 'Kfc/menuKfc.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -49,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Map<String, String>> _restaurants = [
     {'name': 'Subway', 'image': 'assets/logos/subway.png'},
-    {'name': 'KFC', 'image': 'assets/logos/kfc.png'},
+    {'name': 'KFC', 'image': 'assets/logos/kfc.png'}, // Asegúrate que el nombre sea 'KFC'
     {'name': 'Starbucks', 'image': 'assets/logos/starbucks.png'},
     {'name': 'Tierra Querida', 'image': 'assets/logos/tierraQuerida.png'},
     {'name': 'Popsy', 'image': 'assets/logos/popsy.png'},
@@ -221,19 +222,25 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                         );
                                       } else if (restaurant['name'] == 'Subway') {
-                                        // <-- AÑADIDO ESTO
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => const SubwayMenuScreen(),
+                                          ),
+                                        );
+                                      } else if (restaurant['name'] == 'KFC') {
+                                        // Condición para KFC
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
                                             builder:
                                                 (context) =>
-                                                    const SubwayMenuScreen(), // Navega a Subway
+                                                    const KfcMenuScreen(), // Navega a KfcMenuScreen
                                           ),
                                         );
                                       } else {
                                         // Acción por defecto o para otros restaurantes
                                         print('Clicked on ${restaurant['name']}');
-                                        // Podrías mostrar un SnackBar indicando que el menú no está disponible
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           SnackBar(
                                             content: Text(
