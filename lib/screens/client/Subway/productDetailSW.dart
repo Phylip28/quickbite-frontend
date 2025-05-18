@@ -3,7 +3,7 @@ import '../customBottomNavigationBar.dart'; // Importa la barra de navegación
 // Asegúrate de que las rutas de importación sean correctas para tu estructura de proyecto.
 import '../homeScreen.dart'; // Ejemplo, ajusta si es necesario
 import '../cart/shoppingCart.dart'; // Ejemplo, ajusta si es necesario
-import '../profile.dart'; // Ejemplo, ajusta si es necesario
+import '../account/profile.dart'; // Ejemplo, ajusta si es necesario
 
 // Definición del color primario, consistente con las pantallas anteriores.
 // Este color se usa para el botón "Add to cart" y elementos activos.

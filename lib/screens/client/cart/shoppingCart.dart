@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../customBottomNavigationBar.dart';
 import '../homeScreen.dart';
-import '../profile.dart';
+import '../account/profile.dart';
 
 class ShoppingCartScreen extends StatefulWidget {
   const ShoppingCartScreen({super.key});

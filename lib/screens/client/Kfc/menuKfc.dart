@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../customBottomNavigationBar.dart';
 import '../homeScreen.dart';
 import '../cart/shoppingCart.dart';
-import '../profile.dart';
+import '../account/profile.dart';
 import 'productDetailKfc.dart'; // Asegúrate de crear este archivo para los detalles del producto
 
 // Definición de colores consistentes

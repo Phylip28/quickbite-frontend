@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../customBottomNavigationBar.dart'; // Importa la barra de navegación
 import '../homeScreen.dart'; // Para la navegación
 import '../cart/shoppingCart.dart'; // Para la navegación
-import '../profile.dart'; // Para la navegación
+import '../account/profile.dart'; // Para la navegación
 
 // Definición de colores consistentes
 const primaryColor = Color(0xFFf05000);

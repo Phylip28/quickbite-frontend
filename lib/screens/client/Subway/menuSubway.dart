@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'productDetailSW.dart'; // Importa la pantalla de detalles de Subway (Asegúrate de crear este archivo)
 import '../homeScreen.dart';
 import '../customBottomNavigationBar.dart';
-import '../profile.dart';
+import '../account/profile.dart';
 import '../cart/shoppingCart.dart';
 
 const primaryColor = Color(0xFFf05000); // Naranja similar al de la imagen y botones

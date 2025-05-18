@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../customBottomNavigationBar.dart';
 import '../homeScreen.dart';
 import '../cart/shoppingCart.dart';
-import '../profile.dart';
+import '../account/profile.dart';
 
 // Definición de colores consistentes
 const primaryColor = Color(0xFFf05000);

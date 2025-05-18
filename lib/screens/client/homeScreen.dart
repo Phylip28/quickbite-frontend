@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../loginScreen.dart';
 import 'TierraQuerida/menuTierraQuerida.dart';
-import 'profile.dart';
+import 'account/profile.dart';
 import 'customBottomNavigationBar.dart';
 import 'cart/shoppingCart.dart';
 import 'Starbucks/menuStarbucks.dart';

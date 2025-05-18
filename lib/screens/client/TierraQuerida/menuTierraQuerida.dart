@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'productDetailTQ.dart';
 import '../homeScreen.dart';
 import '../customBottomNavigationBar.dart';
-import '../profile.dart';
+import '../account/profile.dart';
 import '../cart/shoppingCart.dart';
 
 class MenuTierraQuerida extends StatefulWidget {

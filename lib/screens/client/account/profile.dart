@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'homeScreen.dart';
-import '../loginScreen.dart';
-import 'customBottomNavigationBar.dart';
-import 'cart/shoppingCart.dart';
-import '../../auth/auth.dart'; // Importa tu archivo auth.dart
+import '../homeScreen.dart';
+import '../../loginScreen.dart';
+import '../customBottomNavigationBar.dart';
+import '../cart/shoppingCart.dart';
+import '../../../auth/auth.dart'; // Importa tu archivo auth.dart
 
 class ProfileClient extends StatefulWidget {
   const ProfileClient({super.key});

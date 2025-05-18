@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../homeScreen.dart';
 import '../customBottomNavigationBar.dart';
-import '../profile.dart';
+import '../account/profile.dart';
 import '../cart/shoppingCart.dart';
 
 // Definición de colores consistentes
