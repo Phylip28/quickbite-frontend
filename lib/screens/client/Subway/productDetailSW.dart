@@ -67,7 +67,7 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
       // Navegar al carrito
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const ShoppingCartScreen()),
+        MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
       );
     } else if (index == 1) {
       // Navegar a la pantalla de inicio/menú

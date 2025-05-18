@@ -25,7 +25,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
     if (index == 0) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const ShoppingCartScreen()),
+        MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
       );
     } else if (index == 1) {
       // Ya estamos en la pantalla de menú (o HomeScreen si esta es una subpantalla de HomeScreen)

@@ -40,7 +40,7 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
     if (index == 0) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const ShoppingCartScreen()),
+        MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
       );
     } else if (index == 1) {
       Navigator.pushReplacement(

@@ -70,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (index == 0) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const ShoppingCartScreen()),
+        MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
       );
       // print('Navegar al carrito'); // Puedes mantener o quitar este print
     } else if (index == 1) {

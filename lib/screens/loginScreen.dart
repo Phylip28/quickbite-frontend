@@ -24,7 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Los campos no pueden estar vacíos')));
+      ).showSnackBar(const SnackBar(content: Text('Fields cannot be empty'))); // CAMBIADO
       return;
     }
 
@@ -37,15 +37,13 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final response = await http.post(
         url,
-        headers: <String, String>{
-          'Content-Type': 'application/x-www-form-urlencoded', // CAMBIADO
-        },
+        headers: <String, String>{'Content-Type': 'application/x-www-form-urlencoded'},
         body: <String, String>{'username': email, 'password': password},
       );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        print('Cuerpo de la respuesta del login: $data'); // <-- ¡AÑADIDO PARA INSPECCIÓN!
+        print('Cuerpo de la respuesta del login: $data');
         if (data.containsKey('access_token') &&
             data.containsKey('id_cliente') &&
             data.containsKey('nombre_cliente') &&
@@ -53,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
             data.containsKey('direccion_cliente') &&
             data.containsKey('telefono_cliente') &&
             data.containsKey('correo_cliente')) {
-          print('Login exitoso (token e info de usuario recibida)'); // Mensaje de depuración
+          print('Login exitoso (token e info de usuario recibida)');
           final String accessToken = data['access_token'];
           await saveAuthToken(accessToken);
           await saveUserId(data['id_cliente']);
@@ -63,41 +61,39 @@ class _LoginScreenState extends State<LoginScreen> {
           await saveUserPhone(data['telefono_cliente']);
           await saveUserEmail(data['correo_cliente']);
           print('Información del usuario guardada localmente');
-          // Mostrar un mensaje de éxito antes de navegar
+
           ScaffoldMessenger.of(
             context,
-          ).showSnackBar(const SnackBar(content: Text('Inicio de sesión exitoso')));
+          ).showSnackBar(const SnackBar(content: Text('Login successful'))); // CAMBIADO
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder: (context) => const HomeScreen(),
-            ), // Asegúrate de importar HomeScreen
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                'Error en la autenticación: Falta información del usuario en la respuesta',
+                'Authentication error: Missing user information in response', // CAMBIADO
               ),
-            ), // Mensaje más específico
+            ),
           );
           print('Respuesta incompleta del backend (falta info de usuario): ${response.body}');
         }
       } else if (response.statusCode == 401) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Credenciales inválidas')));
+        ).showSnackBar(const SnackBar(content: Text('Invalid credentials'))); // CAMBIADO
       } else {
         print('Error en el login: ${response.statusCode}');
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(const SnackBar(content: Text('Error al iniciar sesión')));
+        ).showSnackBar(const SnackBar(content: Text('Login failed'))); // CAMBIADO
       }
     } catch (e) {
       print('Error de conexión: $e');
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('No se pudo conectar al servidor')));
+      ).showSnackBar(const SnackBar(content: Text('Could not connect to the server'))); // CAMBIADO
     } finally {
       setState(() {
         _isLoading = false; // Ocultar indicador de carga
@@ -126,7 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 20),
                   const Text(
-                    'Login',
+                    'Login', // YA EN INGLÉS
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 22,
@@ -136,7 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Log in to your account',
+                    'Log in to your account', // YA EN INGLÉS
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 14, color: Colors.grey),
                   ),
@@ -144,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextField(
                     controller: _emailController,
                     decoration: const InputDecoration(
-                      labelText: 'Email',
+                      labelText: 'Email', // YA EN INGLÉS
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.email),
                       labelStyle: TextStyle(fontSize: 14),
@@ -155,7 +151,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextField(
                     controller: _passwordController,
                     decoration: const InputDecoration(
-                      labelText: 'Password',
+                      labelText: 'Password', // YA EN INGLÉS
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.lock),
                       labelStyle: TextStyle(fontSize: 14),
@@ -164,10 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed:
-                        _isLoading
-                            ? null
-                            : () => _attemptLogin(context), // Deshabilitar botón durante la carga
+                    onPressed: _isLoading ? null : () => _attemptLogin(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFf05000),
                       foregroundColor: Colors.white,
@@ -181,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               width: 20,
                               child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                             )
-                            : const Text('Login', style: TextStyle(fontSize: 16)),
+                            : const Text('Login', style: TextStyle(fontSize: 16)), // YA EN INGLÉS
                   ),
                   const SizedBox(height: 10),
                   TextButton(
@@ -189,7 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       print('Forgot your password');
                     },
                     child: const Text(
-                      'Forgot your password?',
+                      'Forgot your password?', // YA EN INGLÉS
                       style: TextStyle(color: Color(0xFFf05000), fontSize: 12),
                     ),
                   ),
@@ -198,7 +191,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        '- or sign up with -',
+                        '- or sign up with -', // YA EN INGLÉS
                         style: TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                     ],
@@ -248,7 +241,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text(
-                        "Don't have an account?",
+                        "Don't have an account?", // YA EN INGLÉS
                         style: TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                       const SizedBox(width: 5),
@@ -260,7 +253,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           );
                         },
                         child: const Text(
-                          'Register!',
+                          'Register!', // YA EN INGLÉS
                           style: TextStyle(
                             fontSize: 14,
                             color: Color(0xFFf05000),
