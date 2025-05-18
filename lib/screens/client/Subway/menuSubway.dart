@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'productDetailSW.dart'; // Importa la pantalla de detalles de Subway (Asegúrate de crear este archivo)
+import 'productDetailSW.dart';
 import '../homeScreen.dart';
 import '../customBottomNavigationBar.dart';
 import '../account/profile.dart';
-import '../cart/shoppingCart.dart';
+import '../cart/shoppingCart.dart'; // Asegúrate que globalCartItems y CartItem estén aquí
 
-const primaryColor = Color(0xFFf05000); // Naranja similar al de la imagen y botones
+const primaryColor = Color(0xFFf05000);
 
 class SubwayMenuScreen extends StatefulWidget {
   const SubwayMenuScreen({super.key});
@@ -16,6 +16,7 @@ class SubwayMenuScreen extends StatefulWidget {
 
 class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
   int _selectedIndex = 1;
+  OverlayEntry? _overlayEntry; // Para la notificación flotante
 
   void _onTabTapped(int index) {
     setState(() {
@@ -28,8 +29,6 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
         MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
       );
     } else if (index == 1) {
-      // Ya estamos en la pantalla de menú (o HomeScreen si esta es una subpantalla de HomeScreen)
-      // Si esta pantalla es independiente y el índice 1 es para HomeScreen:
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -40,6 +39,102 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
         MaterialPageRoute(builder: (context) => const ProfileClient()),
       );
     }
+  }
+
+  void _showAddedToCartOverlay(String productName) {
+    _overlayEntry?.remove(); // Remover overlay anterior si existe
+    _overlayEntry = OverlayEntry(
+      builder:
+          (context) => Positioned(
+            top: MediaQuery.of(context).padding.top + 10, // Debajo de la barra de estado
+            left: 20,
+            right: 20,
+            child: Material(
+              // Necesario para elevación y otros efectos de Material
+              elevation: 4.0,
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade700, // Un color verde para éxito
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '$productName added to cart!',
+                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white, // Fondo blanco para el botón
+                        foregroundColor: Colors.green.shade700, // Texto verde
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                      onPressed: () {
+                        _overlayEntry?.remove();
+                        _overlayEntry = null; // Marcar como nulo para evitar remoción futura
+                        Navigator.push(
+                          // Navegar al carrito
+                          context,
+                          MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+                        );
+                      },
+                      child: const Text('VIEW CART'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+
+    // Remover el overlay después de unos segundos
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted && _overlayEntry != null) {
+        // Verificar si aún está montado y el overlay existe
+        _overlayEntry?.remove();
+        _overlayEntry = null; // Marcar como nulo después de removerlo
+      }
+    });
+  }
+
+  void _addToCart(Map<String, String> product) {
+    final String name = product['name']!;
+    final double price = double.tryParse(product['price']!) ?? 0.0;
+    final String imageUrl = product['image']!;
+
+    final existingItemIndex = globalCartItems.indexWhere((item) => item.name == name);
+
+    if (existingItemIndex != -1) {
+      // Si el ítem ya existe, incrementa la cantidad
+      globalCartItems[existingItemIndex].quantity++;
+    } else {
+      // Si no existe, añádelo
+      globalCartItems.add(
+        CartItem(
+          name: name,
+          price: price,
+          quantity: 1,
+          imageUrl: imageUrl, // Asegúrate que CartItem tenga este campo
+        ),
+      );
+    }
+    // Llama a setState en ShoppingCartScreen si es necesario para actualizar su UI
+    // Esto se puede hacer a través de la GlobalKey si la tienes configurada
+    // o simplemente se reflejará cuando se navegue al carrito.
+    shoppingCartScreenKey.currentState?.setState(() {});
+
+    print('Producto añadido al carrito: $name');
+    _showAddedToCartOverlay(name); // Muestra la notificación
   }
 
   // Helper method to build cards for regular grid items
@@ -71,7 +166,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                             (context) => ProductDetailSW(
                               productName: item['name']!,
                               productDescription: _getProductDescription(item['name']!),
-                              productPrice: double.parse(item['price']!),
+                              productPrice: double.tryParse(item['price']!) ?? 0.0,
                               imageUrl: item['image']!,
                             ),
                       ),
@@ -82,7 +177,10 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                     child: Image.asset(
                       item['image']!,
                       fit: BoxFit.contain,
-                      height: 120, // Aumentado de 100 a 120
+                      height: 120,
+                      errorBuilder:
+                          (context, error, stackTrace) =>
+                              const Icon(Icons.fastfood, size: 50, color: Colors.grey),
                     ),
                   ),
                 ),
@@ -107,13 +205,19 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: primaryColor,
-                    borderRadius: BorderRadius.circular(20),
+                GestureDetector(
+                  // MODIFICADO: Envolver en GestureDetector
+                  onTap: () {
+                    _addToCart(item); // LLAMAR A _addToCart
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: primaryColor,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Icon(Icons.add, color: Colors.white, size: 20),
                   ),
-                  child: const Icon(Icons.add, color: Colors.white, size: 20),
                 ),
               ],
             ),
@@ -153,7 +257,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                           (context) => ProductDetailSW(
                             productName: item['name']!,
                             productDescription: _getProductDescription(item['name']!),
-                            productPrice: double.parse(item['price']!),
+                            productPrice: double.tryParse(item['price']!) ?? 0.0,
                             imageUrl: item['image']!,
                           ),
                     ),
@@ -164,8 +268,11 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                   child: Image.asset(
                     item['image']!,
                     width: double.infinity,
-                    height: 180, // Aumentado de 150 a 180
+                    height: 180,
                     fit: BoxFit.cover,
+                    errorBuilder:
+                        (context, error, stackTrace) =>
+                            const Icon(Icons.fastfood, size: 80, color: Colors.grey),
                   ),
                 ),
               ),
@@ -189,13 +296,19 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: primaryColor,
-                    borderRadius: BorderRadius.circular(20),
+                GestureDetector(
+                  // MODIFICADO: Envolver en GestureDetector
+                  onTap: () {
+                    _addToCart(item); // LLAMAR A _addToCart
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: primaryColor,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Icon(Icons.add, color: Colors.white, size: 20),
                   ),
-                  child: const Icon(Icons.add, color: Colors.white, size: 20),
                 ),
               ],
             ),
@@ -213,9 +326,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
     for (int i = 0; i < _subwayMenuItems.length; i++) {
       final itemData = _subwayMenuItems[i];
       if (itemData['name'] == 'Subs Footlong Bacon Melt') {
-        // First, process any accumulated regular items into a grid
         if (regularItemsBatch.isNotEmpty) {
-          // Create a copy of the batch for this GridView instance
           final List<Map<String, String>> currentBatch = List.from(regularItemsBatch);
           productLayoutWidgets.add(
             GridView.builder(
@@ -223,28 +334,23 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: 0.75, // Puedes ajustar esto si hay problemas de overflow visual
+                childAspectRatio: 0.75,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
               ),
-              itemCount: currentBatch.length, // Usar currentBatch.length
-              itemBuilder:
-                  (ctx, index) =>
-                      _buildRegularItemCard(ctx, currentBatch[index]), // Usar currentBatch
+              itemCount: currentBatch.length,
+              itemBuilder: (ctx, index) => _buildRegularItemCard(ctx, currentBatch[index]),
             ),
           );
-          regularItemsBatch.clear(); // Ahora es seguro limpiar el lote original
+          regularItemsBatch.clear();
         }
-        // Then, add the spanning item
         productLayoutWidgets.add(_buildSpanningItemCard(context, itemData));
       } else {
         regularItemsBatch.add(itemData);
       }
     }
 
-    // After the loop, process any remaining regular items in the batch
     if (regularItemsBatch.isNotEmpty) {
-      // Crear una copia aquí también
       final List<Map<String, String>> currentBatch = List.from(regularItemsBatch);
       productLayoutWidgets.add(
         GridView.builder(
@@ -252,17 +358,14 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: 0.75, // Puedes ajustar esto si hay problemas de overflow visual
+            childAspectRatio: 0.75,
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
           ),
-          itemCount: currentBatch.length, // Usar currentBatch.length
-          itemBuilder:
-              (ctx, index) => _buildRegularItemCard(ctx, currentBatch[index]), // Usar currentBatch
+          itemCount: currentBatch.length,
+          itemBuilder: (ctx, index) => _buildRegularItemCard(ctx, currentBatch[index]),
         ),
       );
-      // No es necesario regularItemsBatch.clear() aquí ya que es el final del método
-      // y la variable regularItemsBatch se descartará de todos modos.
     }
     return productLayoutWidgets;
   }
@@ -272,7 +375,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F4F4),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0), // Keep overall padding
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             Container(
@@ -306,11 +409,11 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                       child: const Icon(Icons.arrow_back_ios_new, color: primaryColor, size: 20),
                     ),
                   ),
-                  Expanded(
+                  const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
+                      children: [
                         Text('Deliver to', style: TextStyle(fontSize: 14, color: Colors.black54)),
                         SizedBox(height: 2),
                         Text(
@@ -320,11 +423,12 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                             color: primaryColor,
                             fontWeight: FontWeight.bold,
                           ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 40),
+                  const SizedBox(width: 40), // Para balancear el botón de atrás
                 ],
               ),
             ),
