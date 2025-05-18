@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../customBottomNavigationBar.dart';
 import '../homeScreen.dart';
 import '../account/profile.dart';
+import 'paymentScreen.dart';
 
 // --- Lista de ítems del carrito accesible estáticamente ---
 // Esto permite que otras pantallas añadan productos al carrito.
@@ -13,7 +14,6 @@ final GlobalKey<ShoppingCartScreenState> shoppingCartScreenKey =
     GlobalKey<ShoppingCartScreenState>();
 
 class ShoppingCartScreen extends StatefulWidget {
-  // MODIFICAR ESTA LÍNEA
   ShoppingCartScreen({Key? key}) : super(key: key ?? shoppingCartScreenKey);
 
   @override
@@ -146,8 +146,13 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
         context,
       ).showSnackBar(const SnackBar(content: Text('Please add items to your cart.')));
     } else {
-      // Aquí puedes pasar el total y los items del carrito a la pantalla de pago
-      Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentMethodScreen()));
+      // Aquí se navega a la nueva PaymentScreen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const PaymentScreen(),
+        ), // ESTA LÍNEA DEBERÍA ESTAR ASÍ
+      );
     }
   }
 
@@ -565,15 +570,16 @@ class CartItem {
   });
 }
 
-// Pantalla de método de pago (sin cambios significativos aquí)
-class PaymentMethodScreen extends StatelessWidget {
-  const PaymentMethodScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Select Payment Method')),
-      body: const Center(child: Text('Payment Method Selection Screen')),
-    );
-  }
-}
+// Puedes eliminar la clase PaymentMethodScreen antigua si aún existe en este archivo,
+// ya que ahora tenemos la nueva PaymentScreen.
+// class PaymentMethodScreen extends StatelessWidget {
+//   const PaymentMethodScreen({super.key});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: const Text('Select Payment Method')),
+//       body: const Center(child: Text('Payment Method Selection Screen')),
+//     );
+//   }
+// }
