@@ -7,6 +7,7 @@ import 'cart/shoppingCart.dart';
 import 'Starbucks/menuStarbucks.dart';
 import 'Subway/menuSubway.dart';
 import 'Kfc/menuKfc.dart';
+import '../../auth/auth.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,6 +18,34 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 1; // El índice de "Home" es 1
+
+  bool _isLoggedIn = false;
+  String? _userAddress;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatusAndLoadData();
+  }
+
+  Future<void> _checkLoginStatusAndLoadData() async {
+    final token = await getAuthToken();
+    if (token != null && token.isNotEmpty) {
+      final address = await getUserAddress();
+      if (mounted) {
+        setState(() {
+          _isLoggedIn = true;
+          _userAddress = address;
+        });
+      }
+    } else {
+      if (mounted) {
+        setState(() {
+          _isLoggedIn = false;
+        });
+      }
+    }
+  }
 
   void _onTabTapped(int index) {
     setState(() {
@@ -72,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(8.0),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color.fromRGBO(0, 0, 0, 0.2),
+                    color: const Color.fromRGBO(0, 0, 0, 0.2), // Ya estaba usando Color.fromRGBO
                     spreadRadius: 1,
                     blurRadius: 3,
                     offset: const Offset(0, 2),
@@ -80,33 +109,35 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text('Deliver to', style: TextStyle(fontSize: 14, color: Colors.grey)),
                   const SizedBox(height: 5),
-                  const Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Your Location', // Podrías obtener esto de algún estado o preferencia
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        _isLoggedIn ? (_userAddress ?? 'Your Location') : 'Your Location',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
-                      Icon(Icons.arrow_drop_down),
+                      const Icon(Icons.arrow_drop_down),
                     ],
                   ),
                   const SizedBox(height: 10),
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const LoginScreen()),
-                      );
-                    },
-                    child: const Text(
-                      'Register to get started',
-                      style: TextStyle(color: Color(0xFFf05000), fontSize: 12),
-                    ),
-                  ),
+                  if (!_isLoggedIn)
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const LoginScreen()),
+                        );
+                      },
+                      child: const Text(
+                        'Register to get started',
+                        style: TextStyle(color: Color(0xFFf05000), fontSize: 12),
+                      ),
+                    )
+                  else
+                    Container(height: 14), // Para mantener el espacio
                 ],
               ),
             ),
@@ -119,12 +150,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       margin: const EdgeInsets.symmetric(horizontal: 16.0),
                       padding: const EdgeInsets.all(16.0),
                       decoration: BoxDecoration(
-                        color: Colors.white, // Fondo blanco opaco
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
-                          // Sombra sutil opcional para este contenedor
                           BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
+                            color: const Color.fromRGBO(
+                              158,
+                              158,
+                              158,
+                              0.1,
+                            ), // CAMBIADO Colors.grey.withOpacity(0.1)
                             spreadRadius: 1,
                             blurRadius: 3,
                             offset: const Offset(0, 1),
@@ -173,12 +208,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
                       padding: const EdgeInsets.all(16.0),
                       decoration: BoxDecoration(
-                        color: Colors.white, // Fondo blanco opaco
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
-                          // Sombra sutil opcional para este contenedor
                           BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
+                            color: const Color.fromRGBO(
+                              158,
+                              158,
+                              158,
+                              0.1,
+                            ), // CAMBIADO Colors.grey.withOpacity(0.1)
                             spreadRadius: 1,
                             blurRadius: 3,
                             offset: const Offset(0, 1),
@@ -196,7 +235,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 10),
                           SizedBox(
-                            height: 130, // Aumentado de 120 a 130 para dar más espacio
+                            height: 130,
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
                               itemCount: _restaurants.length,
@@ -205,7 +244,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 return Padding(
                                   padding: const EdgeInsets.only(right: 16.0),
                                   child: InkWell(
-                                    // Envuelve la columna en InkWell para la acción onTap
                                     onTap: () {
                                       if (restaurant['name'] == 'Tierra Querida') {
                                         Navigator.push(
@@ -229,22 +267,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                         );
                                       } else if (restaurant['name'] == 'KFC') {
-                                        // Condición para KFC
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder:
-                                                (context) =>
-                                                    const KfcMenuScreen(), // Navega a KfcMenuScreen
+                                            builder: (context) => const KfcMenuScreen(),
                                           ),
                                         );
                                       } else {
-                                        // Acción por defecto o para otros restaurantes
                                         print('Clicked on ${restaurant['name']}');
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           SnackBar(
                                             content: Text(
-                                              'Menú para ${restaurant['name']} no disponible aún.',
+                                              'Menu for ${restaurant['name']} not available yet.', // Mensaje en inglés
                                             ),
                                             duration: const Duration(seconds: 2),
                                           ),
@@ -261,17 +295,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                         const SizedBox(height: 8),
                                         SizedBox(
-                                          // Envuelve el texto en un SizedBox para controlar el ancho si es necesario
-                                          width: 80, // O un ancho que se ajuste bien
+                                          width: 80,
                                           child: Text(
                                             restaurant['name']!,
                                             style: const TextStyle(fontSize: 12),
                                             textAlign: TextAlign.center,
-                                            maxLines:
-                                                2, // Permite que el nombre ocupe dos líneas si es largo
-                                            overflow:
-                                                TextOverflow
-                                                    .ellipsis, // Añade puntos suspensivos si es muy largo
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                       ],
@@ -295,7 +325,7 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _selectedIndex,
         onTabChanged: _onTabTapped,
-        backgroundColor: Colors.white, // Asegúrate que esto sea el color deseado para la NavBar
+        backgroundColor: Colors.white,
       ),
     );
   }
