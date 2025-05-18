@@ -5,6 +5,7 @@ import 'profile.dart';
 import 'customBottomNavigationBar.dart';
 import 'cart/shoppingCart.dart';
 import 'Starbucks/menuStarbucks.dart';
+import 'Subway/menuSubway.dart'; // Asegúrate que la ruta sea correcta
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,21 +22,23 @@ class _HomeScreenState extends State<HomeScreen> {
       _selectedIndex = index;
     });
     if (index == 0) {
-      // Navegar a la pantalla del carrito
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => ShoppingCartScreen(),
-        ), // Reemplaza CartScreen() con tu implementación real
+          builder:
+              (context) => const ShoppingCartScreen(), // Asegúrate que ShoppingCartScreen() exista
+        ),
       );
       print('Navegar al carrito');
+    } else if (index == 1) {
+      // Ya estamos en HomeScreen, no es necesario hacer nada si se presiona Home de nuevo,
+      // a menos que quieras un comportamiento específico como recargar.
     } else if (index == 2) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const ProfileClient()),
       );
     }
-    // El índice 1 ya es la HomeScreen
   }
 
   final List<Map<String, String>> _categories = [
@@ -55,12 +58,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Establecer el fondo blanco aquí
+      backgroundColor: Colors.white,
       body: SafeArea(
-        // Se elimina el Stack y el Positioned.fill
         child: Column(
           children: <Widget>[
-            // Recuadro blanco superior
             Container(
               width: double.infinity,
               margin: const EdgeInsets.all(16.0),
@@ -70,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(8.0),
                 boxShadow: [
                   BoxShadow(
-                    color: Color.fromRGBO(0, 0, 0, 0.2),
+                    color: const Color.fromRGBO(0, 0, 0, 0.2),
                     spreadRadius: 1,
                     blurRadius: 3,
                     offset: const Offset(0, 2),
@@ -82,14 +83,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   const Text('Deliver to', style: TextStyle(fontSize: 14, color: Colors.grey)),
                   const SizedBox(height: 5),
-                  Row(
+                  const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
-                        'Your Location',
+                      Text(
+                        'Your Location', // Podrías obtener esto de algún estado o preferencia
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
-                      const Icon(Icons.arrow_drop_down),
+                      Icon(Icons.arrow_drop_down),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -113,18 +114,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Bloque de Categorías
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16.0),
                       padding: const EdgeInsets.all(16.0),
                       decoration: BoxDecoration(
-                        color: Color.fromRGBO(
-                          255,
-                          255,
-                          255,
-                          0.8,
-                        ), // Considera si este color aún es necesario o si debe ser blanco opaco
+                        color: Colors.white, // Fondo blanco opaco
                         borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          // Sombra sutil opcional para este contenedor
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.1),
+                            spreadRadius: 1,
+                            blurRadius: 3,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,8 +150,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                 return Padding(
                                   padding: const EdgeInsets.only(right: 16.0),
                                   child: Column(
+                                    mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Image.asset(category['image']!, height: 80),
+                                      Image.asset(
+                                        category['image']!,
+                                        height: 80,
+                                        fit: BoxFit.contain,
+                                      ),
                                       const SizedBox(height: 8),
                                       Text(category['name']!, style: const TextStyle(fontSize: 12)),
                                     ],
@@ -159,13 +168,21 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     ),
-                    // Bloque de Restaurantes
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
                       padding: const EdgeInsets.all(16.0),
                       decoration: BoxDecoration(
-                        color: Color.fromRGBO(255, 255, 255, 0.8),
+                        color: Colors.white, // Fondo blanco opaco
                         borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          // Sombra sutil opcional para este contenedor
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.1),
+                            spreadRadius: 1,
+                            blurRadius: 3,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -178,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: 10),
                           SizedBox(
-                            height: 120,
+                            height: 130, // Aumentado de 120 a 130 para dar más espacio
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
                               itemCount: _restaurants.length,
@@ -186,43 +203,72 @@ class _HomeScreenState extends State<HomeScreen> {
                                 final restaurant = _restaurants.elementAt(index);
                                 return Padding(
                                   padding: const EdgeInsets.only(right: 16.0),
-                                  child: Column(
-                                    children: [
-                                      InkWell(
-                                        onTap: () {
-                                          if (restaurant['name'] == 'Tierra Querida') {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) => const MenuTierraQuerida(),
-                                              ),
-                                            );
-                                          } else if (restaurant['name'] == 'Starbucks') {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder:
-                                                    (context) =>
-                                                        const StarbucksMenuScreen(), // Navega a la nueva pantalla
-                                              ),
-                                            );
-                                          } else {
-                                            print('Clicked on ${restaurant['name']}');
-                                          }
-                                        },
-                                        child: Column(
-                                          children: [
-                                            Image.asset(restaurant['image']!, height: 80),
-                                            const SizedBox(height: 8),
-                                            Text(
-                                              restaurant['name']!,
-                                              style: const TextStyle(fontSize: 12),
-                                              textAlign: TextAlign.center,
+                                  child: InkWell(
+                                    // Envuelve la columna en InkWell para la acción onTap
+                                    onTap: () {
+                                      if (restaurant['name'] == 'Tierra Querida') {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => const MenuTierraQuerida(),
+                                          ),
+                                        );
+                                      } else if (restaurant['name'] == 'Starbucks') {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => const StarbucksMenuScreen(),
+                                          ),
+                                        );
+                                      } else if (restaurant['name'] == 'Subway') {
+                                        // <-- AÑADIDO ESTO
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) =>
+                                                    const SubwayMenuScreen(), // Navega a Subway
+                                          ),
+                                        );
+                                      } else {
+                                        // Acción por defecto o para otros restaurantes
+                                        print('Clicked on ${restaurant['name']}');
+                                        // Podrías mostrar un SnackBar indicando que el menú no está disponible
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Menú para ${restaurant['name']} no disponible aún.',
                                             ),
-                                          ],
+                                            duration: const Duration(seconds: 2),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Image.asset(
+                                          restaurant['image']!,
+                                          height: 80,
+                                          fit: BoxFit.contain,
                                         ),
-                                      ),
-                                    ],
+                                        const SizedBox(height: 8),
+                                        SizedBox(
+                                          // Envuelve el texto en un SizedBox para controlar el ancho si es necesario
+                                          width: 80, // O un ancho que se ajuste bien
+                                          child: Text(
+                                            restaurant['name']!,
+                                            style: const TextStyle(fontSize: 12),
+                                            textAlign: TextAlign.center,
+                                            maxLines:
+                                                2, // Permite que el nombre ocupe dos líneas si es largo
+                                            overflow:
+                                                TextOverflow
+                                                    .ellipsis, // Añade puntos suspensivos si es muy largo
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 );
                               },
@@ -231,7 +277,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20), // Espacio al final del contenido
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -242,6 +288,7 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _selectedIndex,
         onTabChanged: _onTabTapped,
+        backgroundColor: Colors.white, // Asegúrate que esto sea el color deseado para la NavBar
       ),
     );
   }

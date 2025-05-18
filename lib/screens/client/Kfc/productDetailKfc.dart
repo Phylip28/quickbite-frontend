@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
-import '../customBottomNavigationBar.dart'; // Importa la barra de navegación
-import '../homeScreen.dart'; // Para la navegación
-import '../cart/shoppingCart.dart'; // Para la navegación
-import '../profile.dart'; // Para la navegación
+import '../customBottomNavigationBar.dart';
+import '../homeScreen.dart';
+import '../cart/shoppingCart.dart';
+import '../profile.dart';
 
 // Definición de colores consistentes
 const primaryColor = Color(0xFFf05000);
 const lightAccentColor = Color(0xFFFEEAE6); // Para el botón de retroceso
 const quantitySelectorBackgroundColor = Color(0xFFFDF0E8); // Para el selector de cantidad
 
-class ProductDetailSB extends StatefulWidget {
+class ProductDetailKFC extends StatefulWidget {
   final String productName;
   final String productDescription;
   final double productPrice;
   final String imageUrl;
   final Function(String, double, int)? onAddToCart;
 
-  const ProductDetailSB({
+  const ProductDetailKFC({
     super.key,
     required this.productName,
     required this.productDescription,
@@ -26,12 +26,12 @@ class ProductDetailSB extends StatefulWidget {
   });
 
   @override
-  State<ProductDetailSB> createState() => _ProductDetailSBState();
+  State<ProductDetailKFC> createState() => _ProductDetailKFCState();
 }
 
-class _ProductDetailSBState extends State<ProductDetailSB> {
+class _ProductDetailKFCState extends State<ProductDetailKFC> {
   int _quantity = 1;
-  int _selectedIndex = 1; // Índice para la barra de navegación
+  int _selectedIndex = 1; // Índice para Home en la barra de navegación
 
   void _incrementQuantity() {
     if (_quantity < 10) {
@@ -74,11 +74,9 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    // Aumentar la proporción de la pantalla para la sección de la imagen
-    final imageSectionHeight =
-        screenHeight * 0.55; // Ajustado de 0.40 a 0.55 (o el valor que prefieras)
-    // Puedes mantener overlapAmount o reducirlo si deseas menos superposición con la imagen más grande
-    const double overlapAmount = 20.0; // Puedes ajustar esto, por ejemplo, a 20.0 o 15.0
+    // Ajusta esta proporción según el tamaño de tus imágenes de KFC
+    final imageSectionHeight = screenHeight * 0.45; // Ejemplo: 45% de la altura de la pantalla
+    const double overlapAmount = 30.0; // Cantidad de superposición
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -94,7 +92,7 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
             child: Container(
               padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
-                color: lightAccentColor, // Usar el color definido
+                color: lightAccentColor,
                 borderRadius: BorderRadius.circular(8.0),
               ),
               child: const Icon(Icons.arrow_back_ios_new, color: primaryColor, size: 20),
@@ -109,16 +107,12 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
             top: 0,
             left: 0,
             right: 0,
-            height:
-                imageSectionHeight +
-                MediaQuery.of(
-                  context,
-                ).padding.top, // Altura total de la sección de la imagen AUMENTADA
+            height: imageSectionHeight + MediaQuery.of(context).padding.top,
             child: Container(
-              color: Colors.white, // Fondo por si la imagen tiene transparencias
+              color: Colors.white,
               child: Image.asset(
                 widget.imageUrl,
-                fit: BoxFit.cover, // Para llenar el contenedor
+                fit: BoxFit.cover,
                 width: double.infinity,
                 height: double.infinity,
               ),
@@ -127,7 +121,6 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
 
           // Sección de detalles del producto
           Positioned(
-            // El cálculo de 'top' ahora usa la nueva 'imageSectionHeight'
             top: imageSectionHeight + MediaQuery.of(context).padding.top - overlapAmount,
             left: 0,
             right: 0,
@@ -135,9 +128,7 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(overlapAmount),
-                ), // Bordes redondeados
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(overlapAmount)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.12),
@@ -196,7 +187,7 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
                         ),
                         Container(
                           decoration: BoxDecoration(
-                            color: quantitySelectorBackgroundColor, // Usar el color definido
+                            color: quantitySelectorBackgroundColor,
                             borderRadius: BorderRadius.circular(25),
                           ),
                           child: Row(

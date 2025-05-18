@@ -180,118 +180,90 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
 
             GridView.builder(
               shrinkWrap: true,
-
               physics: const NeverScrollableScrollPhysics(),
-
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-
                 childAspectRatio: 0.75,
-
                 crossAxisSpacing: 10,
-
                 mainAxisSpacing: 10,
               ),
-
               itemCount: _menuItems.length,
-
               itemBuilder: (context, index) {
                 final item = _menuItems[index];
 
                 return Card(
                   color: Colors.white,
-
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
                           children: [
                             Row(
                               children: [
-                                const Icon(Icons.star, color: Color(0xFFf05000), size: 16),
-
+                                const Icon(
+                                  Icons.star,
+                                  color: Colors.amber, // Estrella cambiada a amarillo
+                                  size: 16,
+                                ),
                                 const SizedBox(width: 4),
-
                                 Text(item['rating']!, style: const TextStyle(fontSize: 12)),
                               ],
                             ),
-
+                            // Considera si este SizedBox es necesario o si falta algún otro elemento en esta Row
                             const SizedBox(width: 8),
                           ],
                         ),
-
                         Expanded(
                           flex: 3,
-
                           child: Center(
                             child: GestureDetector(
                               onTap: () {
                                 Navigator.push(
                                   context,
-
                                   MaterialPageRoute(
                                     builder:
                                         (context) => ProductDetailTQ(
                                           productName: item['name']!,
-
                                           productDescription: _getProductDescription(item['name']!),
-
                                           productPrice: double.parse(item['price']!),
-
                                           imageUrl: item['image']!,
                                         ),
                                   ),
                                 );
                               },
-
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(vertical: 4.0),
-
                                 child: Image.asset(item['image']!, fit: BoxFit.contain),
                               ),
                             ),
                           ),
                         ),
-
                         const SizedBox(height: 8),
-
                         Text(
                           item['name']!,
-
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-
                           maxLines: 2,
-
                           overflow: TextOverflow.ellipsis,
                         ),
-
                         const SizedBox(height: 4),
-
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
                           crossAxisAlignment: CrossAxisAlignment.center,
-
                           children: [
                             Text(
                               '\$ ${item['price']}',
-
-                              style: const TextStyle(color: Color(0xFFf05000), fontSize: 12),
+                              style: const TextStyle(
+                                color: Color(0xFFf05000),
+                                fontSize: 12,
+                              ), // Precio se mantiene naranja
                             ),
-
                             CircleAvatar(
-                              backgroundColor: const Color(0xFFf05000),
-
+                              backgroundColor: const Color(0xFFf05000), // Botón se mantiene naranja
                               radius: 14,
-
                               child: const Icon(Icons.add, color: Colors.white, size: 16),
                             ),
                           ],

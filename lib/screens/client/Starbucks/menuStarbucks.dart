@@ -77,8 +77,9 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
                         borderRadius: BorderRadius.circular(8.0),
                       ),
                       child: const Icon(
-                        Icons.arrow_back_ios_new,
-                        color: primaryColor, // Flecha naranja
+                        // Volver a usar el Icon widget
+                        Icons.arrow_back_ios_new, // O Icons.arrow_back si prefieres ese estilo
+                        color: primaryColor,
                         size: 20,
                       ),
                     ),
@@ -156,7 +157,11 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
                           children: [
                             Row(
                               children: [
-                                const Icon(Icons.star, color: primaryColor, size: 16),
+                                const Icon(
+                                  Icons.star,
+                                  color: Colors.amber,
+                                  size: 16,
+                                ), // Modificado aquí
                                 const SizedBox(width: 4),
                                 Text(item['rating']!, style: const TextStyle(fontSize: 12)),
                               ],
