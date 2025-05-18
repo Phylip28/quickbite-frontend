@@ -4,6 +4,7 @@ import 'TierraQuerida/menuTierraQuerida.dart';
 import 'profile.dart';
 import 'customBottomNavigationBar.dart';
 import 'cart/shoppingCart.dart';
+import 'Starbucks/menuStarbucks.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -193,7 +194,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 Navigator.push(
                                                   context,
                                                   MaterialPageRoute(
-                                                    builder: (context) => MenuTierraQuerida(),
+                                                    builder: (context) => const MenuTierraQuerida(),
+                                                  ),
+                                                );
+                                              } else if (restaurant['name'] == 'Starbucks') {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder:
+                                                        (context) =>
+                                                            const StarbucksMenuScreen(), // Navega a la nueva pantalla
                                                   ),
                                                 );
                                               } else {

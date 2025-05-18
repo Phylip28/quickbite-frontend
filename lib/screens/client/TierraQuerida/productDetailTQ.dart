@@ -9,6 +9,7 @@ class ProductDetailTQ extends StatefulWidget {
   final String productDescription;
   final double productPrice;
   final String imageUrl;
+  final Function(String, double, int)? onAddToCart; // Callback function
 
   const ProductDetailTQ({
     super.key,
@@ -16,6 +17,7 @@ class ProductDetailTQ extends StatefulWidget {
     required this.productDescription,
     required this.productPrice,
     required this.imageUrl,
+    this.onAddToCart, // Make the callback optional
   });
 
   @override
@@ -67,7 +69,7 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final imageSectionHeight = screenHeight * 0.4; // Adjust this value as needed
+    final imageSectionHeight = screenHeight * 0.4;
 
     return Scaffold(
       body: Stack(
@@ -109,8 +111,7 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
                     ),
                   ),
                   Positioned(
-                    // Use Positioned to overlap
-                    top: imageSectionHeight - 20, // Adjust this value to control the overlap
+                    top: imageSectionHeight - 20,
                     left: 0,
                     right: 0,
                     child: Container(
@@ -197,7 +198,17 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
                               width: double.infinity,
                               child: ElevatedButton(
                                 onPressed: () {
-                                  print('Added $_quantity to cart');
+                                  print('Botón "Add to cart" presionado');
+                                  if (widget.onAddToCart != null) {
+                                    print(
+                                      'Llamando a onAddToCart con: ${widget.productName}, ${widget.productPrice}, $_quantity',
+                                    );
+                                    widget.onAddToCart!(
+                                      widget.productName,
+                                      widget.productPrice,
+                                      _quantity,
+                                    );
+                                  }
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFFf05000),

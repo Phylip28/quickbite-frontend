@@ -57,6 +57,7 @@ flutter:
     - assets/images/
     - assets/images/cliente/
     - assets/images/cliente/tierraQuerida/
+    - assets/images/cliente/starbucks/
     - assets/icons/
     - assets/logos/
   # The following line ensures that the Material Icons font is
