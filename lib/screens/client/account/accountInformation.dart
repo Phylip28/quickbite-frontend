@@ -172,7 +172,9 @@ class _AccountInformationScreenState extends State<AccountInformationScreen> {
                                 print('Update Profile tapped');
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Función de actualizar perfil no implementada.'),
+                                    content: Text(
+                                      'Update profile functionality not yet implemented.',
+                                    ), // CAMBIADO
                                   ),
                                 );
                               },

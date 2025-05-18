@@ -5,7 +5,8 @@ import '../customBottomNavigationBar.dart';
 import '../cart/shoppingCart.dart';
 import '../../../auth/auth.dart';
 import 'accountInformation.dart';
-
+import 'changePassword.dart';
+import 'inviteFriends.dart';
 
 class ProfileClient extends StatefulWidget {
   const ProfileClient({super.key});
@@ -133,7 +134,6 @@ class _ProfileClientState extends State<ProfileClient> {
                         ),
                         const SizedBox(height: 16),
                         _buildListTile(
-                          // MODIFICADO
                           context,
                           'Account information',
                           'Change your account information',
@@ -146,11 +146,29 @@ class _ProfileClientState extends State<ProfileClient> {
                             );
                           },
                         ),
-                        _buildListTile(context, 'Password', 'Change your Password'),
                         _buildListTile(
+                          context,
+                          'Password',
+                          'Change your Password',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const ChangePasswordScreen()),
+                            );
+                          },
+                        ),
+                        _buildListTile(
+                          // MODIFICADO
                           context,
                           'Invite your friends',
                           'Get \$59 for each invitation!',
+                          onTap: () {
+                            // AÑADIDO onTap
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const InviteFriendsScreen()),
+                            );
+                          },
                         ),
                         const SizedBox(height: 32),
                         const Text(
