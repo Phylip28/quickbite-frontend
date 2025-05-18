@@ -3,7 +3,9 @@ import '../homeScreen.dart';
 import '../../loginScreen.dart';
 import '../customBottomNavigationBar.dart';
 import '../cart/shoppingCart.dart';
-import '../../../auth/auth.dart'; // Importa tu archivo auth.dart
+import '../../../auth/auth.dart';
+import 'accountInformation.dart';
+
 
 class ProfileClient extends StatefulWidget {
   const ProfileClient({super.key});
@@ -131,9 +133,18 @@ class _ProfileClientState extends State<ProfileClient> {
                         ),
                         const SizedBox(height: 16),
                         _buildListTile(
+                          // MODIFICADO
                           context,
                           'Account information',
                           'Change your account information',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AccountInformationScreen(),
+                              ),
+                            );
+                          },
                         ),
                         _buildListTile(context, 'Password', 'Change your Password'),
                         _buildListTile(
@@ -207,23 +218,33 @@ class _ProfileClientState extends State<ProfileClient> {
     );
   }
 
-  static Widget _buildListTile(BuildContext context, String title, String subtitle) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontSize: 16)),
-                Text(subtitle, style: const TextStyle(fontSize: 14, color: Colors.grey)),
-              ],
+  static Widget _buildListTile(
+    BuildContext context,
+    String title,
+    String subtitle, {
+    VoidCallback? onTap,
+  }) {
+    // AÑADIDO onTap
+    return InkWell(
+      // ENVUELTO EN InkWell
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontSize: 16)),
+                  Text(subtitle, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+                ],
+              ),
             ),
-          ),
-          const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 20),
-        ],
+            const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 20),
+          ],
+        ),
       ),
     );
   }
