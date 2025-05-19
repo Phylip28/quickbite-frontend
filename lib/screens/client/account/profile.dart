@@ -7,6 +7,9 @@ import '../../../auth/auth.dart';
 import 'accountInformation.dart';
 import 'changePassword.dart';
 import 'inviteFriends.dart';
+import 'help/helpCenter.dart';
+import 'help/privacy&policy.dart';
+import 'help/terms&conditions.dart';
 
 class ProfileClient extends StatefulWidget {
   const ProfileClient({super.key});
@@ -29,26 +32,34 @@ class _ProfileClientState extends State<ProfileClient> {
   Future<void> _loadUserProfile() async {
     final userName = await getUserName();
     final userEmail = await getUserEmail();
-    setState(() {
-      _userName = userName;
-      _userEmail = userEmail;
-    });
+    if (mounted) {
+      // Asegúrate de verificar 'mounted' antes de llamar a setState
+      setState(() {
+        _userName = userName;
+        _userEmail = userEmail;
+      });
+    }
   }
 
   void _onTabTapped(int index) {
+    if (_selectedIndex == index) return; // Evitar reconstrucciones innecesarias
+
     setState(() {
       _selectedIndex = index;
     });
+
     if (index == 0) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
       );
-      print('Navegar al carrito');
     } else if (index == 1) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen()));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
     }
-    // El índice 2 ya es la ProfileClient
+    // El índice 2 ya es la ProfileClient, no se necesita acción de navegación.
   }
 
   @override
@@ -71,45 +82,77 @@ class _ProfileClientState extends State<ProfileClient> {
                         onTap: () {
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (context) => HomeScreen()),
+                            MaterialPageRoute(builder: (context) => const HomeScreen()),
                           );
                         },
-                        child: Image.asset('assets/icons/backArrow.png', height: 40, width: 40),
+                        // Reemplazar Image.asset con un Icon para consistencia y mejor escalabilidad
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.8),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Icon(
+                            Icons.arrow_back_ios_new,
+                            color: Color(0xFFf05000),
+                            size: 24,
+                          ),
+                        ),
                       ),
                       const Expanded(
                         child: Text(
                           'Your profile',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 40),
+                      const SizedBox(width: 40), // Para balancear el botón de retroceso
                     ],
                   ),
                   const SizedBox(height: 24),
                   Container(
                     padding: const EdgeInsets.all(14.0),
                     decoration: BoxDecoration(
-                      color: Color.fromRGBO(255, 255, 255, 0.8),
-                      borderRadius: BorderRadius.circular(10.0),
+                      color: Colors.white.withOpacity(0.9), // Aumentar opacidad para legibilidad
+                      borderRadius: BorderRadius.circular(12.0), // Bordes más suaves
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 5,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Row(
                       children: [
-                        const CircleAvatar(radius: 30, child: Icon(Icons.person)),
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundColor: const Color(0xFFf05000).withOpacity(0.2),
+                          child: const Icon(Icons.person, size: 30, color: Color(0xFFf05000)),
+                        ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                _userName ??
-                                    'Nombre no disponible', // Muestra el nombre o un texto por defecto
-                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                _userName ?? 'Loading name...',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
                               ),
                               Text(
-                                _userEmail ??
-                                    'Correo no disponible', // Muestra el correo o un texto por defecto
-                                style: TextStyle(fontSize: 16, color: Colors.grey),
+                                _userEmail ?? 'Loading email...',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.grey[700],
+                                ), // Color más oscuro para el email
                               ),
                             ],
                           ),
@@ -118,25 +161,41 @@ class _ProfileClientState extends State<ProfileClient> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  // El resto de tu código para la sección 'Account' y 'Support' se mantiene igual
                   Container(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16.0,
+                      horizontal: 8.0,
+                    ), // Ajustar padding
                     decoration: BoxDecoration(
-                      color: Color.fromRGBO(255, 255, 255, 0.8),
-                      borderRadius: BorderRadius.circular(10.0),
+                      color: Colors.white.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(12.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 5,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Account',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        const Padding(
+                          padding: EdgeInsets.only(left: 8.0, bottom: 16.0),
+                          child: Text(
+                            'Account',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
                         ),
-                        const SizedBox(height: 16),
                         _buildListTile(
                           context,
                           'Account information',
                           'Change your account information',
+                          icon: Icons.person_outline, // Añadir icono
                           onTap: () {
                             Navigator.push(
                               context,
@@ -150,6 +209,7 @@ class _ProfileClientState extends State<ProfileClient> {
                           context,
                           'Password',
                           'Change your Password',
+                          icon: Icons.lock_outline, // Añadir icono
                           onTap: () {
                             Navigator.push(
                               context,
@@ -158,30 +218,67 @@ class _ProfileClientState extends State<ProfileClient> {
                           },
                         ),
                         _buildListTile(
-                          // MODIFICADO
                           context,
                           'Invite your friends',
                           'Get \$59 for each invitation!',
+                          icon: Icons.people_outline, // Añadir icono
                           onTap: () {
-                            // AÑADIDO onTap
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => const InviteFriendsScreen()),
                             );
                           },
                         ),
-                        const SizedBox(height: 32),
-                        const Text(
-                          'Support',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        const SizedBox(height: 24), // Espacio entre secciones
+                        const Padding(
+                          padding: EdgeInsets.only(left: 8.0, bottom: 16.0),
+                          child: Text(
+                            'Support',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
                         ),
-                        const SizedBox(height: 16),
-                        _buildListTile(context, 'Help Center', 'Change your account information'),
-                        _buildListTile(context, 'Privacy & Policy', 'Change your Password'),
+                        _buildListTile(
+                          context,
+                          'Help Center',
+                          'Find answers and contact support', // Subtítulo más descriptivo
+                          icon: Icons.help_outline, // Añadir icono
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const HelpCenterScreen()),
+                            );
+                          },
+                        ),
+                        _buildListTile(
+                          context,
+                          'Privacy & Policy',
+                          'Read our privacy policy', // Subtítulo más descriptivo
+                          icon: Icons.shield_outlined, // Añadir icono
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen()),
+                            );
+                          },
+                        ),
                         _buildListTile(
                           context,
                           'Terms & Conditions',
-                          'Add your Credit & Debit cards',
+                          'Read our terms and conditions', // Subtítulo más descriptivo
+                          icon: Icons.description_outlined, // Añadir icono
+                          onTap: () {
+                            // CAMBIO AQUÍ
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const TermsAndConditionsScreen(),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -192,36 +289,44 @@ class _ProfileClientState extends State<ProfileClient> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        OutlinedButton(
+                        OutlinedButton.icon(
+                          // Usar .icon para mejor UI
+                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                          label: const Text('Delete account', style: TextStyle(color: Colors.red)),
                           onPressed: () {
+                            // TODO: Implementar diálogo de confirmación para eliminar cuenta
                             print('Delete account pressed');
                           },
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(color: Colors.red),
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
-                          child: const Text('Delete account', style: TextStyle(color: Colors.red)),
                         ),
-                        ElevatedButton(
+                        ElevatedButton.icon(
+                          // Usar .icon para mejor UI
+                          icon: const Icon(Icons.logout, color: Colors.white),
+                          label: const Text('Log Out', style: TextStyle(color: Colors.white)),
                           onPressed: () async {
-                            await deleteAuthToken(); // Elimina el token al cerrar sesión
-                            Navigator.pushReplacement(
+                            await deleteAuthToken();
+                            Navigator.pushAndRemoveUntil(
+                              // Limpiar pila de navegación
                               context,
-                              MaterialPageRoute(
-                                builder: (context) => const LoginScreen(),
-                              ), // Navega a la pantalla de login
+                              MaterialPageRoute(builder: (context) => const LoginScreen()),
+                              (Route<dynamic> route) =>
+                                  false, // Eliminar todas las rutas anteriores
                             );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFf05000),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
-                          child: const Text('Log Out', style: TextStyle(color: Colors.white)),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 80),
+                  const SizedBox(height: 80), // Espacio para la barra de navegación inferior
                 ],
               ),
             ),
@@ -231,36 +336,52 @@ class _ProfileClientState extends State<ProfileClient> {
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _selectedIndex,
         onTabChanged: _onTabTapped,
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white, // Asegurar color de fondo
       ),
     );
   }
 
+  // Modificar _buildListTile para aceptar un icono opcional
   static Widget _buildListTile(
     BuildContext context,
     String title,
     String subtitle, {
+    IconData? icon, // NUEVO: Parámetro de icono opcional
     VoidCallback? onTap,
   }) {
-    // AÑADIDO onTap
     return InkWell(
-      // ENVUELTO EN InkWell
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8.0), // Ajustar padding
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            if (icon != null) // Mostrar icono si se proporciona
+              Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: Icon(icon, color: const Color(0xFFf05000), size: 24),
+              ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontSize: 16)),
-                  Text(subtitle, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 20),
+            const Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.grey,
+              size: 18,
+            ), // Tamaño de flecha ajustado
           ],
         ),
       ),

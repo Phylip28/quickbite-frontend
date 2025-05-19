@@ -32,7 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _isLoading = true; // Mostrar indicador de carga
     });
 
-    final Uri url = Uri.parse('http://192.168.1.7:8000/auth');
+    final Uri url = Uri.parse('http://192.168.246.36:8000/auth');
 
     try {
       final response = await http.post(

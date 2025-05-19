@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
-import '../customBottomNavigationBar.dart'; // Importa la barra de navegación
-import '../homeScreen.dart'; // Para la navegación
-import '../cart/shoppingCart.dart'; // Para la navegación
-import '../account/profile.dart'; // Para la navegación
+import '../customBottomNavigationBar.dart';
+import '../cart/shoppingCart.dart'; // Para globalCartItems, CartItem y shoppingCartScreenKey
+import '../account/profile.dart';
+import 'menuStarbucks.dart'; // Para volver al menú de Starbucks
 
 // Definición de colores consistentes
 const primaryColor = Color(0xFFf05000);
-const lightAccentColor = Color(0xFFFEEAE6); // Para el botón de retroceso
-const quantitySelectorBackgroundColor = Color(0xFFFDF0E8); // Para el selector de cantidad
+const lightAccentColor = Color(0xFFFEEAE6);
+const quantitySelectorBackgroundColor = Color(0xFFFDF0E8);
 
 class ProductDetailSB extends StatefulWidget {
   final String productName;
   final String productDescription;
   final double productPrice;
   final String imageUrl;
-  final Function(String, double, int)? onAddToCart;
+  // final Function(String, double, int)? onAddToCart; // Ya no es necesario si manejamos el carrito globalmente
 
   const ProductDetailSB({
     super.key,
@@ -22,7 +22,7 @@ class ProductDetailSB extends StatefulWidget {
     required this.productDescription,
     required this.productPrice,
     required this.imageUrl,
-    this.onAddToCart,
+    // this.onAddToCart, // Ya no es necesario
   });
 
   @override
@@ -31,7 +31,8 @@ class ProductDetailSB extends StatefulWidget {
 
 class _ProductDetailSBState extends State<ProductDetailSB> {
   int _quantity = 1;
-  int _selectedIndex = 1; // Índice para la barra de navegación
+  int _selectedIndex = 1;
+  OverlayEntry? _overlayEntry; // NUEVO: Para la notificación
 
   void _incrementQuantity() {
     if (_quantity < 10) {
@@ -50,6 +51,7 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
   }
 
   void _onTabTapped(int index) {
+    if (_selectedIndex == index) return;
     setState(() {
       _selectedIndex = index;
     });
@@ -59,9 +61,12 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
         MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
       );
     } else if (index == 1) {
+      // Volver al menú de Starbucks o a HomeScreen
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(
+          builder: (context) => const StarbucksMenuScreen(),
+        ), // O HomeScreen si es preferible
       );
     } else if (index == 2) {
       Navigator.pushReplacement(
@@ -71,18 +76,125 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
     }
   }
 
+  // NUEVO: Función para mostrar la notificación
+  void _showAddedToCartOverlay(String productName, int quantity) {
+    _overlayEntry?.remove();
+    _overlayEntry = OverlayEntry(
+      builder:
+          (context) => Positioned(
+            top: MediaQuery.of(context).padding.top + 10,
+            left: 20,
+            right: 20,
+            child: Material(
+              elevation: 4.0,
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: primaryColor, width: 1.5),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '$productName (x$quantity) added to cart!',
+                        style: const TextStyle(
+                          color: primaryColor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                      onPressed: () {
+                        _overlayEntry?.remove();
+                        _overlayEntry = null;
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+                        );
+                      },
+                      child: const Text('VIEW CART'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted && _overlayEntry != null) {
+        _overlayEntry?.remove();
+        _overlayEntry = null;
+      }
+    });
+  }
+
+  // NUEVO: Función para añadir al carrito
+  void _handleAddToCart() {
+    final String name = widget.productName;
+    final double price = widget.productPrice;
+    final String imageUrl = widget.imageUrl;
+    final int quantityToAdd = _quantity;
+    const String restaurantName = 'Starbucks';
+
+    final existingItemIndex = globalCartItems.indexWhere(
+      (item) => item.name == name && item.restaurant == restaurantName,
+    );
+
+    if (existingItemIndex != -1) {
+      setState(() {
+        // Asegúrate de que setState se llame si es necesario para actualizar la UI local
+        globalCartItems[existingItemIndex].quantity += quantityToAdd;
+      });
+    } else {
+      setState(() {
+        // Asegúrate de que setState se llame si es necesario para actualizar la UI local
+        globalCartItems.add(
+          CartItem(
+            name: name,
+            price: price,
+            quantity: quantityToAdd,
+            imageUrl: imageUrl,
+            restaurant: restaurantName,
+          ),
+        );
+      });
+    }
+
+    // Opcional: Actualizar la UI del ShoppingCartScreen si es necesario
+    if (shoppingCartScreenKey.currentState != null && shoppingCartScreenKey.currentState!.mounted) {
+      shoppingCartScreenKey.currentState!.setState(() {});
+    }
+
+    print('$name (x$quantityToAdd) added to cart from $restaurantName.'); // Para depuración
+    _showAddedToCartOverlay(name, quantityToAdd); // Muestra la notificación
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    // Aumentar la proporción de la pantalla para la sección de la imagen
-    final imageSectionHeight =
-        screenHeight * 0.55; // Ajustado de 0.40 a 0.55 (o el valor que prefieras)
-    // Puedes mantener overlapAmount o reducirlo si deseas menos superposición con la imagen más grande
-    const double overlapAmount = 20.0; // Puedes ajustar esto, por ejemplo, a 20.0 o 15.0
+    final imageSectionHeight = screenHeight * 0.55;
+    const double overlapAmount = 20.0;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
+        // ... (código del AppBar existente sin cambios) ...
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: Padding(
@@ -94,7 +206,7 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
             child: Container(
               padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
-                color: lightAccentColor, // Usar el color definido
+                color: lightAccentColor,
                 borderRadius: BorderRadius.circular(8.0),
               ),
               child: const Icon(Icons.arrow_back_ios_new, color: primaryColor, size: 20),
@@ -105,29 +217,24 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
       body: Stack(
         children: [
           // Sección de la imagen
+          // ... (código de la sección de imagen existente sin cambios) ...
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            height:
-                imageSectionHeight +
-                MediaQuery.of(
-                  context,
-                ).padding.top, // Altura total de la sección de la imagen AUMENTADA
+            height: imageSectionHeight + MediaQuery.of(context).padding.top,
             child: Container(
-              color: Colors.white, // Fondo por si la imagen tiene transparencias
+              color: Colors.white,
               child: Image.asset(
                 widget.imageUrl,
-                fit: BoxFit.cover, // Para llenar el contenedor
+                fit: BoxFit.cover,
                 width: double.infinity,
                 height: double.infinity,
               ),
             ),
           ),
-
           // Sección de detalles del producto
           Positioned(
-            // El cálculo de 'top' ahora usa la nueva 'imageSectionHeight'
             top: imageSectionHeight + MediaQuery.of(context).padding.top - overlapAmount,
             left: 0,
             right: 0,
@@ -135,9 +242,7 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(overlapAmount),
-                ), // Bordes redondeados
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(overlapAmount)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.12),
@@ -152,7 +257,7 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Barra estética naranja desvanecida
+                    // ... (barra estética, nombre, descripción, precio y selector de cantidad existentes sin cambios) ...
                     Center(
                       child: Container(
                         height: 5,
@@ -187,7 +292,8 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          '\$${widget.productPrice.toStringAsFixed(2)}',
+                          // Actualizar precio dinámicamente según la cantidad
+                          '\$${(widget.productPrice * _quantity).toStringAsFixed(2)}',
                           style: const TextStyle(
                             fontSize: 30,
                             fontWeight: FontWeight.bold,
@@ -196,7 +302,7 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
                         ),
                         Container(
                           decoration: BoxDecoration(
-                            color: quantitySelectorBackgroundColor, // Usar el color definido
+                            color: quantitySelectorBackgroundColor,
                             borderRadius: BorderRadius.circular(25),
                           ),
                           child: Row(
@@ -234,16 +340,7 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          if (widget.onAddToCart != null) {
-                            widget.onAddToCart!(widget.productName, widget.productPrice, _quantity);
-                          }
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${widget.productName} (x$_quantity) added to cart!'),
-                            ),
-                          );
-                        },
+                        onPressed: _handleAddToCart, // CAMBIO: Llamar a _handleAddToCart
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor,
                           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -260,16 +357,12 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
                         ),
                       ),
                     ),
-                    SizedBox(
-                      height: 60 + MediaQuery.of(context).padding.bottom,
-                    ), // Espacio para la barra de navegación
+                    SizedBox(height: 60 + MediaQuery.of(context).padding.bottom),
                   ],
                 ),
               ),
             ),
           ),
-
-          // Barra de navegación inferior
           Align(
             alignment: Alignment.bottomCenter,
             child: CustomBottomNavigationBar(
