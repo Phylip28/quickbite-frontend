@@ -13,6 +13,28 @@ List<CartItem> globalCartItems = [];
 final GlobalKey<ShoppingCartScreenState> shoppingCartScreenKey =
     GlobalKey<ShoppingCartScreenState>();
 
+class CartItem {
+  // Asegúrate que esta es tu definición actualizada
+  String name;
+  double price;
+  int quantity;
+  String imageUrl;
+  final String restaurant; // CAMBIO: Campo para el restaurante
+
+  CartItem({
+    required this.name,
+    required this.price,
+    required this.quantity,
+    required this.imageUrl,
+    required this.restaurant, // CAMBIO: Parámetro requerido
+  });
+
+  @override
+  String toString() {
+    return 'CartItem(name: $name, price: $price, quantity: $quantity, imageUrl: $imageUrl, restaurant: $restaurant)';
+  }
+}
+
 class ShoppingCartScreen extends StatefulWidget {
   ShoppingCartScreen({Key? key}) : super(key: key ?? shoppingCartScreenKey);
 
@@ -32,28 +54,53 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
   // Este método puede ser llamado desde cualquier pantalla de menú de restaurante.
   // Asegúrate de que este estado (ShoppingCartScreenState) se actualice si está visible
   // o que se reconstruya al navegar a él.
-  void addProductToCart(String name, double price, String imageUrl, {int quantity = 1}) {
+  void addProductToCart(
+    String name,
+    double price,
+    String imageUrl,
+    String restaurant, {
+    int quantity = 1,
+  }) {
     // Llama a setState para refrescar la UI si esta pantalla está activa.
     // Si no está activa, los cambios en globalCartItems se reflejarán cuando se abra.
     if (mounted) {
       setState(() {
-        _addProductInternal(name, price, imageUrl, quantity: quantity);
+        // CAMBIO: Pasar 'restaurant'
+        _addProductInternal(name, price, imageUrl, restaurant, quantity: quantity);
       });
     } else {
-      // Si el widget no está montado, solo actualiza la lista global.
-      // Esto es útil si se añaden items mientras el carrito no está visible.
-      _addProductInternal(name, price, imageUrl, quantity: quantity);
+      // CAMBIO: Pasar 'restaurant'
+      _addProductInternal(name, price, imageUrl, restaurant, quantity: quantity);
     }
-    print('Producto añadido/actualizado en el carrito global: $name, Cantidad: $quantity');
+    print(
+      'Producto añadido/actualizado en el carrito global: $name, Restaurante: $restaurant, Cantidad: $quantity',
+    );
   }
 
-  void _addProductInternal(String name, double price, String imageUrl, {int quantity = 1}) {
-    final existingItemIndex = globalCartItems.indexWhere((item) => item.name == name);
+  // CAMBIO: Añadir parámetro 'restaurant'
+  void _addProductInternal(
+    String name,
+    double price,
+    String imageUrl,
+    String restaurant, {
+    int quantity = 1,
+  }) {
+    final existingItemIndex = globalCartItems.indexWhere(
+      (item) =>
+          item.name == name &&
+          item.restaurant == restaurant, // Considerar el restaurante para unicidad si es necesario
+    );
     if (existingItemIndex != -1) {
       globalCartItems[existingItemIndex].quantity += quantity;
     } else {
       globalCartItems.add(
-        CartItem(name: name, price: price, quantity: quantity, imageUrl: imageUrl),
+        CartItem(
+          name: name,
+          price: price,
+          quantity: quantity,
+          imageUrl: imageUrl,
+          restaurant: restaurant, // CAMBIO: Usar el parámetro 'restaurant'
+        ),
       );
     }
   }
@@ -553,33 +600,3 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
     );
   }
 }
-
-class CartItem {
-  String name;
-  double price;
-  int quantity;
-  String imageUrl; // --- AÑADIDO: Para mostrar la imagen del producto ---
-  // String? restaurantName; // Opcional: si necesitas diferenciar por restaurante
-
-  CartItem({
-    required this.name,
-    required this.price,
-    required this.quantity,
-    required this.imageUrl, // --- AÑADIDO ---
-    // this.restaurantName,
-  });
-}
-
-// Puedes eliminar la clase PaymentMethodScreen antigua si aún existe en este archivo,
-// ya que ahora tenemos la nueva PaymentScreen.
-// class PaymentMethodScreen extends StatelessWidget {
-//   const PaymentMethodScreen({super.key});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: const Text('Select Payment Method')),
-//       body: const Center(child: Text('Payment Method Selection Screen')),
-//     );
-//   }
-// }

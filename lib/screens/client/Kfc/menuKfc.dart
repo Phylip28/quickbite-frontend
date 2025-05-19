@@ -4,6 +4,7 @@ import '../homeScreen.dart';
 import '../cart/shoppingCart.dart';
 import '../account/profile.dart';
 import 'productDetailKfc.dart'; // Asegúrate de crear este archivo para los detalles del producto
+import '../../../auth/auth.dart'; // IMPORTANTE: Añadir esta importación para getUserAddress
 
 // Definición de colores consistentes
 const primaryColor = Color(0xFFf05000); // Naranja principal de la temática
@@ -18,7 +19,24 @@ class KfcMenuScreen extends StatefulWidget {
 }
 
 class _KfcMenuScreenState extends State<KfcMenuScreen> {
-  int _selectedIndex = 1; // Índice para Home en la barra de navegación
+  int _selectedIndex = 1;
+  OverlayEntry? _overlayEntry; // NUEVO: Para la notificación
+  String _userAddress = "Loading address..."; // Variable para la dirección del usuario
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserAddress();
+  }
+
+  Future<void> _loadUserAddress() async {
+    final address = await getUserAddress();
+    if (mounted) {
+      setState(() {
+        _userAddress = address ?? "Address not found";
+      });
+    }
+  }
 
   final List<Map<String, String>> _kfcMenuItems = [
     {
@@ -102,21 +120,140 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
     }
   }
 
+  // NUEVO: Función para mostrar la notificación
+  void _showAddedToCartOverlay(String productName) {
+    _overlayEntry?.remove();
+    _overlayEntry = OverlayEntry(
+      builder:
+          (context) => Positioned(
+            top: MediaQuery.of(context).padding.top + 10,
+            left: 20,
+            right: 20,
+            child: Material(
+              elevation: 4.0,
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white, // Fondo blanco
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: primaryColor, width: 1.5), // Borde naranja
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '$productName added to cart!',
+                        style: const TextStyle(
+                          color: primaryColor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ), // Texto naranja
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor, // Botón con fondo naranja
+                        foregroundColor: Colors.white, // Texto del botón blanco
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                      onPressed: () {
+                        _overlayEntry?.remove();
+                        _overlayEntry = null;
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+                        );
+                      },
+                      child: const Text('VIEW CART'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted && _overlayEntry != null) {
+        _overlayEntry?.remove();
+        _overlayEntry = null;
+      }
+    });
+  }
+
+  // NUEVO: Función para añadir al carrito
+  void _addToCart(Map<String, String> product) {
+    final String restaurantName = 'KFC'; // Definir el nombre del restaurante
+
+    final existingItemIndex = globalCartItems.indexWhere(
+      (item) =>
+          item.name == product['name'] &&
+          item.restaurant == restaurantName, // CONFIRMAR/AÑADIR: Considerar restaurante
+    );
+
+    if (existingItemIndex != -1) {
+      setState(() {
+        globalCartItems[existingItemIndex].quantity++;
+      });
+    } else {
+      setState(() {
+        globalCartItems.add(
+          CartItem(
+            name: product['name']!,
+            price: double.parse(product['price']!),
+            quantity: 1,
+            imageUrl: product['image']!,
+            restaurant: restaurantName, // CONFIRMAR: Ya debería estar así
+          ),
+        );
+      });
+    }
+    _showAddedToCartOverlay(product['name']!);
+    print('Added to cart: ${product['name']} from $restaurantName');
+    print('Current cart: $globalCartItems');
+  }
+
   // Definición del método _buildHeader
   Widget _buildHeader(BuildContext context) {
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.only(
+        // Contenedor blanco con sombra para la barra superior
+        Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(
             top: 10.0,
             left: 15,
             right: 15,
             bottom: 0,
-          ), // Ajustado el padding
+          ), // Margen para el contenedor
+          padding: const EdgeInsets.symmetric(
+            horizontal: 10.0,
+            vertical: 10.0,
+          ), // Padding interno del contenedor
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12.0), // Bordes redondeados para el contenedor
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                spreadRadius: 1,
+                blurRadius: 5,
+                offset: const Offset(0, 2), // Sombra sutil
+              ),
+            ],
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // Botón de retroceso
               InkWell(
                 onTap:
                     () => Navigator.pushReplacement(
@@ -132,49 +269,46 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
                   child: const Icon(Icons.arrow_back_ios_new, color: primaryColor, size: 20),
                 ),
               ),
+              // Columna para "Deliver to" y la dirección
               Expanded(
-                // Para que la columna de "Deliver to" pueda centrarse si es necesario
                 child: Column(
-                  mainAxisSize:
-                      MainAxisSize.min, // Para que la columna no ocupe más espacio del necesario
-                  crossAxisAlignment: CrossAxisAlignment.center, // Centra el texto "Deliver to"
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const Text("Deliver to", style: TextStyle(fontSize: 12, color: Colors.grey)),
                     InkWell(
-                      // Para hacer la dirección clickeable si se desea en el futuro
                       onTap: () {
-                        // Lógica para cambiar dirección si se implementa
                         print("Change address tapped");
                       },
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min, // Para centrar la fila
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            "Transversal 51a #67B - 90", // Dirección
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: primaryColor,
+                          Flexible(
+                            child: Text(
+                              _userAddress,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: primaryColor,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center, // Centrar si es largo
                             ),
                           ),
-                          Icon(Icons.keyboard_arrow_down, color: primaryColor, size: 16),
+                          const Icon(Icons.keyboard_arrow_down, color: primaryColor, size: 16),
                         ],
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(
-                width: 48,
-              ), // Espacio para balancear el botón de retroceso (ajustar si es necesario)
+              // SizedBox para balancear el botón de retroceso
+              const SizedBox(width: 48), // Ajusta este valor si es necesario
             ],
           ),
         ),
-        const SizedBox(height: 20),
-        Image.asset(
-          'assets/logos/kfc.png', // Asegúrate que esta ruta sea correcta
-          height: 80,
-        ),
+        const SizedBox(height: 20), // Espacio antes del logo
+        Image.asset('assets/logos/kfc.png', height: 80),
         const SizedBox(height: 10),
         const Text(
           "Welcome to KFC",
@@ -186,7 +320,7 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
           style: TextStyle(fontSize: 14, color: Colors.black54),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 25),
+        const SizedBox(height: 25), // Espacio antes de la lista de productos
       ],
     );
   }
@@ -208,7 +342,6 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
                     productDescription: _getProductDescription(item['name']!),
                     productPrice: double.parse(item['price']!),
                     imageUrl: item['image']!,
-                    // onAddToCart: (name, price, quantity) { Lógica para añadir al carrito }
                   ),
             ),
           );
@@ -233,11 +366,7 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Image.asset(
-                      item['image']!,
-                      fit: BoxFit.contain,
-                      // height: 100, // Puedes ajustar la altura si es necesario
-                    ),
+                    child: Image.asset(item['image']!, fit: BoxFit.contain),
                   ),
                 ),
               ),
@@ -260,13 +389,19 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: primaryColor, // Color naranja para el botón
-                      borderRadius: BorderRadius.circular(20),
+                  InkWell(
+                    // CAMBIO: Envolver el icono de añadir en InkWell
+                    onTap: () {
+                      _addToCart(item); // LLAMADA a _addToCart
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: primaryColor, // Color naranja para el botón
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Icon(Icons.add, color: Colors.white, size: 20),
                     ),
-                    child: const Icon(Icons.add, color: Colors.white, size: 20),
                   ),
                 ],
               ),

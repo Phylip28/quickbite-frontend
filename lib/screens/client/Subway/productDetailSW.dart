@@ -109,8 +109,12 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Colors.green.shade700,
+                  color: Colors.white, // CAMBIO: Fondo blanco
                   borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: primaryColor,
+                    width: 1.5,
+                  ), // CAMBIO OPCIONAL: Borde naranja
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -118,15 +122,19 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
                     Expanded(
                       child: Text(
                         '$productName (x$quantity) added to cart!',
-                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        style: const TextStyle(
+                          color: primaryColor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ), // CAMBIO: Texto naranja
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 10),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.green.shade700,
+                        backgroundColor: primaryColor, // CAMBIO: Botón con fondo naranja
+                        foregroundColor: Colors.white, // CAMBIO: Texto del botón blanco
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                       ),
@@ -162,25 +170,43 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
     final double price = widget.productPrice;
     final String imageUrl = widget.imageUrl;
     final int quantity = _quantity;
+    final String restaurantName = 'Subway'; // Definir el nombre del restaurante
 
-    final existingItemIndex = globalCartItems.indexWhere((item) => item.name == name);
+    final existingItemIndex = globalCartItems.indexWhere(
+      (item) => item.name == name && item.restaurant == restaurantName, // Considerar restaurante
+    );
 
     if (existingItemIndex != -1) {
-      // Si el ítem ya existe, actualiza la cantidad
-      globalCartItems[existingItemIndex].quantity += quantity;
+      // Si el ítem ya existe y es del mismo restaurante, actualiza la cantidad
+      setState(() {
+        // Asegúrate de que setState se llame si es necesario para actualizar la UI local
+        globalCartItems[existingItemIndex].quantity += quantity;
+      });
     } else {
       // Si no existe, añádelo con la cantidad seleccionada
-      globalCartItems.add(
-        CartItem(name: name, price: price, quantity: quantity, imageUrl: imageUrl),
-      );
+      setState(() {
+        // Asegúrate de que setState se llame si es necesario para actualizar la UI local
+        globalCartItems.add(
+          CartItem(
+            name: name,
+            price: price,
+            quantity: quantity,
+            imageUrl: imageUrl,
+            restaurant: restaurantName, // CAMBIO: Pasar el nombre del restaurante
+          ),
+        );
+      });
     }
 
     // Actualizar la UI del ShoppingCartScreen si está en la pila y montado
+    // Esta línea puede o no ser necesaria dependiendo de cómo gestiones el estado global del carrito
+    // y si ShoppingCartScreen necesita ser forzado a reconstruirse.
+    // Si globalCartItems es un ValueNotifier o similar, la actualización podría ser automática.
     if (shoppingCartScreenKey.currentState != null && shoppingCartScreenKey.currentState!.mounted) {
       shoppingCartScreenKey.currentState!.setState(() {});
     }
 
-    print('$name (x$quantity) added to cart.');
+    print('$name (x$quantity) added to cart from $restaurantName.');
     _showAddedToCartOverlay(name, quantity);
   }
 

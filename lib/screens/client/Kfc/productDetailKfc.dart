@@ -32,6 +32,7 @@ class ProductDetailKFC extends StatefulWidget {
 class _ProductDetailKFCState extends State<ProductDetailKFC> {
   int _quantity = 1;
   int _selectedIndex = 1; // Índice para Home en la barra de navegación
+  OverlayEntry? _overlayEntry;
 
   void _incrementQuantity() {
     if (_quantity < 10) {
@@ -69,6 +70,115 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
         MaterialPageRoute(builder: (context) => const ProfileClient()),
       );
     }
+  }
+
+  void _showAddedToCartOverlay(String productName, int quantity) {
+    _overlayEntry?.remove();
+    _overlayEntry = OverlayEntry(
+      builder:
+          (context) => Positioned(
+            top: MediaQuery.of(context).padding.top + 10,
+            left: 20,
+            right: 20,
+            child: Material(
+              elevation: 4.0,
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: primaryColor, width: 1.5),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '$productName (x$quantity) added to cart!',
+                        style: const TextStyle(
+                          color: primaryColor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                      onPressed: () {
+                        _overlayEntry?.remove();
+                        _overlayEntry = null;
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+                        );
+                      },
+                      child: const Text('VIEW CART'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted && _overlayEntry != null) {
+        _overlayEntry?.remove();
+        _overlayEntry = null;
+      }
+    });
+  }
+
+  void _handleAddToCart() {
+    print('Add to Cart button pressed'); // DEBUG
+    final String name = widget.productName;
+    final double price = widget.productPrice;
+    final String imageUrl = widget.imageUrl;
+    final int quantityToAdd = _quantity;
+    const String restaurantName = 'KFC';
+
+    print('Global cart items before add: $globalCartItems'); // DEBUG
+
+    final existingItemIndex = globalCartItems.indexWhere(
+      (item) => item.name == name && item.restaurant == restaurantName,
+    );
+
+    if (existingItemIndex != -1) {
+      setState(() {
+        globalCartItems[existingItemIndex].quantity += quantityToAdd;
+      });
+    } else {
+      setState(() {
+        globalCartItems.add(
+          CartItem(
+            name: name,
+            price: price,
+            quantity: quantityToAdd,
+            imageUrl: imageUrl,
+            restaurant: restaurantName,
+          ),
+        );
+      });
+    }
+
+    print('Global cart items after add/update: $globalCartItems'); // DEBUG
+
+    if (shoppingCartScreenKey.currentState != null && shoppingCartScreenKey.currentState!.mounted) {
+      shoppingCartScreenKey.currentState!.setState(() {});
+    }
+
+    // print('$name (x$quantityToAdd) added to cart from $restaurantName.'); // Este print es para depuración, la notificación es la siguiente línea
+    _showAddedToCartOverlay(name, quantityToAdd); // <<--- ASEGÚRATE QUE ESTA LÍNEA ESTÉ ACTIVA
   }
 
   @override
@@ -225,16 +335,7 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          if (widget.onAddToCart != null) {
-                            widget.onAddToCart!(widget.productName, widget.productPrice, _quantity);
-                          }
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${widget.productName} (x$_quantity) added to cart!'),
-                            ),
-                          );
-                        },
+                        onPressed: _handleAddToCart, // <<--- CAMBIO AQUÍ: Llama a tu función
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor,
                           padding: const EdgeInsets.symmetric(vertical: 16),

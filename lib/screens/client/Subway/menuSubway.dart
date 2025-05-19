@@ -91,8 +91,12 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Colors.green.shade700,
+                  color: Colors.white, // CAMBIO: Fondo blanco
                   borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: primaryColor,
+                    width: 1.5,
+                  ), // CAMBIO OPCIONAL: Borde naranja
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -100,15 +104,19 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                     Expanded(
                       child: Text(
                         '$productName added to cart!',
-                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        style: const TextStyle(
+                          color: primaryColor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ), // CAMBIO: Texto naranja
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 10),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.green.shade700,
+                        backgroundColor: primaryColor, // CAMBIO: Botón con fondo naranja
+                        foregroundColor: Colors.white, // CAMBIO: Texto del botón blanco
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                       ),
@@ -140,22 +148,31 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
   }
 
   void _addToCart(Map<String, String> product) {
-    final String name = product['name']!;
-    final double price = double.tryParse(product['price']!) ?? 0.0;
-    final String imageUrl = product['image']!;
-
-    final existingItemIndex = globalCartItems.indexWhere((item) => item.name == name);
+    final existingItemIndex = globalCartItems.indexWhere(
+      (item) =>
+          item.name == product['name'] && item.restaurant == 'Subway', // Considerar restaurante
+    );
 
     if (existingItemIndex != -1) {
-      globalCartItems[existingItemIndex].quantity++;
+      setState(() {
+        globalCartItems[existingItemIndex].quantity++;
+      });
     } else {
-      globalCartItems.add(CartItem(name: name, price: price, quantity: 1, imageUrl: imageUrl));
+      setState(() {
+        globalCartItems.add(
+          CartItem(
+            name: product['name']!,
+            price: double.parse(product['price']!),
+            quantity: 1,
+            imageUrl: product['image']!,
+            restaurant: 'Subway', // ASEGURARSE DE QUE ESTÉ ASÍ
+          ),
+        );
+      });
     }
-    if (shoppingCartScreenKey.currentState != null && shoppingCartScreenKey.currentState!.mounted) {
-      shoppingCartScreenKey.currentState!.setState(() {});
-    }
-    print('Producto añadido al carrito: $name');
-    _showAddedToCartOverlay(name);
+    _showAddedToCartOverlay(product['name']!);
+    print('Added to cart: ${product['name']} from Subway');
+    print('Current cart: $globalCartItems');
   }
 
   // Helper method to build cards for regular grid items
