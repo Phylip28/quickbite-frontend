@@ -3,7 +3,8 @@ import 'productDetailSW.dart';
 import '../homeScreen.dart';
 import '../customBottomNavigationBar.dart';
 import '../account/profile.dart';
-import '../cart/shoppingCart.dart'; // Asegúrate que globalCartItems y CartItem estén aquí
+import '../cart/shoppingCart.dart';
+import '../../../auth/auth.dart'; // IMPORTANTE: Añadir esta importación para getUserAddress
 
 const primaryColor = Color(0xFFf05000);
 
@@ -16,12 +17,30 @@ class SubwayMenuScreen extends StatefulWidget {
 
 class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
   int _selectedIndex = 1;
-  OverlayEntry? _overlayEntry; // Para la notificación flotante
+  OverlayEntry? _overlayEntry;
+  String _userAddress = "Loading address..."; // Variable para la dirección del usuario
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserAddress(); // Cargar la dirección al iniciar la pantalla
+  }
+
+  Future<void> _loadUserAddress() async {
+    final address = await getUserAddress(); // Llama a tu función para obtener la dirección
+    if (mounted) {
+      // Verificar si el widget sigue montado antes de llamar a setState
+      setState(() {
+        _userAddress = address ?? "Address not found"; // Actualizar la dirección
+      });
+    }
+  }
 
   void _onTabTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    // No es necesario llamar a setState si la navegación reemplaza la pantalla completamente
+    // setState(() {
+    //   _selectedIndex = index;
+    // });
 
     if (index == 0) {
       Navigator.pushReplacement(
@@ -29,10 +48,27 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
         MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
       );
     } else if (index == 1) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
+      // Si ya estamos en HomeScreen (o una pantalla de menú que actúa como tal), no hacer nada
+      // O si _selectedIndex ya es 1, no hacer nada.
+      // Para este caso, si se tapea Home, y no estamos en Home, vamos a Home.
+      // Si SubwayMenuScreen es una sub-pantalla de HomeScreen, el comportamiento podría variar.
+      // Asumiendo que es una pantalla separada a la que se llega desde HomeScreen:
+      if (!ModalRoute.of(context)!.isFirst) {
+        // Si no es la primera ruta (es decir, no es HomeScreen)
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } else {
+        // Si ya estamos en HomeScreen (o una pantalla que actúa como tal y es la primera)
+        // y el índice seleccionado ya es 1, no es necesario hacer nada.
+        // Si el índice cambia, actualizamos el estado.
+        if (_selectedIndex != index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        }
+      }
     } else if (index == 2) {
       Navigator.pushReplacement(
         context,
@@ -42,21 +78,20 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
   }
 
   void _showAddedToCartOverlay(String productName) {
-    _overlayEntry?.remove(); // Remover overlay anterior si existe
+    _overlayEntry?.remove();
     _overlayEntry = OverlayEntry(
       builder:
           (context) => Positioned(
-            top: MediaQuery.of(context).padding.top + 10, // Debajo de la barra de estado
+            top: MediaQuery.of(context).padding.top + 10,
             left: 20,
             right: 20,
             child: Material(
-              // Necesario para elevación y otros efectos de Material
               elevation: 4.0,
               borderRadius: BorderRadius.circular(10),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Colors.green.shade700, // Un color verde para éxito
+                  color: Colors.green.shade700,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
@@ -72,16 +107,15 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                     const SizedBox(width: 10),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white, // Fondo blanco para el botón
-                        foregroundColor: Colors.green.shade700, // Texto verde
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.green.shade700,
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                       ),
                       onPressed: () {
                         _overlayEntry?.remove();
-                        _overlayEntry = null; // Marcar como nulo para evitar remoción futura
+                        _overlayEntry = null;
                         Navigator.push(
-                          // Navegar al carrito
                           context,
                           MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
                         );
@@ -97,12 +131,10 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
 
     Overlay.of(context).insert(_overlayEntry!);
 
-    // Remover el overlay después de unos segundos
     Future.delayed(const Duration(seconds: 4), () {
       if (mounted && _overlayEntry != null) {
-        // Verificar si aún está montado y el overlay existe
         _overlayEntry?.remove();
-        _overlayEntry = null; // Marcar como nulo después de removerlo
+        _overlayEntry = null;
       }
     });
   }
@@ -115,26 +147,15 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
     final existingItemIndex = globalCartItems.indexWhere((item) => item.name == name);
 
     if (existingItemIndex != -1) {
-      // Si el ítem ya existe, incrementa la cantidad
       globalCartItems[existingItemIndex].quantity++;
     } else {
-      // Si no existe, añádelo
-      globalCartItems.add(
-        CartItem(
-          name: name,
-          price: price,
-          quantity: 1,
-          imageUrl: imageUrl, // Asegúrate que CartItem tenga este campo
-        ),
-      );
+      globalCartItems.add(CartItem(name: name, price: price, quantity: 1, imageUrl: imageUrl));
     }
-    // Llama a setState en ShoppingCartScreen si es necesario para actualizar su UI
-    // Esto se puede hacer a través de la GlobalKey si la tienes configurada
-    // o simplemente se reflejará cuando se navegue al carrito.
-    shoppingCartScreenKey.currentState?.setState(() {});
-
+    if (shoppingCartScreenKey.currentState != null && shoppingCartScreenKey.currentState!.mounted) {
+      shoppingCartScreenKey.currentState!.setState(() {});
+    }
     print('Producto añadido al carrito: $name');
-    _showAddedToCartOverlay(name); // Muestra la notificación
+    _showAddedToCartOverlay(name);
   }
 
   // Helper method to build cards for regular grid items
@@ -398,7 +419,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                 children: [
                   InkWell(
                     onTap: () {
-                      Navigator.pop(context);
+                      Navigator.pop(context); // Volver a la pantalla anterior (HomeScreen)
                     },
                     child: Container(
                       padding: const EdgeInsets.all(8.0),
@@ -409,21 +430,25 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                       child: const Icon(Icons.arrow_back_ios_new, color: primaryColor, size: 20),
                     ),
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('Deliver to', style: TextStyle(fontSize: 14, color: Colors.black54)),
-                        SizedBox(height: 2),
+                        const Text(
+                          'Deliver to',
+                          style: TextStyle(fontSize: 14, color: Colors.black54),
+                        ),
+                        const SizedBox(height: 2),
                         Text(
-                          'Transversal 51a #67B - 90',
-                          style: TextStyle(
+                          _userAddress, // MODIFICADO: Usar la dirección del usuario
+                          style: const TextStyle(
                             fontSize: 16,
                             color: primaryColor,
                             fontWeight: FontWeight.bold,
                           ),
                           overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center, // Centrar si es largo
                         ),
                       ],
                     ),
@@ -456,6 +481,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
             const SizedBox(height: 24),
             // Spread the dynamically built product layout widgets here
             ..._buildProductLayoutWidgets(context),
+            const SizedBox(height: 80), // Espacio para el BottomNavigationBar
           ],
         ),
       ),
@@ -482,8 +508,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
     },
     {
       'name': 'Subs Footlong Bacon Melt',
-      'image':
-          'assets/images/cliente/subway/subsFootlongBaconMelt.png', // Ensure this image is wide
+      'image': 'assets/images/cliente/subway/subsFootlongBaconMelt.png',
       'price': '5.50',
       'rating': '4.6',
     },

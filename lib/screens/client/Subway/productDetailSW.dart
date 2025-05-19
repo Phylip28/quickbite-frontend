@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../customBottomNavigationBar.dart'; // Importa la barra de navegación
 // Asegúrate de que las rutas de importación sean correctas para tu estructura de proyecto.
 import '../homeScreen.dart'; // Ejemplo, ajusta si es necesario
-import '../cart/shoppingCart.dart'; // Ejemplo, ajusta si es necesario
+import '../cart/shoppingCart.dart'; // Para globalCartItems y CartItem
 import '../account/profile.dart'; // Ejemplo, ajusta si es necesario
 
 // Definición del color primario, consistente con las pantallas anteriores.
@@ -19,7 +19,8 @@ class ProductDetailSW extends StatefulWidget {
   final String productDescription;
   final double productPrice;
   final String imageUrl;
-  final Function(String, double, int)? onAddToCart; // Callback para añadir al carrito
+  // Eliminamos onAddToCart ya que manejaremos la lógica directamente aquí
+  // final Function(String, double, int)? onAddToCart;
 
   const ProductDetailSW({
     super.key,
@@ -27,7 +28,7 @@ class ProductDetailSW extends StatefulWidget {
     required this.productDescription,
     required this.productPrice,
     required this.imageUrl,
-    this.onAddToCart,
+    // this.onAddToCart,
   });
 
   @override
@@ -37,6 +38,7 @@ class ProductDetailSW extends StatefulWidget {
 class _ProductDetailSubwayState extends State<ProductDetailSW> {
   int _quantity = 1; // Cantidad inicial del producto
   int _selectedIndex = 1; // Índice seleccionado en la barra de navegación inferior (ej. Home)
+  OverlayEntry? _overlayEntry; // Para la notificación flotante
 
   // Incrementa la cantidad del producto, con un límite de 10.
   void _incrementQuantity() {
@@ -58,11 +60,10 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
 
   // Maneja el cambio de pestaña en la barra de navegación inferior.
   void _onTabTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    // Lógica de navegación basada en el índice seleccionado.
-    // Asegúrate de que estas rutas coincidan con tu configuración de enrutamiento.
+    // setState(() { // No es necesario si la navegación reemplaza la pantalla
+    //   _selectedIndex = index;
+    // });
+
     if (index == 0) {
       // Navegar al carrito
       Navigator.pushReplacement(
@@ -70,10 +71,14 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
         MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
       );
     } else if (index == 1) {
-      // Navegar a la pantalla de inicio/menú
+      // Si estamos en ProductDetail, "Home" probablemente signifique volver al menú anterior o a HomeScreen
+      // Si SubwayMenuScreen es la pantalla anterior:
+      // Navigator.pop(context); // O
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(
+          builder: (context) => const HomeScreen(),
+        ), // O SubwayMenuScreen si es más apropiado
       );
     } else if (index == 2) {
       // Navegar al perfil
@@ -82,6 +87,101 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
         MaterialPageRoute(builder: (context) => const ProfileClient()),
       );
     }
+    // Actualizar el índice después de la navegación si es necesario para la UI
+    if (mounted && _selectedIndex != index) {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
+  }
+
+  void _showAddedToCartOverlay(String productName, int quantity) {
+    _overlayEntry?.remove();
+    _overlayEntry = OverlayEntry(
+      builder:
+          (context) => Positioned(
+            top: MediaQuery.of(context).padding.top + 10,
+            left: 20,
+            right: 20,
+            child: Material(
+              elevation: 4.0,
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade700,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '$productName (x$quantity) added to cart!',
+                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.green.shade700,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                      onPressed: () {
+                        _overlayEntry?.remove();
+                        _overlayEntry = null;
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+                        );
+                      },
+                      child: const Text('VIEW CART'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted && _overlayEntry != null) {
+        _overlayEntry?.remove();
+        _overlayEntry = null;
+      }
+    });
+  }
+
+  void _handleAddToCart() {
+    final String name = widget.productName;
+    final double price = widget.productPrice;
+    final String imageUrl = widget.imageUrl;
+    final int quantity = _quantity;
+
+    final existingItemIndex = globalCartItems.indexWhere((item) => item.name == name);
+
+    if (existingItemIndex != -1) {
+      // Si el ítem ya existe, actualiza la cantidad
+      globalCartItems[existingItemIndex].quantity += quantity;
+    } else {
+      // Si no existe, añádelo con la cantidad seleccionada
+      globalCartItems.add(
+        CartItem(name: name, price: price, quantity: quantity, imageUrl: imageUrl),
+      );
+    }
+
+    // Actualizar la UI del ShoppingCartScreen si está en la pila y montado
+    if (shoppingCartScreenKey.currentState != null && shoppingCartScreenKey.currentState!.mounted) {
+      shoppingCartScreenKey.currentState!.setState(() {});
+    }
+
+    print('$name (x$quantity) added to cart.');
+    _showAddedToCartOverlay(name, quantity);
   }
 
   @override
@@ -106,7 +206,9 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
             child: Container(
               padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
-                color: lightAccentColor,
+                color: lightAccentColor.withOpacity(
+                  0.8,
+                ), // Un poco de opacidad si hay imagen detrás
                 borderRadius: BorderRadius.circular(8.0),
               ),
               child: const Icon(Icons.arrow_back_ios_new, color: primaryColor, size: 20),
@@ -132,6 +234,10 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
                 fit: BoxFit.cover, // Cambiado a BoxFit.cover
                 width: double.infinity, // Asegura que la imagen llene el ancho
                 height: double.infinity, // Asegura que la imagen llene la altura
+                errorBuilder:
+                    (context, error, stackTrace) => const Center(
+                      child: Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
+                    ),
               ),
             ),
           ),
@@ -213,7 +319,7 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
                       children: [
                         // Precio del producto
                         Text(
-                          '\$${widget.productPrice.toStringAsFixed(2)}',
+                          '\$${(widget.productPrice * _quantity).toStringAsFixed(2)}', // Precio total por cantidad
                           style: const TextStyle(
                             fontSize: 30, // Tamaño de fuente destacado para el precio
                             fontWeight: FontWeight.bold,
@@ -265,17 +371,7 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          if (widget.onAddToCart != null) {
-                            widget.onAddToCart!(widget.productName, widget.productPrice, _quantity);
-                          }
-                          // Opcional: Mostrar un SnackBar o navegar
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${widget.productName} (x$_quantity) added to cart!'),
-                            ),
-                          );
-                        },
+                        onPressed: _handleAddToCart, // MODIFICADO: Llamar a _handleAddToCart
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor, // Color primario para el botón
                           padding: const EdgeInsets.symmetric(vertical: 16), // Padding vertical
