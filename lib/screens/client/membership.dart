@@ -4,6 +4,7 @@ import 'homeScreen.dart';
 import 'cart/shoppingCart.dart';
 import 'account/profile.dart';
 import 'membershipPaymentScreen.dart';
+import 'membershipTerms.dart';
 
 const primaryColor = Color(0xFFf05000);
 const starColor = Colors.amber;
@@ -196,7 +197,14 @@ class _MembershipScreenState extends State<MembershipScreen> {
             const SizedBox(height: 12),
             TextButton(
               onPressed: () {
-                print('Learn more / Terms tapped');
+                // ANTERIOR:
+                // print('Learn more / Terms tapped');
+
+                // NUEVO: Navegar a MembershipTermsScreen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MembershipTermsScreen()),
+                );
               },
               child: const Text('Learn more or view terms', style: TextStyle(color: primaryColor)),
             ),

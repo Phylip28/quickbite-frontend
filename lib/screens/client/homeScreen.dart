@@ -7,6 +7,7 @@ import 'cart/shoppingCart.dart';
 import 'Starbucks/menuStarbucks.dart';
 import 'Subway/menuSubway.dart';
 import 'Kfc/menuKfc.dart';
+import 'Popsy/menuPopsy.dart';
 import 'membership.dart';
 import '../../auth/auth.dart';
 
@@ -155,7 +156,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                       .black, // Negro por defecto o si no hay dirección/no logueado
                         ),
                       ),
-                      const Icon(Icons.arrow_drop_down),
                     ],
                   ),
                   const SizedBox(height: 10),
@@ -174,10 +174,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     )
                   else
-                    // Si está logueado, no mostramos el mensaje "Register to get started"
-                    // Mostramos un Container para mantener el espacio si es necesario,
-                    // o simplemente nada si la dirección ya se muestra arriba.
-                    // El Container(height:14) que tenías podría ser para esto.
                     Container(height: 14), // O ajusta según tu diseño
                 ],
               ),
@@ -302,6 +298,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) => const KfcMenuScreen(),
+                                          ),
+                                        );
+                                      } else if (restaurant['name'] == 'Popsy') {
+                                        // <--- ASEGÚRATE QUE ESTA CONDICIÓN ESTÉ AQUÍ
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => const PopsyMenuScreen(),
                                           ),
                                         );
                                       } else {

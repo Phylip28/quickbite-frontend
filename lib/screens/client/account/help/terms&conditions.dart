@@ -8,15 +8,18 @@ class TermsAndConditionsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white, // FONDO DEL SCAFFOLD BLANCO
       appBar: AppBar(
         title: const Text(
           'Terms & Conditions',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold), // TEXTO NARANJA
         ),
-        backgroundColor: primaryColor,
-        iconTheme: const IconThemeData(color: Colors.white),
+        centerTitle: true, // TÍTULO CENTRADO
+        backgroundColor: Colors.white, // APPBAR BLANCA
+        elevation: 1.0, // Sutil elevación
+        iconTheme: const IconThemeData(color: primaryColor), // ICONO DE RETROCESO NARANJA
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_new), // Ícono actualizado para consistencia
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -25,8 +28,10 @@ class TermsAndConditionsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            _buildSectionTitle('Last Updated: May 19, 2025'), // Ejemplo de fecha
-            const SizedBox(height: 16.0),
+            // "Last Updated" se moverá al final
+            // const SizedBox(
+            //   height: 16.0, // Este SizedBox puede ajustarse o eliminarse si el Padding anterior es suficiente
+            // ),
             _buildSectionTitle('1. Acceptance of Terms'),
             _buildParagraph(
               'By accessing or using the QuickBite mobile application (the "Service"), you agree to be bound by these Terms and Conditions ("Terms"). If you disagree with any part of the terms, then you may not access the Service. These Terms apply to all visitors, users, and others who access or use the Service.',
@@ -78,13 +83,28 @@ class TermsAndConditionsScreen extends StatelessWidget {
             // 9. Governing Law
             // 10. Changes to Terms
             // 11. Contact Information
-            const SizedBox(height: 24.0),
+            const SizedBox(height: 24.0), // Espacio antes de la información de contacto
             _buildSectionTitle('Contact Information'),
             _buildParagraph(
               'If you have any questions about these Terms, please contact us at legal@quickbite.app or by post to:',
             ),
             _buildParagraph(
               'QuickBite Technologies Inc.\n123 Culinary Lane\nFoodie City, FS 98765\nUnited States',
+            ),
+            const SizedBox(height: 24.0), // Espacio antes de la fecha de "Last Updated"
+            Padding(
+              padding: const EdgeInsets.only(
+                top: 8.0,
+                bottom: 8.0,
+              ), // Ajusta el padding según sea necesario
+              child: Text(
+                'Last Updated: May 19, 2025', // Ejemplo de fecha
+                style: TextStyle(
+                  fontSize: 14, // Tamaño más pequeño
+                  fontStyle: FontStyle.italic, // Cursiva
+                  color: Colors.grey[700], // Color gris
+                ),
+              ),
             ),
           ],
         ),

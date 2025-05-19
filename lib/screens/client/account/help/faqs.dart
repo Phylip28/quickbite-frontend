@@ -57,44 +57,55 @@ class _FaqsScreenState extends State<FaqsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white, // FONDO DEL SCAFFOLD BLANCO
       appBar: AppBar(
         title: const Text(
           'FAQs',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold), // TEXTO NARANJA
         ),
-        backgroundColor: primaryColor,
-        iconTheme: const IconThemeData(color: Colors.white),
+        centerTitle: true, // TÍTULO CENTRADO
+        backgroundColor: Colors.white, // APPBAR BLANCA
+        elevation: 1.0, // Sutil elevación
+        iconTheme: const IconThemeData(color: primaryColor), // ICONO DE RETROCESO NARANJA
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_new), // Ícono actualizado
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: ListView.builder(
-        padding: const EdgeInsets.all(8.0), // Un poco de padding general
+        padding: const EdgeInsets.all(16.0), // Padding general
         itemCount: _faqItems.length,
         itemBuilder: (context, index) {
           final item = _faqItems[index];
           return Card(
-            elevation: 1.0, // Sombra sutil para cada Card
-            margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+            color: Colors.white, // TARJETA BLANCA
+            elevation: 2.0, // Elevación para que resalte
+            margin: const EdgeInsets.symmetric(vertical: 8.0),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.0),
+            ), // Bordes redondeados
             child: ExpansionTile(
               key: PageStorageKey(item.question), // Para mantener el estado de expansión
+              iconColor: primaryColor, // Color del icono de expansión
+              collapsedIconColor: Colors.grey[600], // Color del icono cuando está colapsado
               title: Text(
                 item.question,
-                style: const TextStyle(fontWeight: FontWeight.w500, color: Colors.black87),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                  fontSize: 16,
+                ),
               ),
-              // Controlar el estado de expansión si es necesario para lógica más compleja
-              // onExpansionChanged: (bool expanding) => setState(() => item.isExpanded = expanding),
-              // initiallyExpanded: item.isExpanded,
-              childrenPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              childrenPadding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0, top: 0),
               expandedCrossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
                   item.answer,
+                  textAlign: TextAlign.justify,
                   style: TextStyle(
-                    color: Colors.grey[700],
-                    height: 1.4, // Espaciado de línea para mejor legibilidad
+                    color: Colors.grey[800],
+                    height: 1.5, // Espaciado de línea para mejor legibilidad
+                    fontSize: 14,
                   ),
                 ),
               ],
