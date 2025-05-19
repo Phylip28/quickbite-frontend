@@ -3,6 +3,7 @@ import '../homeScreen.dart';
 import '../customBottomNavigationBar.dart';
 import '../account/profile.dart';
 import '../cart/shoppingCart.dart';
+import '../membership.dart'; // NUEVA IMPORTACIÓN
 
 // Definición de colores consistentes
 const primaryColor = Color(0xFFf05000);
@@ -30,28 +31,58 @@ class ProductDetailTQ extends StatefulWidget {
 }
 
 class _ProductDetailTQState extends State<ProductDetailTQ> {
-  int _selectedIndex = 1; // O el índice que corresponda
+  final int _selectedIndex = 1; // ProductDetailTQ es parte del flujo de Home (índice 1)
   int _quantity = 1;
+  OverlayEntry? _overlayEntry; // Para el overlay
 
   void _onTabTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    if (index == 0) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
-      );
-    } else if (index == 1) {
-      Navigator.pushReplacement(
+    // No es necesario llamar a setState para _selectedIndex aquí si siempre usas
+    // pushReplacement o pushAndRemoveUntil, ya que la nueva pantalla se reconstruirá.
+    // Sin embargo, si alguna navegación no reemplaza la pantalla actual (ej. un Navigator.push simple
+    // a una sub-pantalla dentro de la misma pestaña), entonces sí sería útil.
+
+    if (_selectedIndex == index && index != 1)
+      return; // Evitar recarga innecesaria si ya está en la pestaña (excepto Home)
+
+    if (index == 1 && _selectedIndex == 1) {
+      // Si ya está en Home y tapea Home, ir a la raíz de Home
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
+        (Route<dynamic> route) => false,
       );
-    } else if (index == 2) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const ProfileClient()),
-      );
+      return;
+    }
+
+    switch (index) {
+      case 0: // Cart
+        // Usar push para poder volver a ProductDetail si el usuario quiere seguir comprando
+        Navigator.push(context, MaterialPageRoute(builder: (context) => ShoppingCartScreen()));
+        // Si se usa push, y quieres que el ícono del carrito se active inmediatamente:
+        // if (mounted) setState(() => _selectedIndex = index);
+        break;
+      case 1: // Home
+        // Navegar a la pantalla principal de Home, limpiando la pila.
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (Route<dynamic> route) => false,
+        );
+        break;
+      case 2: // Membership
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const MembershipScreen()),
+          (Route<dynamic> route) => false,
+        );
+        break;
+      case 3: // Account (Profile)
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfileClient()),
+          (Route<dynamic> route) => false,
+        );
+        break;
     }
   }
 
@@ -70,6 +101,116 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
         _quantity--;
       });
     }
+  }
+
+  void _showAddedToCartOverlay(String productName, int quantity) {
+    _overlayEntry?.remove();
+    _overlayEntry = OverlayEntry(
+      builder:
+          (context) => Positioned(
+            top: MediaQuery.of(context).padding.top + 10,
+            left: 20,
+            right: 20,
+            child: Material(
+              elevation: 4.0,
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: primaryColor, width: 1.5),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '$productName (x$quantity) added to cart!',
+                        style: const TextStyle(
+                          color: primaryColor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                      onPressed: () {
+                        _overlayEntry?.remove();
+                        _overlayEntry = null;
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+                        );
+                      },
+                      child: const Text('VIEW CART'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted && _overlayEntry != null) {
+        _overlayEntry?.remove();
+        _overlayEntry = null;
+      }
+    });
+  }
+
+  void _handleAddToCart() {
+    final String name = widget.productName;
+    final double price = widget.productPrice;
+    final String imageUrl = widget.imageUrl;
+    final int quantityToAdd = _quantity;
+    const String restaurantName = 'Tierra Querida'; // O el nombre del restaurante
+
+    // Lógica para añadir al carrito global
+    final existingItemIndex = globalCartItems.indexWhere(
+      (item) => item.name == name && item.restaurant == restaurantName,
+    );
+
+    if (existingItemIndex != -1) {
+      setState(() {
+        // Asegúrate de que esto esté dentro de un setState si actualizas la UI localmente
+        globalCartItems[existingItemIndex].quantity += quantityToAdd;
+      });
+    } else {
+      setState(() {
+        globalCartItems.add(
+          CartItem(
+            name: name,
+            price: price,
+            quantity: quantityToAdd,
+            imageUrl: imageUrl,
+            restaurant: restaurantName,
+          ),
+        );
+      });
+    }
+
+    // Actualizar el estado del ShoppingCartScreen si está montado
+    if (shoppingCartScreenKey.currentState != null && shoppingCartScreenKey.currentState!.mounted) {
+      shoppingCartScreenKey.currentState!.setState(() {});
+    }
+
+    // Mostrar overlay
+    _showAddedToCartOverlay(name, quantityToAdd);
+
+    // Llamar al callback si existe (para la pantalla de menú)
+    widget.onAddToCart?.call(name, price, quantityToAdd);
   }
 
   @override
@@ -92,7 +233,7 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
             child: Container(
               padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
-                color: lightAccentColor,
+                color: lightAccentColor.withOpacity(0.8), // Fondo semitransparente
                 borderRadius: BorderRadius.circular(8.0),
               ),
               child: const Icon(Icons.arrow_back_ios_new, color: primaryColor, size: 20),
@@ -115,6 +256,10 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
                 fit: BoxFit.cover,
                 width: double.infinity,
                 height: double.infinity,
+                errorBuilder:
+                    (context, error, stackTrace) => const Center(
+                      child: Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
+                    ),
               ),
             ),
           ),
@@ -144,23 +289,15 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
                 ],
               ),
               child: SingleChildScrollView(
-                // El padding superior del SingleChildScrollView asegura que el contenido
-                // no comience demasiado alto dentro del área superpuesta.
-                // Si overlapAmount es 30 y el padding.top es 20, el contenido
-                // comenzará 20px desde el borde superior del contenedor de detalles.
                 padding: const EdgeInsets.only(top: 20.0, left: 20.0, right: 20.0, bottom: 20.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Barra estética naranja desvanecida
                     Center(
                       child: Container(
                         height: 5,
                         width: 50,
-                        // Ajustar el margen superior si es necesario, o eliminarlo si el padding del SingleChildScrollView es suficiente
-                        margin: const EdgeInsets.only(
-                          bottom: 16.0,
-                        ), // El padding superior del SingleChildScrollView ya da espacio arriba
+                        margin: const EdgeInsets.only(bottom: 16.0),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [primaryColor, primaryColor.withOpacity(0.3)],
@@ -190,7 +327,7 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          '\$${widget.productPrice.toStringAsFixed(2)}',
+                          '\$${(widget.productPrice * _quantity).toStringAsFixed(2)}', // Precio total
                           style: const TextStyle(
                             fontSize: 30,
                             fontWeight: FontWeight.bold,
@@ -237,25 +374,16 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          if (widget.onAddToCart != null) {
-                            widget.onAddToCart!(widget.productName, widget.productPrice, _quantity);
-                          }
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('${widget.productName} (x$_quantity) added to cart!'),
-                            ),
-                          );
-                        },
+                        onPressed: _handleAddToCart, // Usar el nuevo método
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           elevation: 2,
                         ),
-                        child: Text(
+                        child: const Text(
                           'Add to cart',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -263,7 +391,9 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 60 + MediaQuery.of(context).padding.bottom),
+                    SizedBox(
+                      height: 60 + MediaQuery.of(context).padding.bottom,
+                    ), // Espacio para la barra de navegación
                   ],
                 ),
               ),
@@ -274,7 +404,7 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
           Align(
             alignment: Alignment.bottomCenter,
             child: CustomBottomNavigationBar(
-              currentIndex: _selectedIndex,
+              currentIndex: _selectedIndex, // Asegúrate que sea 1
               onTabChanged: _onTabTapped,
               backgroundColor: Colors.white,
             ),

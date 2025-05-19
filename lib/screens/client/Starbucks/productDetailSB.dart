@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../customBottomNavigationBar.dart';
 import '../cart/shoppingCart.dart'; // Para globalCartItems, CartItem y shoppingCartScreenKey
 import '../account/profile.dart';
-import 'menuStarbucks.dart'; // Para volver al menú de Starbucks
+import '../homeScreen.dart'; // NUEVA IMPORTACIÓN para el caso Home
+import '../membership.dart'; // NUEVA IMPORTACIÓN para el caso Membership
+// import 'menuStarbucks.dart'; // Ya está importado, podría usarse para volver al menú específico
 
 // Definición de colores consistentes
 const primaryColor = Color(0xFFf05000);
@@ -14,7 +16,6 @@ class ProductDetailSB extends StatefulWidget {
   final String productDescription;
   final double productPrice;
   final String imageUrl;
-  // final Function(String, double, int)? onAddToCart; // Ya no es necesario si manejamos el carrito globalmente
 
   const ProductDetailSB({
     super.key,
@@ -22,7 +23,6 @@ class ProductDetailSB extends StatefulWidget {
     required this.productDescription,
     required this.productPrice,
     required this.imageUrl,
-    // this.onAddToCart, // Ya no es necesario
   });
 
   @override
@@ -31,8 +31,8 @@ class ProductDetailSB extends StatefulWidget {
 
 class _ProductDetailSBState extends State<ProductDetailSB> {
   int _quantity = 1;
-  int _selectedIndex = 1;
-  OverlayEntry? _overlayEntry; // NUEVO: Para la notificación
+  final int _selectedIndex = 1; // ProductDetailSB es parte del flujo de Home (índice 1)
+  OverlayEntry? _overlayEntry;
 
   void _incrementQuantity() {
     if (_quantity < 10) {
@@ -51,28 +51,57 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
   }
 
   void _onTabTapped(int index) {
-    if (_selectedIndex == index) return;
-    setState(() {
-      _selectedIndex = index;
-    });
-    if (index == 0) {
-      Navigator.pushReplacement(
+    if (_selectedIndex == index && index != 1) return;
+
+    if (index == 1 && _selectedIndex == 1) {
+      Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        (Route<dynamic> route) => false,
       );
-    } else if (index == 1) {
-      // Volver al menú de Starbucks o a HomeScreen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const StarbucksMenuScreen(),
-        ), // O HomeScreen si es preferible
-      );
-    } else if (index == 2) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const ProfileClient()),
-      );
+      return;
+    }
+
+    // No es necesario llamar a setState para _selectedIndex aquí si siempre usas
+    // pushReplacement o pushAndRemoveUntil, ya que la nueva pantalla se reconstruirá.
+
+    switch (index) {
+      case 0: // Cart
+        Navigator.push(
+          // Usar push para poder volver
+          context,
+          MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+        );
+        break;
+      case 1: // Home
+        // Navegar a la pantalla principal de Home, limpiando la pila.
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (Route<dynamic> route) => false,
+        );
+        // Alternativa: si quieres volver solo a StarbucksMenuScreen:
+        // Navigator.pop(context); // Si ProductDetailSB fue pusheado desde StarbucksMenuScreen
+        // O:
+        // Navigator.pushReplacement(
+        //   context,
+        //   MaterialPageRoute(builder: (context) => const StarbucksMenuScreen()),
+        // );
+        break;
+      case 2: // Membership
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const MembershipScreen()),
+          (Route<dynamic> route) => false,
+        );
+        break;
+      case 3: // Account (Profile)
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfileClient()),
+          (Route<dynamic> route) => false,
+        );
+        break;
     }
   }
 
@@ -188,25 +217,24 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final imageSectionHeight = screenHeight * 0.55;
+    final imageSectionHeight = screenHeight * 0.55; // Ajustado para Starbucks
     const double overlapAmount = 20.0;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        // ... (código del AppBar existente sin cambios) ...
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
           child: InkWell(
             onTap: () {
-              Navigator.pop(context);
+              Navigator.pop(context); // Vuelve a la pantalla anterior (StarbucksMenuScreen)
             },
             child: Container(
               padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
-                color: lightAccentColor,
+                color: lightAccentColor.withOpacity(0.8),
                 borderRadius: BorderRadius.circular(8.0),
               ),
               child: const Icon(Icons.arrow_back_ios_new, color: primaryColor, size: 20),
@@ -230,6 +258,10 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
                 fit: BoxFit.cover,
                 width: double.infinity,
                 height: double.infinity,
+                errorBuilder:
+                    (context, error, stackTrace) => const Center(
+                      child: Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
+                    ),
               ),
             ),
           ),
@@ -243,12 +275,12 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(overlapAmount)),
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.12),
+                    color: Colors.black12,
                     blurRadius: 10.0,
                     spreadRadius: 1.0,
-                    offset: const Offset(0, -3),
+                    offset: Offset(0, -3),
                   ),
                 ],
               ),
@@ -357,7 +389,9 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 60 + MediaQuery.of(context).padding.bottom),
+                    SizedBox(
+                      height: 60 + MediaQuery.of(context).padding.bottom,
+                    ), // Espacio para la barra de navegación
                   ],
                 ),
               ),
@@ -366,7 +400,7 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
           Align(
             alignment: Alignment.bottomCenter,
             child: CustomBottomNavigationBar(
-              currentIndex: _selectedIndex,
+              currentIndex: _selectedIndex, // Asegúrate de que sea 1
               onTabChanged: _onTabTapped,
               backgroundColor: Colors.white,
             ),

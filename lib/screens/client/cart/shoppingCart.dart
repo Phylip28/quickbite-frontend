@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../customBottomNavigationBar.dart';
 import '../homeScreen.dart';
 import '../account/profile.dart';
+import '../membership.dart'; // NUEVA IMPORTACIÓN
 import 'paymentScreen.dart';
 
 // --- Lista de ítems del carrito accesible estáticamente ---
@@ -36,7 +37,9 @@ class CartItem {
 }
 
 class ShoppingCartScreen extends StatefulWidget {
-  ShoppingCartScreen({Key? key}) : super(key: key ?? shoppingCartScreenKey);
+  // AÑADE const SI ES POSIBLE Y NO TIENES PARÁMETROS VARIABLES
+  ShoppingCartScreen({Key? key})
+    : super(key: key ?? shoppingCartScreenKey); // CAMBIO AQUÍ: Se eliminó 'const'
 
   @override
   ShoppingCartScreenState createState() => ShoppingCartScreenState();
@@ -46,7 +49,7 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
   // _cartItems ya no se usa localmente, se usa globalCartItems
   double _tipAmount = 0;
   final double _discountAmount = 0; // El descuento se mantiene, podrías hacerlo dinámico también
-  int _selectedIndex = 0;
+  final int _selectedIndex = 0; // ShoppingCartScreen es el índice 0
   final TextEditingController _tipController = TextEditingController(text: '0');
   // _deliveryFee se calculará dinámicamente en el método build, ya no es un campo fijo.
 
@@ -106,21 +109,35 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
   }
 
   void _onTabTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    if (index == 1) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
-    } else if (index == 2) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const ProfileClient()),
-      );
+    if (_selectedIndex == index) return; // Evitar reconstrucción si ya está en la pestaña
+
+    // setState(() { // No es estrictamente necesario si siempre usas pushReplacement
+    //   _selectedIndex = index;
+    // });
+
+    switch (index) {
+      case 0: // Cart
+        // Ya estamos en ShoppingCartScreen
+        break;
+      case 1: // Home
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+        break;
+      case 2: // Membership
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MembershipScreen()),
+        );
+        break;
+      case 3: // Account (Profile)
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfileClient()),
+        );
+        break;
     }
-    // Si el índice es 0 (Carrito), ya estamos aquí.
   }
 
   void _increaseQuantity(int index) {
@@ -234,27 +251,9 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
                   // Cabecera
                   padding: const EdgeInsets.all(16.0),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center, // Centrar el contenido de la Row
                     children: [
-                      InkWell(
-                        onTap: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => const HomeScreen()),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(8.0),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFEEAE6),
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                          child: const Icon(
-                            Icons.arrow_back_ios_new,
-                            color: Color(0xFFf05000),
-                            size: 24,
-                          ),
-                        ),
-                      ),
+                      // InkWell para la flecha de retroceso ELIMINADO
                       const Expanded(
                         child: Text(
                           'Your Cart',
@@ -262,7 +261,7 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
                           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                       ),
-                      const SizedBox(width: 40), // Espacio para centrar el título
+                      // SizedBox(width: 40) ELIMINADO ya que no hay flecha que balancear
                     ],
                   ),
                 ),
@@ -306,10 +305,8 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
                                       ),
                                     ),
                                     onPressed: () {
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(builder: (context) => const HomeScreen()),
-                                      );
+                                      // Navegar a HomeScreen usando el método _onTabTapped para mantener la consistencia
+                                      _onTabTapped(1);
                                     },
                                     child: const Text(
                                       'Go to the menu',

@@ -7,6 +7,7 @@ import 'cart/shoppingCart.dart';
 import 'Starbucks/menuStarbucks.dart';
 import 'Subway/menuSubway.dart';
 import 'Kfc/menuKfc.dart';
+import 'membership.dart';
 import '../../auth/auth.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -17,7 +18,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 1;
+  final int _selectedIndex = 1;
   bool _isLoggedIn = false;
   String? _userAddress;
 
@@ -64,22 +65,30 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onTabTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    if (index == 0) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
-      );
-      // print('Navegar al carrito'); // Puedes mantener o quitar este print
-    } else if (index == 1) {
-      // Ya estamos en HomeScreen
-    } else if (index == 2) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const ProfileClient()),
-      );
+    if (_selectedIndex == index) return;
+
+    switch (index) {
+      case 0: // Cart
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+        );
+        break;
+      case 1: // Home
+        // Ya estamos en HomeScreen
+        break;
+      case 2: // Membership
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MembershipScreen()),
+        );
+        break;
+      case 3: // Account (Profile)
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfileClient()),
+        );
+        break;
     }
   }
 

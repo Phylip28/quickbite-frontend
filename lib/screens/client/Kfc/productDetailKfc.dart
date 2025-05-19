@@ -3,6 +3,7 @@ import '../customBottomNavigationBar.dart';
 import '../homeScreen.dart';
 import '../cart/shoppingCart.dart';
 import '../account/profile.dart';
+import '../membership.dart';
 
 // Definición de colores consistentes
 const primaryColor = Color(0xFFf05000);
@@ -31,7 +32,7 @@ class ProductDetailKFC extends StatefulWidget {
 
 class _ProductDetailKFCState extends State<ProductDetailKFC> {
   int _quantity = 1;
-  int _selectedIndex = 1; // Índice para Home en la barra de navegación
+  final int _selectedIndex = 1; // ProductDetailKFC es parte del flujo de Home (índice 1)
   OverlayEntry? _overlayEntry;
 
   void _incrementQuantity() {
@@ -51,24 +52,42 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
   }
 
   void _onTabTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    if (index == 0) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
-      );
-    } else if (index == 1) {
-      Navigator.pushReplacement(
+    if (_selectedIndex == index && index != 1) return;
+
+    if (index == 1 && _selectedIndex == 1) {
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
+        (Route<dynamic> route) => false,
       );
-    } else if (index == 2) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const ProfileClient()),
-      );
+      return;
+    }
+
+    switch (index) {
+      case 0: // Cart
+        Navigator.push(context, MaterialPageRoute(builder: (context) => ShoppingCartScreen()));
+        break;
+      case 1: // Home
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (Route<dynamic> route) => false,
+        );
+        break;
+      case 2: // Membership
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const MembershipScreen()),
+          (Route<dynamic> route) => false,
+        );
+        break;
+      case 3: // Account (Profile)
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfileClient()),
+          (Route<dynamic> route) => false,
+        );
+        break;
     }
   }
 
@@ -177,16 +196,14 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
       shoppingCartScreenKey.currentState!.setState(() {});
     }
 
-    // print('$name (x$quantityToAdd) added to cart from $restaurantName.'); // Este print es para depuración, la notificación es la siguiente línea
-    _showAddedToCartOverlay(name, quantityToAdd); // <<--- ASEGÚRATE QUE ESTA LÍNEA ESTÉ ACTIVA
+    _showAddedToCartOverlay(name, quantityToAdd);
   }
 
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    // Ajusta esta proporción según el tamaño de tus imágenes de KFC
-    final imageSectionHeight = screenHeight * 0.45; // Ejemplo: 45% de la altura de la pantalla
-    const double overlapAmount = 30.0; // Cantidad de superposición
+    final imageSectionHeight = screenHeight * 0.45;
+    const double overlapAmount = 30.0;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -202,7 +219,7 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
             child: Container(
               padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
-                color: lightAccentColor,
+                color: lightAccentColor.withOpacity(0.8), // Fondo semitransparente para el botón
                 borderRadius: BorderRadius.circular(8.0),
               ),
               child: const Icon(Icons.arrow_back_ios_new, color: primaryColor, size: 20),
@@ -212,24 +229,25 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
       ),
       body: Stack(
         children: [
-          // Sección de la imagen
           Positioned(
             top: 0,
             left: 0,
             right: 0,
             height: imageSectionHeight + MediaQuery.of(context).padding.top,
             child: Container(
-              color: Colors.white,
+              color: Colors.white, // Fondo para la imagen si no cubre todo
               child: Image.asset(
                 widget.imageUrl,
                 fit: BoxFit.cover,
                 width: double.infinity,
                 height: double.infinity,
+                errorBuilder:
+                    (context, error, stackTrace) => const Center(
+                      child: Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
+                    ),
               ),
             ),
           ),
-
-          // Sección de detalles del producto
           Positioned(
             top: imageSectionHeight + MediaQuery.of(context).padding.top - overlapAmount,
             left: 0,
@@ -239,12 +257,12 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(overlapAmount)),
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.12),
+                    color: Colors.black12,
                     blurRadius: 10.0,
                     spreadRadius: 1.0,
-                    offset: const Offset(0, -3),
+                    offset: Offset(0, -3),
                   ),
                 ],
               ),
@@ -253,7 +271,6 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Barra estética naranja desvanecida
                     Center(
                       child: Container(
                         height: 5,
@@ -288,7 +305,7 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          '\$${widget.productPrice.toStringAsFixed(2)}',
+                          '\$${(widget.productPrice * _quantity).toStringAsFixed(2)}', // Precio total según cantidad
                           style: const TextStyle(
                             fontSize: 30,
                             fontWeight: FontWeight.bold,
@@ -335,7 +352,7 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: _handleAddToCart, // <<--- CAMBIO AQUÍ: Llama a tu función
+                        onPressed: _handleAddToCart,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor,
                           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -360,14 +377,12 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
               ),
             ),
           ),
-
-          // Barra de navegación inferior
           Align(
             alignment: Alignment.bottomCenter,
             child: CustomBottomNavigationBar(
-              currentIndex: _selectedIndex,
+              currentIndex: _selectedIndex, // Asegúrate de que sea 1
               onTabChanged: _onTabTapped,
-              backgroundColor: Colors.white,
+              backgroundColor: Colors.white, // O el color que prefieras
             ),
           ),
         ],

@@ -3,7 +3,8 @@ import 'productDetailSB.dart';
 import '../homeScreen.dart';
 import '../customBottomNavigationBar.dart';
 import '../account/profile.dart';
-import '../cart/shoppingCart.dart'; // Asegúrate que shoppingCartScreenKey esté aquí si lo usas
+import '../cart/shoppingCart.dart';
+import '../membership.dart'; // NUEVA IMPORTACIÓN
 import '../../../auth/auth.dart';
 
 const primaryColor = Color(0xFFf05000);
@@ -17,9 +18,9 @@ class StarbucksMenuScreen extends StatefulWidget {
 }
 
 class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
-  int _selectedIndex = 1;
+  final int _selectedIndex = 1; // StarbucksMenuScreen es parte del flujo de Home (índice 1)
   String _userAddress = "Loading address...";
-  OverlayEntry? _overlayEntry; // NUEVO: Para la notificación
+  OverlayEntry? _overlayEntry;
 
   @override
   void initState() {
@@ -37,29 +38,43 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
   }
 
   void _onTabTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (_selectedIndex == index) return;
 
-    if (index == 0) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
-      );
-    } else if (index == 1) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
-    } else if (index == 2) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const ProfileClient()),
-      );
+    // No es necesario llamar a setState aquí si siempre usas pushReplacement o pushAndRemoveUntil,
+    // ya que la pantalla se reconstruirá con el _selectedIndex correcto.
+
+    switch (index) {
+      case 0: // Cart
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+        );
+        break;
+      case 1: // Home
+        // Si StarbucksMenuScreen es una pantalla "profunda" y el usuario quiere volver a la HomeScreen principal
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (Route<dynamic> route) => false, // Limpia la pila hasta HomeScreen
+        );
+        break;
+      case 2: // Membership
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const MembershipScreen()),
+          (Route<dynamic> route) => false,
+        );
+        break;
+      case 3: // Account (Profile)
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfileClient()),
+          (Route<dynamic> route) => false,
+        );
+        break;
     }
   }
 
-  // NUEVO: Función para mostrar la notificación
   void _showAddedToCartOverlay(String productName) {
     _overlayEntry?.remove();
     _overlayEntry = OverlayEntry(
@@ -127,9 +142,8 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
     });
   }
 
-  // NUEVO: Función para añadir al carrito
   void _addToCart(Map<String, String> product) {
-    const String restaurantName = 'Starbucks'; // Definir el nombre del restaurante
+    const String restaurantName = 'Starbucks';
 
     final existingItemIndex = globalCartItems.indexWhere(
       (item) => item.name == product['name'] && item.restaurant == restaurantName,
@@ -153,7 +167,6 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
       });
     }
 
-    // Opcional: Actualizar la UI del ShoppingCartScreen si es necesario
     if (shoppingCartScreenKey.currentState != null && shoppingCartScreenKey.currentState!.mounted) {
       shoppingCartScreenKey.currentState!.setState(() {});
     }
@@ -163,6 +176,48 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
     print('Current cart: $globalCartItems');
   }
 
+  final List<Map<String, String>> _starbucksMenuItems = [
+    {
+      'name': 'Fresa Cream Frappuccino',
+      'image': 'assets/images/cliente/starbucks/fresaCreamFrappuccino.png',
+      'price': '4.50',
+      'rating': '4.8',
+    },
+    {
+      'name': 'Cookies & Cream Frappuccino',
+      'image': 'assets/images/cliente/starbucks/cookies&CreamFrappuccino.png',
+      'price': '5.95',
+      'rating': '4.7',
+    },
+    {
+      'name': 'Mocha Blanco Frappuccino',
+      'image': 'assets/images/cliente/starbucks/mochaBlancoFrappuccino.png',
+      'price': '4.50',
+      'rating': '4.6',
+    },
+    {
+      'name': 'Caramel Frappuccino',
+      'image': 'assets/images/cliente/starbucks/caramelFrappuccino.png',
+      'price': '5.00',
+      'rating': '4.8',
+    },
+  ];
+
+  String _getProductDescription(String productName) {
+    switch (productName) {
+      case 'Fresa Cream Frappuccino':
+        return 'A new way to drink a strawberry frappé drink, mixed with ice and milk, finished with whipped cream.';
+      case 'Cookies & Cream Frappuccino':
+        return 'Blended drink with the perfect combination of milk of your choice, white mocha sauce, chocolate chips. Topped with whipped cream and crushed cookies.';
+      case 'Mocha Blanco Frappuccino':
+        return 'White chocolate sauce drink, combined with coffee, milk and ice, topped with whipped cream.';
+      case 'Caramel Frappuccino':
+        return 'Caramel, coffee and milk based drink. Finished with whipped cream and caramel swirl.';
+      default:
+        return '';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -170,7 +225,6 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Contenedor del Header (barra superior)
             Container(
               width: double.infinity,
               margin: const EdgeInsets.only(top: 10.0, left: 15, right: 15, bottom: 0),
@@ -193,6 +247,9 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
                 children: [
                   InkWell(
                     onTap: () {
+                      // Volver a la pantalla anterior (probablemente HomeScreen)
+                      // Si esta pantalla reemplazó a HomeScreen, entonces pushReplacement es correcto.
+                      // Si fue pusheada encima, Navigator.pop(context) sería más común.
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -239,7 +296,6 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
                 ],
               ),
             ),
-            // Contenido principal de la pantalla de Starbucks
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -350,7 +406,7 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
                                     ),
                                     InkWell(
                                       onTap: () {
-                                        _addToCart(item); // CAMBIO: Llamar a _addToCart
+                                        _addToCart(item);
                                       },
                                       child: Container(
                                         padding: const EdgeInsets.all(4),
@@ -377,52 +433,10 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
         ),
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _selectedIndex,
+        currentIndex: _selectedIndex, // Asegúrate de que sea 1
         onTabChanged: _onTabTapped,
         backgroundColor: Colors.white,
       ),
     );
-  }
-
-  final List<Map<String, String>> _starbucksMenuItems = [
-    {
-      'name': 'Fresa Cream Frappuccino',
-      'image': 'assets/images/cliente/starbucks/fresaCreamFrappuccino.png',
-      'price': '4.50',
-      'rating': '4.8',
-    },
-    {
-      'name': 'Cookies & Cream Frappuccino',
-      'image': 'assets/images/cliente/starbucks/cookies&CreamFrappuccino.png',
-      'price': '5.95',
-      'rating': '4.7',
-    },
-    {
-      'name': 'Mocha Blanco Frappuccino',
-      'image': 'assets/images/cliente/starbucks/mochaBlancoFrappuccino.png',
-      'price': '4.50',
-      'rating': '4.6',
-    },
-    {
-      'name': 'Caramel Frappuccino',
-      'image': 'assets/images/cliente/starbucks/caramelFrappuccino.png',
-      'price': '5.00',
-      'rating': '4.8',
-    },
-  ];
-
-  String _getProductDescription(String productName) {
-    switch (productName) {
-      case 'Fresa Cream Frappuccino':
-        return 'A new way to drink a strawberry frappé drink, mixed with ice and milk, finished with whipped cream.';
-      case 'Cookies & Cream Frappuccino':
-        return 'Blended drink with the perfect combination of milk of your choice, white mocha sauce, chocolate chips. Topped with whipped cream and crushed cookies.';
-      case 'Mocha Blanco Frappuccino':
-        return 'White chocolate sauce drink, combined with coffee, milk and ice, topped with whipped cream.';
-      case 'Caramel Frappuccino':
-        return 'Caramel, coffee and milk based drink. Finished with whipped cream and caramel swirl.';
-      default:
-        return '';
-    }
   }
 }

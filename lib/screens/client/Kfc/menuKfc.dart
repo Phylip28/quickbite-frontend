@@ -3,13 +3,14 @@ import '../customBottomNavigationBar.dart';
 import '../homeScreen.dart';
 import '../cart/shoppingCart.dart';
 import '../account/profile.dart';
-import 'productDetailKfc.dart'; // Asegúrate de crear este archivo para los detalles del producto
-import '../../../auth/auth.dart'; // IMPORTANTE: Añadir esta importación para getUserAddress
+import '../membership.dart';
+import 'productDetailKfc.dart';
+import '../../../auth/auth.dart';
 
 // Definición de colores consistentes
-const primaryColor = Color(0xFFf05000); // Naranja principal de la temática
-const kfcRedColor = Color(0xFFA00000); // Un rojo oscuro para KFC, si se necesita
-const lightAccentColor = Color(0xFFFEEAE6); // Para el botón de retroceso en AppBar
+const primaryColor = Color(0xFFf05000);
+const kfcRedColor = Color(0xFFA00000);
+const lightAccentColor = Color(0xFFFEEAE6);
 
 class KfcMenuScreen extends StatefulWidget {
   const KfcMenuScreen({super.key});
@@ -19,9 +20,9 @@ class KfcMenuScreen extends StatefulWidget {
 }
 
 class _KfcMenuScreenState extends State<KfcMenuScreen> {
-  int _selectedIndex = 1;
-  OverlayEntry? _overlayEntry; // NUEVO: Para la notificación
-  String _userAddress = "Loading address..."; // Variable para la dirección del usuario
+  final int _selectedIndex = 1; // KfcMenuScreen es parte del flujo de Home (índice 1)
+  OverlayEntry? _overlayEntry;
+  String _userAddress = "Loading address...";
 
   @override
   void initState() {
@@ -40,7 +41,7 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
 
   final List<Map<String, String>> _kfcMenuItems = [
     {
-      'name': 'Mega Family', // Nombre corregido de 'Mega Familiar' si es necesario
+      'name': 'Mega Family',
       'price': '22.99',
       'rating': '4.8',
       'image': 'assets/images/cliente/kfc/megaFamily.png',
@@ -58,7 +59,7 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
       'image': 'assets/images/cliente/kfc/comboNuggets.png',
     },
     {
-      'name': 'Share and Split Wings', // Nombre corregido de 'Parte y Comparte Alas'
+      'name': 'Share and Split Wings',
       'price': '25.99',
       'rating': '4.7',
       'image': 'assets/images/cliente/kfc/shareAndSplitWings.png',
@@ -75,20 +76,18 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
       'rating': '4.7',
       'image': 'assets/images/cliente/kfc/comboPopCorn.png',
     },
-    // Puedes añadir más productos aquí si es necesario
   ];
 
   String _getProductDescription(String productName) {
-    // Devuelve descripciones específicas para cada producto para la página de detalles
     switch (productName) {
-      case 'Mega Family': // Asegúrate que coincida con el nombre en _kfcMenuItems
+      case 'Mega Family':
         return '8 Chicken Pieces + 4 Small Potatoes.';
       case 'Wow Duo Deluxe Nuggets':
         return '2 Deluxe BBQ Sandwiches (Brioche bread, 120gr breast, tomato, lettuce, Mayonnaise Sauce, 1 slice of American cheese) + 5 Nuggets + 2 Small Potatoes + 2 Pet Sodas + Colonel\'s Sauce.';
       case 'Combo Nuggets':
         return '10 Nuggets + 1 Small Potato + 1 Pet Soda 400ml + 1 BBQ Sauce + 1 Colonel\'s Sauce.';
-      case 'Share and Split Wings': // Asegúrate que coincida con el nombre en _kfcMenuItems
-        return '10 Chicken Wings + 1 Small Potato + 1 Pet Soda 400ml + 1 BBQ Sauce + 1 Colonel\'s Sauce.'; // Descripción ajustada para alas
+      case 'Share and Split Wings':
+        return '10 Chicken Wings + 1 Small Potato + 1 Pet Soda 400ml + 1 BBQ Sauce + 1 Colonel\'s Sauce.';
       case 'BigBox Kentucky Coronel':
         return '1 Kentucky Colonel Hamburger / Sandwich (1 Breaded Chicken Breast Fillet, Coleslaw, BBQ and Butter) + 1 Small Pop Corn + 1 Small Potato + 1 PET Soda 400ml.';
       case 'Combo Pop Corn':
@@ -99,28 +98,43 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
   }
 
   void _onTabTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    if (index == 0) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
-      );
-    } else if (index == 1) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
-    } else if (index == 2) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const ProfileClient()),
-      );
+    if (_selectedIndex == index) return;
+
+    // No es necesario llamar a setState aquí si siempre usas pushReplacement,
+    // ya que la pantalla se reconstruirá con el _selectedIndex correcto.
+
+    switch (index) {
+      case 0: // Cart
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+        );
+        break;
+      case 1: // Home
+        // Si KfcMenuScreen es una pantalla "profunda" y el usuario quiere volver a la HomeScreen principal
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (Route<dynamic> route) => false, // Limpia la pila hasta HomeScreen
+        );
+        break;
+      case 2: // Membership
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const MembershipScreen()),
+          (Route<dynamic> route) => false,
+        );
+        break;
+      case 3: // Account (Profile)
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfileClient()),
+          (Route<dynamic> route) => false,
+        );
+        break;
     }
   }
 
-  // NUEVO: Función para mostrar la notificación
   void _showAddedToCartOverlay(String productName) {
     _overlayEntry?.remove();
     _overlayEntry = OverlayEntry(
@@ -135,9 +149,9 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Colors.white, // Fondo blanco
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: primaryColor, width: 1.5), // Borde naranja
+                  border: Border.all(color: primaryColor, width: 1.5),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -149,15 +163,15 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
                           color: primaryColor,
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                        ), // Texto naranja
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 10),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor, // Botón con fondo naranja
-                        foregroundColor: Colors.white, // Texto del botón blanco
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                       ),
@@ -188,14 +202,11 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
     });
   }
 
-  // NUEVO: Función para añadir al carrito
   void _addToCart(Map<String, String> product) {
-    final String restaurantName = 'KFC'; // Definir el nombre del restaurante
+    final String restaurantName = 'KFC';
 
     final existingItemIndex = globalCartItems.indexWhere(
-      (item) =>
-          item.name == product['name'] &&
-          item.restaurant == restaurantName, // CONFIRMAR/AÑADIR: Considerar restaurante
+      (item) => item.name == product['name'] && item.restaurant == restaurantName,
     );
 
     if (existingItemIndex != -1) {
@@ -210,7 +221,7 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
             price: double.parse(product['price']!),
             quantity: 1,
             imageUrl: product['image']!,
-            restaurant: restaurantName, // CONFIRMAR: Ya debería estar así
+            restaurant: restaurantName,
           ),
         );
       });
@@ -256,10 +267,9 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
               // Botón de retroceso
               InkWell(
                 onTap:
-                    () => Navigator.pushReplacement(
+                    () => Navigator.pop(
                       context,
-                      MaterialPageRoute(builder: (context) => const HomeScreen()),
-                    ),
+                    ), // CAMBIO: Usar Navigator.pop para volver a la pantalla anterior (HomeScreen)
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
@@ -296,7 +306,6 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
                               textAlign: TextAlign.center,
                             ),
                           ),
-                          // const Icon(Icons.keyboard_arrow_down, color: primaryColor, size: 16), // <<--- LÍNEA ELIMINADA/COMENTADA
                         ],
                       ),
                     ),
@@ -444,8 +453,9 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
         ),
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _selectedIndex,
+        currentIndex: _selectedIndex, // Asegúrate de que sea 1
         onTabChanged: _onTabTapped,
+        backgroundColor: Colors.white, // O el color que prefieras
       ),
     );
   }

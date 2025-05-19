@@ -1,26 +1,21 @@
 import 'package:flutter/material.dart';
-import '../customBottomNavigationBar.dart'; // Importa la barra de navegación
-// Asegúrate de que las rutas de importación sean correctas para tu estructura de proyecto.
-import '../homeScreen.dart'; // Ejemplo, ajusta si es necesario
-import '../cart/shoppingCart.dart'; // Para globalCartItems y CartItem
-import '../account/profile.dart'; // Ejemplo, ajusta si es necesario
+import '../customBottomNavigationBar.dart';
+import '../homeScreen.dart';
+import '../cart/shoppingCart.dart';
+import '../account/profile.dart';
+import '../membership.dart'; // NUEVA IMPORTACIÓN
+// Asegúrate de que SubwayMenuScreen esté importado si decides navegar a él en el caso 'Home'
+// import 'menuSubway.dart';
 
-// Definición del color primario, consistente con las pantallas anteriores.
-// Este color se usa para el botón "Add to cart" y elementos activos.
 const primaryColor = Color(0xFFf05000);
-// Color para el fondo del botón de retroceso y el selector de cantidad.
-const lightAccentColor = Color(0xFFFEEAE6); // Un tono naranja/durazno muy claro
-const quantitySelectorBackgroundColor = Color(
-  0xFFFDF0E8,
-); // Un tono durazno/rosado pálido para el selector de cantidad
+const lightAccentColor = Color(0xFFFEEAE6);
+const quantitySelectorBackgroundColor = Color(0xFFFDF0E8);
 
 class ProductDetailSW extends StatefulWidget {
   final String productName;
   final String productDescription;
   final double productPrice;
   final String imageUrl;
-  // Eliminamos onAddToCart ya que manejaremos la lógica directamente aquí
-  // final Function(String, double, int)? onAddToCart;
 
   const ProductDetailSW({
     super.key,
@@ -28,7 +23,6 @@ class ProductDetailSW extends StatefulWidget {
     required this.productDescription,
     required this.productPrice,
     required this.imageUrl,
-    // this.onAddToCart,
   });
 
   @override
@@ -36,11 +30,10 @@ class ProductDetailSW extends StatefulWidget {
 }
 
 class _ProductDetailSubwayState extends State<ProductDetailSW> {
-  int _quantity = 1; // Cantidad inicial del producto
-  int _selectedIndex = 1; // Índice seleccionado en la barra de navegación inferior (ej. Home)
-  OverlayEntry? _overlayEntry; // Para la notificación flotante
+  int _quantity = 1;
+  final int _selectedIndex = 1; // ProductDetailSW es parte del flujo de Home (índice 1)
+  OverlayEntry? _overlayEntry;
 
-  // Incrementa la cantidad del producto, con un límite de 10.
   void _incrementQuantity() {
     if (_quantity < 10) {
       setState(() {
@@ -49,7 +42,6 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
     }
   }
 
-  // Decrementa la cantidad del producto, con un mínimo de 1.
   void _decrementQuantity() {
     if (_quantity > 1) {
       setState(() {
@@ -58,40 +50,63 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
     }
   }
 
-  // Maneja el cambio de pestaña en la barra de navegación inferior.
   void _onTabTapped(int index) {
-    // setState(() { // No es necesario si la navegación reemplaza la pantalla
-    //   _selectedIndex = index;
-    // });
+    if (_selectedIndex == index && index != 1)
+      return; // Si ya está en la pestaña (y no es Home para evitar pop innecesario)
 
-    if (index == 0) {
-      // Navegar al carrito
-      Navigator.pushReplacement(
+    // Si el índice es 1 (Home) y ya estamos en el flujo de Home (_selectedIndex == 1),
+    // y el usuario quiere ir a la pantalla principal de Home.
+    if (index == 1 && _selectedIndex == 1) {
+      Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        (Route<dynamic> route) => false,
       );
-    } else if (index == 1) {
-      // Si estamos en ProductDetail, "Home" probablemente signifique volver al menú anterior o a HomeScreen
-      // Si SubwayMenuScreen es la pantalla anterior:
-      // Navigator.pop(context); // O
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const HomeScreen(),
-        ), // O SubwayMenuScreen si es más apropiado
-      );
-    } else if (index == 2) {
-      // Navegar al perfil
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const ProfileClient()),
-      );
+      return;
     }
-    // Actualizar el índice después de la navegación si es necesario para la UI
-    if (mounted && _selectedIndex != index) {
-      setState(() {
-        _selectedIndex = index;
-      });
+
+    // No es estrictamente necesario llamar a setState para _selectedIndex aquí si siempre usas
+    // pushReplacement o pushAndRemoveUntil, ya que la nueva pantalla se reconstruirá.
+    // Sin embargo, si alguna navegación no reemplaza la pantalla actual (ej. un Navigator.push simple
+    // a una sub-pantalla dentro de la misma pestaña), entonces sí sería útil.
+
+    switch (index) {
+      case 0: // Cart
+        // Usar push para poder volver a ProductDetail si el usuario quiere seguir comprando
+        // o pushReplacement si se considera una navegación principal.
+        Navigator.push(context, MaterialPageRoute(builder: (context) => ShoppingCartScreen()));
+        // Si se usa push, y quieres que el ícono del carrito se active inmediatamente:
+        // if (mounted) setState(() => _selectedIndex = index);
+        break;
+      case 1: // Home
+        // Navegar a la pantalla principal de Home, limpiando la pila.
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (Route<dynamic> route) => false,
+        );
+        // Alternativamente, si quieres volver solo a SubwayMenuScreen:
+        // Navigator.pop(context); // Si ProductDetailSW fue pusheado desde SubwayMenuScreen
+        // O:
+        // Navigator.pushReplacement(
+        //   context,
+        //   MaterialPageRoute(builder: (context) => const SubwayMenuScreen()),
+        // );
+        break;
+      case 2: // Membership
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const MembershipScreen()),
+          (Route<dynamic> route) => false,
+        );
+        break;
+      case 3: // Account (Profile)
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfileClient()),
+          (Route<dynamic> route) => false,
+        );
+        break;
     }
   }
 
@@ -109,12 +124,9 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Colors.white, // CAMBIO: Fondo blanco
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: primaryColor,
-                    width: 1.5,
-                  ), // CAMBIO OPCIONAL: Borde naranja
+                  border: Border.all(color: primaryColor, width: 1.5),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -126,15 +138,15 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
                           color: primaryColor,
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                        ), // CAMBIO: Texto naranja
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 10),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor, // CAMBIO: Botón con fondo naranja
-                        foregroundColor: Colors.white, // CAMBIO: Texto del botón blanco
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                       ),
@@ -170,38 +182,30 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
     final double price = widget.productPrice;
     final String imageUrl = widget.imageUrl;
     final int quantity = _quantity;
-    final String restaurantName = 'Subway'; // Definir el nombre del restaurante
+    final String restaurantName = 'Subway';
 
     final existingItemIndex = globalCartItems.indexWhere(
-      (item) => item.name == name && item.restaurant == restaurantName, // Considerar restaurante
+      (item) => item.name == name && item.restaurant == restaurantName,
     );
 
     if (existingItemIndex != -1) {
-      // Si el ítem ya existe y es del mismo restaurante, actualiza la cantidad
       setState(() {
-        // Asegúrate de que setState se llame si es necesario para actualizar la UI local
         globalCartItems[existingItemIndex].quantity += quantity;
       });
     } else {
-      // Si no existe, añádelo con la cantidad seleccionada
       setState(() {
-        // Asegúrate de que setState se llame si es necesario para actualizar la UI local
         globalCartItems.add(
           CartItem(
             name: name,
             price: price,
             quantity: quantity,
             imageUrl: imageUrl,
-            restaurant: restaurantName, // CAMBIO: Pasar el nombre del restaurante
+            restaurant: restaurantName,
           ),
         );
       });
     }
 
-    // Actualizar la UI del ShoppingCartScreen si está en la pila y montado
-    // Esta línea puede o no ser necesaria dependiendo de cómo gestiones el estado global del carrito
-    // y si ShoppingCartScreen necesita ser forzado a reconstruirse.
-    // Si globalCartItems es un ValueNotifier o similar, la actualización podría ser automática.
     if (shoppingCartScreenKey.currentState != null && shoppingCartScreenKey.currentState!.mounted) {
       shoppingCartScreenKey.currentState!.setState(() {});
     }
@@ -213,9 +217,7 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    // Altura de la sección de la imagen, puedes ajustar este valor (e.g., 0.45 o 0.50)
     final imageSectionHeight = screenHeight * 0.45;
-    // Cantidad de superposición del contenedor de descripción sobre la imagen
     const double overlapAmount = 30.0;
 
     return Scaffold(
@@ -232,9 +234,7 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
             child: Container(
               padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
-                color: lightAccentColor.withOpacity(
-                  0.8,
-                ), // Un poco de opacidad si hay imagen detrás
+                color: lightAccentColor.withOpacity(0.8),
                 borderRadius: BorderRadius.circular(8.0),
               ),
               child: const Icon(Icons.arrow_back_ios_new, color: primaryColor, size: 20),
@@ -244,22 +244,18 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
       ),
       body: Stack(
         children: [
-          // Sección superior para la imagen del producto.
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            height:
-                imageSectionHeight +
-                MediaQuery.of(context).padding.top, // Incluye el padding superior
+            height: imageSectionHeight + MediaQuery.of(context).padding.top,
             child: Container(
-              // Se elimina el padding interno para que la imagen llene el contenedor.
-              color: Colors.white, // Fondo blanco para la sección de la imagen
+              color: Colors.white,
               child: Image.asset(
                 widget.imageUrl,
-                fit: BoxFit.cover, // Cambiado a BoxFit.cover
-                width: double.infinity, // Asegura que la imagen llene el ancho
-                height: double.infinity, // Asegura que la imagen llene la altura
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
                 errorBuilder:
                     (context, error, stackTrace) => const Center(
                       child: Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
@@ -267,22 +263,15 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
               ),
             ),
           ),
-          // Sección inferior para los detalles del producto y acciones.
           Positioned(
-            top:
-                imageSectionHeight +
-                MediaQuery.of(context).padding.top -
-                overlapAmount, // Ajustado para superposición
+            top: imageSectionHeight + MediaQuery.of(context).padding.top - overlapAmount,
             left: 0,
             right: 0,
             bottom: 0,
             child: Container(
               decoration: BoxDecoration(
-                // BoxDecoration movida aquí
                 color: Colors.white,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(overlapAmount), // Usar overlapAmount para el radio
-                ),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(overlapAmount)),
                 boxShadow: const [
                   BoxShadow(
                     color: Colors.black12,
@@ -293,16 +282,10 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
                 ],
               ),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.only(
-                  top: 20.0,
-                  left: 20.0,
-                  right: 20.0,
-                  bottom: 20.0,
-                ), // Padding ajustado
+                padding: const EdgeInsets.only(top: 20.0, left: 20.0, right: 20.0, bottom: 20.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Barra estética naranja desvanecida
                     Center(
                       child: Container(
                         height: 5,
@@ -318,46 +301,36 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
                         ),
                       ),
                     ),
-                    // Nombre del producto
                     Text(
                       widget.productName,
                       style: const TextStyle(
-                        fontSize: 26, // Tamaño de fuente ligeramente mayor
+                        fontSize: 26,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    // Descripción del producto
                     Text(
                       widget.productDescription,
-                      style: TextStyle(
-                        fontSize: 15, // Tamaño de fuente ligeramente mayor
-                        color: Colors.grey[700], // Color de texto más suave
-                        height: 1.4, // Altura de línea para mejor legibilidad
-                      ),
+                      style: TextStyle(fontSize: 15, color: Colors.grey[700], height: 1.4),
                     ),
                     const SizedBox(height: 20),
-                    // Precio y selector de cantidad
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Precio del producto
                         Text(
-                          '\$${(widget.productPrice * _quantity).toStringAsFixed(2)}', // Precio total por cantidad
+                          '\$${(widget.productPrice * _quantity).toStringAsFixed(2)}',
                           style: const TextStyle(
-                            fontSize: 30, // Tamaño de fuente destacado para el precio
+                            fontSize: 30,
                             fontWeight: FontWeight.bold,
-                            color: primaryColor, // Precio en color primario
+                            color: primaryColor,
                           ),
                         ),
-                        // Selector de cantidad
                         Container(
                           decoration: BoxDecoration(
-                            color: quantitySelectorBackgroundColor, // Fondo claro para el selector
+                            color: quantitySelectorBackgroundColor,
                             borderRadius: BorderRadius.circular(25),
-                            // border: Border.all(color: primaryColor.withOpacity(0.5)), // Borde sutil opcional
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -365,17 +338,15 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
                               IconButton(
                                 icon: const Icon(Icons.remove, color: primaryColor),
                                 onPressed: _decrementQuantity,
-                                iconSize: 20, // Tamaño de icono ajustado
+                                iconSize: 20,
                                 splashRadius: 20,
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12.0,
-                                ), // Padding ajustado
+                                padding: const EdgeInsets.symmetric(horizontal: 12.0),
                                 child: Text(
                                   '$_quantity',
                                   style: const TextStyle(
-                                    fontSize: 18, // Tamaño de fuente ajustado
+                                    fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: primaryColor,
                                   ),
@@ -384,7 +355,7 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
                               IconButton(
                                 icon: const Icon(Icons.add, color: primaryColor),
                                 onPressed: _incrementQuantity,
-                                iconSize: 20, // Tamaño de icono ajustado
+                                iconSize: 20,
                                 splashRadius: 20,
                               ),
                             ],
@@ -392,47 +363,39 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24), // Espacio antes del botón
-                    // Botón para añadir al carrito
+                    const SizedBox(height: 24),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: _handleAddToCart, // MODIFICADO: Llamar a _handleAddToCart
+                        onPressed: _handleAddToCart,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: primaryColor, // Color primario para el botón
-                          padding: const EdgeInsets.symmetric(vertical: 16), // Padding vertical
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              12,
-                            ), // Bordes redondeados para el botón
-                          ),
-                          elevation: 2, // Sombra ligera para el botón
+                          backgroundColor: primaryColor,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          elevation: 2,
                         ),
                         child: const Text(
                           'Add to cart',
                           style: TextStyle(
-                            fontSize: 18, // Tamaño de fuente
-                            color: Colors.white, // Texto en color blanco
+                            fontSize: 18,
+                            color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                     ),
-                    SizedBox(
-                      height: 60 + MediaQuery.of(context).padding.bottom,
-                    ), // Espacio para la barra de navegación
+                    SizedBox(height: 60 + MediaQuery.of(context).padding.bottom),
                   ],
                 ),
               ),
             ),
           ),
-          // Barra de navegación inferior personalizada, alineada al fondo.
           Align(
             alignment: Alignment.bottomCenter,
             child: CustomBottomNavigationBar(
-              currentIndex: _selectedIndex,
+              currentIndex: _selectedIndex, // Asegúrate de que sea 1
               onTabChanged: _onTabTapped,
-              backgroundColor: Colors.white, // Fondo blanco para la barra de navegación
+              backgroundColor: Colors.white,
             ),
           ),
         ],

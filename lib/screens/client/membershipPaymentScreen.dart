@@ -1,28 +1,32 @@
 import 'package:flutter/material.dart';
-import '../../../auth/auth.dart';
-import 'shoppingCart.dart'; // Para globalCartItems y shoppingCartScreenKey
-import '../homeScreen.dart';
-import '../membership.dart'; // NUEVA IMPORTACIÓN
-import '../account/profile.dart';
-import '../customBottomNavigationBar.dart';
+import '../../auth/auth.dart'; // Ajusta la ruta si es necesario
+import 'membership.dart'; // Para navegar de vuelta, etc.
+import 'homeScreen.dart';
+import 'cart/shoppingCart.dart'; // Podrías no necesitar globalCartItems aquí
+import 'account/profile.dart';
+import 'customBottomNavigationBar.dart';
 
-const Color primaryColor = Color(0xFFf05000); // Color principal de la app
+const Color primaryColor = Color(0xFFf05000);
 
-enum PaymentMethod { visa, mastercard, cash }
+// MODIFICACIÓN 1: Quitar efectivo
+enum MembershipPaymentMethod { visa, mastercard }
 
-class PaymentScreen extends StatefulWidget {
-  const PaymentScreen({super.key});
+class MembershipPaymentScreen extends StatefulWidget {
+  const MembershipPaymentScreen({super.key});
 
   @override
-  State<PaymentScreen> createState() => _PaymentScreenState();
+  State<MembershipPaymentScreen> createState() => _MembershipPaymentScreenState();
 }
 
-class _PaymentScreenState extends State<PaymentScreen> {
-  PaymentMethod? _selectedPaymentMethod = PaymentMethod.cash; // Valor inicial
-  final int _selectedIndex = 0; // PaymentScreen es parte del flujo del Carrito (índice 0)
+class _MembershipPaymentScreenState extends State<MembershipPaymentScreen> {
+  // MODIFICACIÓN 1: Ajustar el método de pago seleccionado
+  MembershipPaymentMethod? _selectedPaymentMethod =
+      MembershipPaymentMethod.visa; // O null si prefieres que elija
+  final int _selectedIndex = 2; // Asumiendo que es parte del flujo de Membership
 
-  String _userAddress = "Loading address...";
-  String _userName = "";
+  // MODIFICACIÓN 2: Campos para nombre y correo
+  String _userEmail = "Loading email...";
+  String _userName = "Loading name...";
 
   @override
   void initState() {
@@ -31,103 +35,85 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Future<void> _loadUserData() async {
-    final address = await getUserAddress();
+    // MODIFICACIÓN 2: Cargar nombre y correo
+    final email = await getUserEmail(); // Necesitas esta función en auth.dart
     final name = await getUserName();
     if (mounted) {
-      // Verificar si el widget sigue montado
       setState(() {
-        _userAddress = address ?? "Not available";
+        _userEmail = email ?? "Not available";
         _userName = name ?? "Customer";
       });
     }
   }
 
   void _onTabTapped(int index) {
-    if (_selectedIndex == index &&
-        index == 0 &&
-        ModalRoute.of(context)?.settings.name == '/paymentScreen') {
-      // Si ya estamos en PaymentScreen y se tapea el ícono del carrito,
-      // podríamos querer ir a ShoppingCartScreen.
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
-      );
-      return;
-    }
-    if (_selectedIndex == index)
-      return; // Si es otra pestaña y ya está seleccionada, no hacer nada.
+    if (_selectedIndex == index) return;
 
-    // setState(() { // No es estrictamente necesario si siempre usas pushReplacement
-    //   _selectedIndex = index;
-    // });
-
+    // Lógica de navegación similar a otras pantallas, ajustada para los 4 ítems
     switch (index) {
-      case 0: // Cart
-        // Si el usuario está en PaymentScreen y presiona "Cart",
-        // lo llevamos a la pantalla principal del carrito.
-        Navigator.pushReplacement(
+      case 0:
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+          (route) => false,
         );
         break;
-      case 1: // Home
+      case 1:
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
-          (Route<dynamic> route) => false, // Limpia la pila de navegación
+          (route) => false,
         );
         break;
       case 2: // Membership
+        // Si ya está en el flujo de membresía, podría ir a la pantalla principal de membresía
         Navigator.pushAndRemoveUntil(
-          // O pushReplacement si prefieres
           context,
           MaterialPageRoute(builder: (context) => const MembershipScreen()),
-          (Route<dynamic> route) => false, // Limpia la pila si es una sección principal
+          (route) => false,
         );
         break;
-      case 3: // Account (Profile)
+      case 3:
         Navigator.pushAndRemoveUntil(
-          // O pushReplacement
           context,
           MaterialPageRoute(builder: (context) => const ProfileClient()),
-          (Route<dynamic> route) => false, // Limpia la pila si es una sección principal
+          (route) => false,
         );
         break;
     }
   }
 
-  void _finishOrder() {
+  void _processSubscription() {
     if (_selectedPaymentMethod == null) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Please select a payment method.')));
       return;
     }
-    print('Order finished with: $_selectedPaymentMethod');
-    print('Address: $_userAddress');
-    globalCartItems.clear();
+    print('Subscription processing with: $_selectedPaymentMethod');
+    print('User: $_userName, Email: $_userEmail');
 
-    // Actualizar ShoppingCartScreen si está montado y es accesible mediante la key
-    if (shoppingCartScreenKey.currentState != null && shoppingCartScreenKey.currentState!.mounted) {
-      shoppingCartScreenKey.currentState!.setState(() {});
-    }
+    // TODO: Implementar lógica de suscripción (API, actualizar estado, etc.)
 
     showDialog(
       context: context,
-      barrierDismissible: false, // El usuario debe presionar OK
+      barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: const Text('Order Placed!'),
-          content: const Text('Thank you for your order. It has been placed successfully.'),
+          title: const Text('Subscription Successful!'),
+          content: const Text('Welcome to QuickBite Team! Your membership is now active.'),
           actions: <Widget>[
             TextButton(
-              child: const Text('OK'),
+              child: const Text('Great!'),
               onPressed: () {
                 Navigator.of(dialogContext).pop(); // Cierra el diálogo
+                // Navegar a la pantalla de membresía o perfil
                 Navigator.pushAndRemoveUntil(
-                  context, // Usa el context original de _PaymentScreenState
-                  MaterialPageRoute(builder: (context) => const HomeScreen()),
-                  (Route<dynamic> route) => false, // Limpia la pila hasta HomeScreen
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MembershipScreen(),
+                  ), // O ProfileClient
+                  (Route<dynamic> route) => false,
                 );
               },
             ),
@@ -137,38 +123,34 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
+  // Copia y adapta _buildPaymentOption de PaymentScreen, quitando la lógica de 'isIconAsset' si solo tendrás tarjetas
   Widget _buildPaymentOption({
     required String title,
     required String subtitle,
     required String iconAsset,
-    required PaymentMethod value,
-    bool isIconAsset = true,
+    required MembershipPaymentMethod value,
   }) {
     return Card(
       elevation: 1,
       color: Colors.white,
       margin: const EdgeInsets.symmetric(vertical: 6.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-      child: RadioListTile<PaymentMethod>(
+      child: RadioListTile<MembershipPaymentMethod>(
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
         value: value,
         groupValue: _selectedPaymentMethod,
-        onChanged: (PaymentMethod? newValue) {
+        onChanged: (MembershipPaymentMethod? newValue) {
           setState(() {
             _selectedPaymentMethod = newValue;
           });
         },
-        secondary:
-            isIconAsset
-                ? Image.asset(
-                  iconAsset,
-                  width: 30,
-                  height: 30,
-                  errorBuilder:
-                      (context, error, stackTrace) => const Icon(Icons.credit_card, size: 30),
-                )
-                : Icon(Icons.local_atm, color: primaryColor.withOpacity(0.7), size: 30),
+        secondary: Image.asset(
+          iconAsset,
+          width: 30,
+          height: 30,
+          errorBuilder: (context, error, stackTrace) => const Icon(Icons.credit_card, size: 30),
+        ),
         activeColor: primaryColor,
         controlAffinity: ListTileControlAffinity.trailing,
       ),
@@ -178,52 +160,28 @@ class _PaymentScreenState extends State<PaymentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white, // FONDO DEL SCAFFOLD A BLANCO SÓLIDO
+      appBar: AppBar(
+        title: const Text(
+          'Join QuickBite Team',
+          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white, // APPBAR CON FONDO BLANCO SÓLIDO
+        elevation: 0.5, // Puedes mantener una sombra sutil o poner 0.0
+        iconTheme: const IconThemeData(color: primaryColor),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
       body: Stack(
         children: [
-          Positioned.fill(
-            child: Image.asset('assets/images/fondoSemiTransparente.png', fit: BoxFit.cover),
-          ),
+          // Si tenías algún widget de fondo aquí (ej. Image.asset), elimínalo
+          // para que se vea el backgroundColor del Scaffold.
           SafeArea(
             child: Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
-                  child: Row(
-                    children: [
-                      InkWell(
-                        onTap:
-                            () => Navigator.pop(
-                              context,
-                            ), // Botón para ir atrás (a ShoppingCartScreen)
-                        child: Container(
-                          padding: const EdgeInsets.all(10.0),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.8),
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                          child: const Icon(
-                            Icons.arrow_back_ios_new,
-                            color: primaryColor,
-                            size: 20,
-                          ),
-                        ),
-                      ),
-                      // Puedes añadir un título aquí si lo deseas, centrado
-                      // const Expanded(
-                      //   child: Text(
-                      //     'Confirm Payment',
-                      //     textAlign: TextAlign.center,
-                      //     style: TextStyle(
-                      //       fontSize: 20,
-                      //       fontWeight: FontWeight.bold,
-                      //       color: Colors.black87, // O el color que prefieras
-                      //     ),
-                      //   ),
-                      // ),
-                      // const SizedBox(width: 40), // Para balancear el botón de retroceso si hay título
-                    ],
-                  ),
-                ),
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
@@ -231,7 +189,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Delivery address',
+                          'Account Details',
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
@@ -273,14 +231,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                 Row(
                                   children: [
                                     const Icon(
-                                      Icons.location_on_outlined,
+                                      Icons.email_outlined,
                                       color: Colors.black54,
                                       size: 20,
                                     ),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
-                                        _userAddress,
+                                        _userEmail,
                                         style: const TextStyle(fontSize: 14, color: Colors.black54),
                                       ),
                                     ),
@@ -292,7 +250,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         ),
                         const SizedBox(height: 24),
                         const Text(
-                          'Payment',
+                          'Payment Method',
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
@@ -302,53 +260,36 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         const SizedBox(height: 8),
                         _buildPaymentOption(
                           title: 'Visa',
-                          subtitle: 'Enter information on the card',
+                          subtitle: 'Pay with your Visa card',
                           iconAsset: 'assets/logos/visa.png',
-                          value: PaymentMethod.visa,
+                          value: MembershipPaymentMethod.visa,
                         ),
                         _buildPaymentOption(
                           title: 'MasterCard',
-                          subtitle: 'Enter information on the card',
+                          subtitle: 'Pay with your MasterCard',
                           iconAsset: 'assets/logos/masterCard.png',
-                          value: PaymentMethod.mastercard,
+                          value: MembershipPaymentMethod.mastercard,
                         ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 12.0),
-                          child: Center(
-                            child: Text(
-                              '- or -',
-                              style: TextStyle(fontSize: 14, color: Colors.grey),
-                            ),
-                          ),
-                        ),
-                        _buildPaymentOption(
-                          title: 'Cash on delivery',
-                          subtitle: 'Pay when your order arrives',
-                          iconAsset: '',
-                          value: PaymentMethod.cash,
-                          isIconAsset: false,
-                        ),
-                        const SizedBox(height: 30), // Espacio antes del botón
+                        const SizedBox(height: 30),
                       ],
                     ),
                   ),
                 ),
                 Padding(
-                  // Botón de finalizar orden
-                  padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0), // Ajustar padding
+                  padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0),
                   child: SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
-                      onPressed: _finishOrder,
+                      onPressed: _processSubscription,
                       style: OutlinedButton.styleFrom(
-                        backgroundColor: Colors.white,
+                        backgroundColor: Colors.white, // El botón ya tiene fondo blanco
                         foregroundColor: primaryColor,
                         side: const BorderSide(color: primaryColor, width: 1.5),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
                         textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                      child: const Text('Finish order'),
+                      child: const Text('Subscribe Now'),
                     ),
                   ),
                 ),
@@ -358,9 +299,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
         ],
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _selectedIndex, // Siempre 0 para el flujo del carrito
+        currentIndex: _selectedIndex,
         onTabChanged: _onTabTapped,
-        backgroundColor: Colors.white.withOpacity(0.95),
+        backgroundColor: Colors.white, // BOTTOMNAVBAR CON FONDO BLANCO SÓLIDO
       ),
     );
   }

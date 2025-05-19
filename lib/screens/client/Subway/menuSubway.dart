@@ -4,7 +4,8 @@ import '../homeScreen.dart';
 import '../customBottomNavigationBar.dart';
 import '../account/profile.dart';
 import '../cart/shoppingCart.dart';
-import '../../../auth/auth.dart'; // IMPORTANTE: Añadir esta importación para getUserAddress
+import '../membership.dart';
+import '../../../auth/auth.dart';
 
 const primaryColor = Color(0xFFf05000);
 
@@ -16,64 +17,64 @@ class SubwayMenuScreen extends StatefulWidget {
 }
 
 class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
-  int _selectedIndex = 1;
+  final int _selectedIndex = 1; // SubwayMenuScreen es parte del flujo de Home (índice 1)
   OverlayEntry? _overlayEntry;
-  String _userAddress = "Loading address..."; // Variable para la dirección del usuario
+  String _userAddress = "Loading address...";
 
   @override
   void initState() {
     super.initState();
-    _loadUserAddress(); // Cargar la dirección al iniciar la pantalla
+    _loadUserAddress();
   }
 
   Future<void> _loadUserAddress() async {
-    final address = await getUserAddress(); // Llama a tu función para obtener la dirección
+    final address = await getUserAddress();
     if (mounted) {
-      // Verificar si el widget sigue montado antes de llamar a setState
       setState(() {
-        _userAddress = address ?? "Address not found"; // Actualizar la dirección
+        _userAddress = address ?? "Address not found";
       });
     }
   }
 
   void _onTabTapped(int index) {
-    // No es necesario llamar a setState si la navegación reemplaza la pantalla completamente
-    // setState(() {
-    //   _selectedIndex = index;
-    // });
+    if (_selectedIndex == index) return; // Si ya está en la pestaña, no hacer nada
 
-    if (index == 0) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
-      );
-    } else if (index == 1) {
-      // Si ya estamos en HomeScreen (o una pantalla de menú que actúa como tal), no hacer nada
-      // O si _selectedIndex ya es 1, no hacer nada.
-      // Para este caso, si se tapea Home, y no estamos en Home, vamos a Home.
-      // Si SubwayMenuScreen es una sub-pantalla de HomeScreen, el comportamiento podría variar.
-      // Asumiendo que es una pantalla separada a la que se llega desde HomeScreen:
-      if (!ModalRoute.of(context)!.isFirst) {
-        // Si no es la primera ruta (es decir, no es HomeScreen)
+    // No es necesario llamar a setState aquí si siempre usas pushReplacement,
+    // ya que la pantalla se reconstruirá con el _selectedIndex correcto.
+
+    switch (index) {
+      case 0: // Cart
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
         );
-      } else {
-        // Si ya estamos en HomeScreen (o una pantalla que actúa como tal y es la primera)
-        // y el índice seleccionado ya es 1, no es necesario hacer nada.
-        // Si el índice cambia, actualizamos el estado.
-        if (_selectedIndex != index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        }
-      }
-    } else if (index == 2) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const ProfileClient()),
-      );
+        break;
+      case 1: // Home
+        // Si SubwayMenuScreen es una pantalla "profunda" y el usuario quiere volver a la HomeScreen principal
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (Route<dynamic> route) => false, // Limpia la pila hasta HomeScreen
+        );
+        // Si SubwayMenuScreen actúa como una de las pantallas principales del índice 1,
+        // y el usuario ya está aquí, no se haría nada (cubierto por el primer if).
+        break;
+      case 2: // Membership
+        Navigator.pushAndRemoveUntil(
+          // O pushReplacement si prefieres
+          context,
+          MaterialPageRoute(builder: (context) => const MembershipScreen()),
+          (Route<dynamic> route) => false,
+        );
+        break;
+      case 3: // Account (Profile)
+        Navigator.pushAndRemoveUntil(
+          // O pushReplacement
+          context,
+          MaterialPageRoute(builder: (context) => const ProfileClient()),
+          (Route<dynamic> route) => false,
+        );
+        break;
     }
   }
 
@@ -91,12 +92,9 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Colors.white, // CAMBIO: Fondo blanco
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: primaryColor,
-                    width: 1.5,
-                  ), // CAMBIO OPCIONAL: Borde naranja
+                  border: Border.all(color: primaryColor, width: 1.5),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -108,21 +106,23 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                           color: primaryColor,
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                        ), // CAMBIO: Texto naranja
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 10),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor, // CAMBIO: Botón con fondo naranja
-                        foregroundColor: Colors.white, // CAMBIO: Texto del botón blanco
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                       ),
                       onPressed: () {
                         _overlayEntry?.remove();
                         _overlayEntry = null;
+                        // Navegar a ShoppingCartScreen manteniendo la pila si es necesario,
+                        // o usar pushReplacement si se considera una navegación principal desde el overlay.
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
@@ -149,8 +149,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
 
   void _addToCart(Map<String, String> product) {
     final existingItemIndex = globalCartItems.indexWhere(
-      (item) =>
-          item.name == product['name'] && item.restaurant == 'Subway', // Considerar restaurante
+      (item) => item.name == product['name'] && item.restaurant == 'Subway',
     );
 
     if (existingItemIndex != -1) {
@@ -165,7 +164,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
             price: double.parse(product['price']!),
             quantity: 1,
             imageUrl: product['image']!,
-            restaurant: 'Subway', // ASEGURARSE DE QUE ESTÉ ASÍ
+            restaurant: 'Subway',
           ),
         );
       });
@@ -436,7 +435,8 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                 children: [
                   InkWell(
                     onTap: () {
-                      Navigator.pop(context); // Volver a la pantalla anterior (HomeScreen)
+                      // Volver a la pantalla anterior (probablemente HomeScreen)
+                      Navigator.pop(context);
                     },
                     child: Container(
                       padding: const EdgeInsets.all(8.0),
@@ -458,14 +458,14 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          _userAddress, // MODIFICADO: Usar la dirección del usuario
+                          _userAddress,
                           style: const TextStyle(
                             fontSize: 16,
                             color: primaryColor,
                             fontWeight: FontWeight.bold,
                           ),
                           overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center, // Centrar si es largo
+                          textAlign: TextAlign.center,
                         ),
                       ],
                     ),
@@ -503,7 +503,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
         ),
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _selectedIndex,
+        currentIndex: _selectedIndex, // Asegúrate de que sea 1
         onTabChanged: _onTabTapped,
         backgroundColor: Colors.white,
       ),

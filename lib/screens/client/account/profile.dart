@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import '../homeScreen.dart';
 import '../../loginScreen.dart';
-import '../customBottomNavigationBar.dart';
+import '../homeScreen.dart';
 import '../cart/shoppingCart.dart';
+import '../membership.dart';
+import '../customBottomNavigationBar.dart';
 import '../../../auth/auth.dart';
 import 'accountInformation.dart';
 import 'changePassword.dart';
@@ -19,7 +20,7 @@ class ProfileClient extends StatefulWidget {
 }
 
 class _ProfileClientState extends State<ProfileClient> {
-  int _selectedIndex = 2;
+  int _selectedIndex = 3; // ASEGÚRATE DE QUE ESTÉ INICIALIZADO A 3
   String? _userName;
   String? _userEmail;
 
@@ -33,7 +34,6 @@ class _ProfileClientState extends State<ProfileClient> {
     final userName = await getUserName();
     final userEmail = await getUserEmail();
     if (mounted) {
-      // Asegúrate de verificar 'mounted' antes de llamar a setState
       setState(() {
         _userName = userName;
         _userEmail = userEmail;
@@ -42,24 +42,47 @@ class _ProfileClientState extends State<ProfileClient> {
   }
 
   void _onTabTapped(int index) {
-    if (_selectedIndex == index) return; // Evitar reconstrucciones innecesarias
+    if (_selectedIndex == index) return; // Si ya está en la pestaña, no hacer nada
 
-    setState(() {
-      _selectedIndex = index;
-    });
+    // Si se navega a una pantalla diferente, esa pantalla se encargará de su propio _selectedIndex.
+    // Si se usa pushReplacement, esta instancia de ProfileClient se destruirá y reconstruirá
+    // si se navega de vuelta, inicializando _selectedIndex a 3 de nuevo.
 
-    if (index == 0) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
-      );
-    } else if (index == 1) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
+    // setState(() { // Esta línea es importante si NO usas pushReplacement para todas las navegaciones
+    //   _selectedIndex = index; // y quieres que el estado visual se actualice inmediatamente.
+    // });                 // Con pushReplacement para las pestañas principales, la reconstrucción se encarga.
+
+    switch (index) {
+      case 0: // Cart
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+        );
+        break;
+      case 1: // Home
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+        break;
+      case 2: // Membership
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MembershipScreen()),
+        );
+        break;
+      case 3: // Account (Profile)
+        // Ya estamos en ProfileClient, no se necesita acción de navegación si _selectedIndex ya es 3.
+        // Si por alguna razón _selectedIndex no fuera 3 y se llega aquí,
+        // la inicialización de la pantalla (si se reconstruye) o un setState asegurarían el estado correcto.
+        if (_selectedIndex != 3 && mounted) {
+          // Solo si es necesario y para asegurar consistencia
+          setState(() {
+            _selectedIndex = 3;
+          });
+        }
+        break;
     }
-    // El índice 2 ya es la ProfileClient, no se necesita acción de navegación.
   }
 
   @override
@@ -334,9 +357,9 @@ class _ProfileClientState extends State<ProfileClient> {
         ],
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _selectedIndex,
+        currentIndex: _selectedIndex, // ASEGÚRATE DE PASAR EL _selectedIndex CORRECTO
         onTabChanged: _onTabTapped,
-        backgroundColor: Colors.white, // Asegurar color de fondo
+        backgroundColor: Colors.white, // O el color que uses
       ),
     );
   }

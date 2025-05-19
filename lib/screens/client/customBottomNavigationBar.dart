@@ -17,36 +17,49 @@ class CustomBottomNavigationBar extends StatelessWidget {
     const Color activeColor = Color(0xFFf05000);
     const Color inactiveColor = Colors.grey;
 
+    // Asegúrate de tener este icono en tu carpeta assets/icons/
+    // o reemplázalo con el que desees usar.
+    const String membershipIconPath = 'assets/icons/membership.png';
+
     return BottomNavigationBar(
       backgroundColor: backgroundColor ?? Colors.white,
+      type: BottomNavigationBarType.fixed, // Recomendado para 4 o más ítems
       items: <BottomNavigationBarItem>[
         BottomNavigationBarItem(
           icon: ImageIcon(
-            const AssetImage('assets/icons/cart.png'),
+            const AssetImage('assets/icons/cart.png'), // Índice 0
             color: currentIndex == 0 ? activeColor : inactiveColor,
           ),
           label: 'Cart',
         ),
         BottomNavigationBarItem(
           icon: ImageIcon(
-            const AssetImage('assets/icons/home.png'),
+            const AssetImage('assets/icons/home.png'), // Índice 1
             color: currentIndex == 1 ? activeColor : inactiveColor,
           ),
           label: 'Home',
         ),
         BottomNavigationBarItem(
+          // NUEVO ÍTEM DE MEMBRESÍA - Índice 2
           icon: ImageIcon(
-            const AssetImage('assets/icons/profile.png'),
+            const AssetImage(membershipIconPath),
             color: currentIndex == 2 ? activeColor : inactiveColor,
+          ),
+          label: 'Membership',
+        ),
+        BottomNavigationBarItem(
+          icon: ImageIcon(
+            const AssetImage('assets/icons/profile.png'), // Índice 3 (anteriormente 2)
+            color: currentIndex == 3 ? activeColor : inactiveColor,
           ),
           label: 'Account',
         ),
       ],
       currentIndex: currentIndex,
-      selectedItemColor: activeColor, // Aunque ya no se usa directamente para el icono
-      unselectedItemColor: inactiveColor, // Aunque ya no se usa directamente para el icono
-      showSelectedLabels: false,
-      showUnselectedLabels: false,
+      selectedItemColor: activeColor,
+      unselectedItemColor: inactiveColor,
+      showSelectedLabels: false, // Opcional: puedes ponerlas en true si quieres ver los labels
+      showUnselectedLabels: false, // Opcional
       onTap: onTabChanged,
     );
   }
