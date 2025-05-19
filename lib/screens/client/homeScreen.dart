@@ -131,11 +131,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        // Lógica para mostrar la dirección o 'Your Location'
                         _isLoggedIn && _userAddress != null && _userAddress!.isNotEmpty
                             ? _userAddress!
                             : 'Your Location',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color:
+                              _isLoggedIn && _userAddress != null && _userAddress!.isNotEmpty
+                                  ? const Color(
+                                    0xFFf05000,
+                                  ) // Naranja si está logueado y hay dirección
+                                  : Colors
+                                      .black, // Negro por defecto o si no hay dirección/no logueado
+                        ),
                       ),
                       const Icon(Icons.arrow_drop_down),
                     ],

@@ -281,6 +281,7 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
                         print("Change address tapped");
                       },
                       child: Row(
+                        // Esta es la fila que estamos modificando
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Flexible(
@@ -292,10 +293,10 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
                                 color: primaryColor,
                               ),
                               overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center, // Centrar si es largo
+                              textAlign: TextAlign.center,
                             ),
                           ),
-                          const Icon(Icons.keyboard_arrow_down, color: primaryColor, size: 16),
+                          // const Icon(Icons.keyboard_arrow_down, color: primaryColor, size: 16), // <<--- LÍNEA ELIMINADA/COMENTADA
                         ],
                       ),
                     ),
