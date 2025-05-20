@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'customBottomNavigationBar.dart';
-import 'homeScreen.dart';
-import 'cart/shoppingCart.dart';
-import 'account/profile.dart';
+import '../customBottomNavigationBar.dart';
+import '../homeScreen.dart';
+import '../cart/shoppingCart.dart';
+import '../account/profile.dart';
 import 'membershipPaymentScreen.dart';
 import 'membershipTerms.dart';
 

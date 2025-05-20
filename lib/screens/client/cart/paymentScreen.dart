@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../auth/auth.dart';
 import 'shoppingCart.dart'; // Para globalCartItems y shoppingCartScreenKey
 import '../homeScreen.dart';
-import '../membership.dart'; // NUEVA IMPORTACIÓN
+import '../membership/membership.dart'; // NUEVA IMPORTACIÓN
 import '../account/profile.dart';
 import '../customBottomNavigationBar.dart';
 

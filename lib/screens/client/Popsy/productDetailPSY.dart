@@ -3,7 +3,7 @@ import '../customBottomNavigationBar.dart';
 import '../cart/shoppingCart.dart';
 import '../account/profile.dart';
 import '../homeScreen.dart';
-import '../membership.dart';
+import '../membership/membership.dart';
 
 const primaryColor = Color(0xFFf05000);
 const lightAccentColor = Color(0xFFFEEAE6);

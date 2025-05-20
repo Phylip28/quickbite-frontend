@@ -3,7 +3,7 @@ import '../customBottomNavigationBar.dart';
 import '../cart/shoppingCart.dart'; // Para globalCartItems, CartItem y shoppingCartScreenKey
 import '../account/profile.dart';
 import '../homeScreen.dart'; // NUEVA IMPORTACIÓN para el caso Home
-import '../membership.dart'; // NUEVA IMPORTACIÓN para el caso Membership
+import '../membership/membership.dart'; // NUEVA IMPORTACIÓN para el caso Membership
 // import 'menuStarbucks.dart'; // Ya está importado, podría usarse para volver al menú específico
 
 // Definición de colores consistentes

@@ -3,7 +3,7 @@ import '../customBottomNavigationBar.dart';
 import '../homeScreen.dart';
 import '../cart/shoppingCart.dart';
 import '../account/profile.dart';
-import '../membership.dart'; // NUEVA IMPORTACIÓN
+import '../membership/membership.dart'; // NUEVA IMPORTACIÓN
 // Asegúrate de que SubwayMenuScreen esté importado si decides navegar a él en el caso 'Home'
 // import 'menuSubway.dart';
 

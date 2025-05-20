@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../customBottomNavigationBar.dart';
 import '../homeScreen.dart';
 import '../account/profile.dart';
-import '../membership.dart'; // NUEVA IMPORTACIÓN
+import '../membership/membership.dart'; // NUEVA IMPORTACIÓN
 import 'paymentScreen.dart';
 
 // --- Lista de ítems del carrito accesible estáticamente ---

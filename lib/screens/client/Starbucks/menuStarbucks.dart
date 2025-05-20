@@ -4,7 +4,7 @@ import '../homeScreen.dart';
 import '../customBottomNavigationBar.dart';
 import '../account/profile.dart';
 import '../cart/shoppingCart.dart';
-import '../membership.dart'; // NUEVA IMPORTACIÓN
+import '../membership/membership.dart'; // NUEVA IMPORTACIÓN
 import '../../../auth/auth.dart';
 
 const primaryColor = Color(0xFFf05000);

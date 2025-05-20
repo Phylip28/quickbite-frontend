@@ -4,7 +4,7 @@ import '../homeScreen.dart';
 import '../customBottomNavigationBar.dart';
 import '../account/profile.dart';
 import '../cart/shoppingCart.dart';
-import '../membership.dart';
+import '../membership/membership.dart';
 import '../../../auth/auth.dart'; // Para _loadUserAddress
 
 // Definición de colores consistentes

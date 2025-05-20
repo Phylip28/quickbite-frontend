@@ -4,7 +4,7 @@ import '../homeScreen.dart';
 import '../customBottomNavigationBar.dart';
 import '../account/profile.dart';
 import '../cart/shoppingCart.dart';
-import '../membership.dart'; // NUEVA IMPORTACIÓN
+import '../membership/membership.dart'; // NUEVA IMPORTACIÓN
 import '../../../auth/auth.dart'; // Para _loadUserAddress
 
 const primaryColor = Color(0xFFf05000); // Definir primaryColor si no está globalmente

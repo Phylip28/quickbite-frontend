@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../auth/auth.dart'; // Ajusta la ruta si es necesario
+import '../../../auth/auth.dart'; // Ajusta la ruta si es necesario
 import 'membership.dart'; // Para navegar de vuelta, etc.
-import 'homeScreen.dart';
-import 'cart/shoppingCart.dart'; // Podrías no necesitar globalCartItems aquí
-import 'account/profile.dart';
-import 'customBottomNavigationBar.dart';
+import '../homeScreen.dart';
+import '../cart/shoppingCart.dart'; // Podrías no necesitar globalCartItems aquí
+import '../account/profile.dart';
+import '../customBottomNavigationBar.dart';
 
 const Color primaryColor = Color(0xFFf05000);
 

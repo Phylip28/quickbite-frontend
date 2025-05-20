@@ -3,7 +3,7 @@ import '../customBottomNavigationBar.dart';
 import '../homeScreen.dart';
 import '../cart/shoppingCart.dart';
 import '../account/profile.dart';
-import '../membership.dart';
+import '../membership/membership.dart';
 
 // Definición de colores consistentes
 const primaryColor = Color(0xFFf05000);

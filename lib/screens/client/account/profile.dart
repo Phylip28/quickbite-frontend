@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../loginScreen.dart';
 import '../homeScreen.dart';
 import '../cart/shoppingCart.dart';
-import '../membership.dart';
+import '../membership/membership.dart';
 import '../customBottomNavigationBar.dart';
 import '../../../auth/auth.dart';
 import 'accountInformation.dart';
