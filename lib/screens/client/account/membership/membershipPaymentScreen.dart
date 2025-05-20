@@ -1,82 +1,89 @@
 import 'package:flutter/material.dart';
-import '../../../auth/auth.dart';
-import 'shoppingCart.dart'; // Para globalCartItems y shoppingCartScreenKey
-import '../homeScreen.dart';
-// import '../membership/membership.dart'; // YA NO SE USA DIRECTAMENTE AQUÍ PARA LA NAVBAR
-import '../orders/orders.dart';
-import '../account/profile.dart';
-import '../customBottomNavigationBar.dart';
+import '../../../../auth/auth.dart'; // Para getUserName, getUserEmail
+import '../../customBottomNavigationBar.dart';
+import '../../homeScreen.dart';
+import '../../orders/orders.dart'; // CORREGIDO
+import '../profile.dart';
+import '../../cart/shoppingCart.dart'; // Para ShoppingCartScreen en la navbar
+import 'membershipSuccessfulScreen.dart'; // Pantalla de éxito de membresía
 
-const Color primaryColor = Color(0xFFf05000); // Color principal de la app
+const Color primaryColor = Color(0xFFf05000);
+const double membershipPrice = 9.99; // Precio fijo de la membresía
 
-enum PaymentMethod { visa, mastercard, cash }
+// ENUM DE MÉTODO DE PAGO SIN EFECTIVO PARA MEMBRESÍA
+enum MembershipPaymentMethod { visa, mastercard }
 
-class PaymentScreen extends StatefulWidget {
-  const PaymentScreen({super.key});
+class MembershipPaymentScreen extends StatefulWidget {
+  const MembershipPaymentScreen({super.key});
 
   @override
-  State<PaymentScreen> createState() => _PaymentScreenState();
+  State<MembershipPaymentScreen> createState() => _MembershipPaymentScreenState();
 }
 
-class _PaymentScreenState extends State<PaymentScreen> {
-  PaymentMethod? _selectedPaymentMethod = PaymentMethod.cash; // Valor inicial
-  final int _selectedIndex = 0; // PaymentScreen es parte del flujo del Carrito (índice 0)
+class _MembershipPaymentScreenState extends State<MembershipPaymentScreen> {
+  MembershipPaymentMethod? _selectedPaymentMethod =
+      MembershipPaymentMethod.visa; // Visa por defecto
+  String _userName = "Loading...";
+  String _userEmail = "Loading...";
 
-  String _userAddress = "Loading address...";
-  String _userName = "";
+  final int _navBarIndex = 3;
 
   @override
   void initState() {
     super.initState();
+    print("DEBUG: MembershipPaymentScreen initState() llamado.");
+    print("DEBUG: Valor inicial de _selectedPaymentMethod en initState: $_selectedPaymentMethod");
     _loadUserData();
   }
 
   Future<void> _loadUserData() async {
-    final address = await getUserAddress();
+    print("DEBUG: _loadUserData() llamado.");
     final name = await getUserName();
+    final email = await getUserEmail();
     if (mounted) {
+      print("DEBUG: _loadUserData() - widget montado, actualizando estado.");
       setState(() {
-        _userAddress = address ?? "Not available";
-        _userName = name ?? "Customer";
+        _userName = name ?? "User";
+        _userEmail = email ?? "No email available";
       });
+    } else {
+      print("DEBUG: _loadUserData() - widget NO montado después de async.");
     }
   }
 
   void _onTabTapped(int index) {
-    // Si ya estamos en PaymentScreen (que es parte del flujo del carrito, índice 0)
-    // y se tapea el ícono del carrito, vamos a ShoppingCartScreen.
-    if (index == 0) {
-      // Solo navegar a ShoppingCartScreen si no estamos ya en una subpantalla del carrito
-      // que debería volver al carrito principal.
-      // Si PaymentScreen es la "raíz" del flujo del carrito para la navbar,
-      // este comportamiento podría necesitar ajuste.
-      // Por ahora, si se presiona "Cart" (índice 0), se va a ShoppingCartScreen.
+    print("DEBUG: _onTabTapped() llamado con index: $index");
+    if (index == _navBarIndex) {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+        MaterialPageRoute(builder: (context) => const ProfileClient()),
         (Route<dynamic> route) => false,
       );
       return;
     }
-
-    // Para las otras pestañas, siempre navegamos y limpiamos la pila.
     switch (index) {
-      // case 0 ya manejado arriba
-      case 1: // Home
+      case 0:
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+          (Route<dynamic> route) => false,
+        );
+        break;
+      case 1:
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 2: // Orders (ANTERIORMENTE Membership)
+      case 2:
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const OrdersScreen()), // NAVEGAR A OrdersScreen
+          MaterialPageRoute(builder: (context) => const OrdersScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 3: // Account (Profile)
+      case 3: // Account
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const ProfileClient()),
@@ -86,79 +93,64 @@ class _PaymentScreenState extends State<PaymentScreen> {
     }
   }
 
-  void _finishOrder() {
+  void _processSubscription() {
+    print("DEBUG: _processSubscription() llamado.");
+    print(
+      "DEBUG: Valor de _selectedPaymentMethod al inicio de _processSubscription: $_selectedPaymentMethod",
+    );
     if (_selectedPaymentMethod == null) {
+      print("DEBUG: _selectedPaymentMethod ES NULL. Mostrando SnackBar.");
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Please select a payment method.')));
       return;
     }
-    print('Order finished with: $_selectedPaymentMethod');
-    print('Address: $_userAddress');
-    globalCartItems.clear();
+    print("DEBUG: _selectedPaymentMethod NO ES NULL. Procesando...");
+    print('Membership subscription processing with: $_selectedPaymentMethod');
+    print('User: $_userName, Email: $_userEmail');
+    print('Membership Price: €${membershipPrice.toStringAsFixed(2)}');
 
-    // Actualizar ShoppingCartScreen si está montado y es accesible mediante la key
-    if (shoppingCartScreenKey.currentState != null && shoppingCartScreenKey.currentState!.mounted) {
-      shoppingCartScreenKey.currentState!.setState(() {});
-    }
-
-    showDialog(
-      context: context,
-      barrierDismissible: false, // El usuario debe presionar OK
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('Order Placed!'),
-          content: const Text('Thank you for your order. It has been placed successfully.'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.of(dialogContext).pop(); // Cierra el diálogo
-                Navigator.pushAndRemoveUntil(
-                  context, // Usa el context original de _PaymentScreenState
-                  MaterialPageRoute(builder: (context) => const HomeScreen()),
-                  (Route<dynamic> route) => false, // Limpia la pila hasta HomeScreen
-                );
-              },
-            ),
-          ],
-        );
-      },
+    print("DEBUG: Navegando a MembershipSuccessfulScreen...");
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const MembershipSuccessfulScreen()),
+      (Route<dynamic> route) => false,
     );
+    print("DEBUG: Navegación a MembershipSuccessfulScreen INVOCADA.");
   }
 
-  Widget _buildPaymentOption({
+  Widget _buildMembershipPaymentOption({
     required String title,
     required String subtitle,
     required String iconAsset,
-    required PaymentMethod value,
-    bool isIconAsset = true,
+    required MembershipPaymentMethod value,
   }) {
+    // print("DEBUG: _buildMembershipPaymentOption llamado para: $title, valor actual de _selectedPaymentMethod: $_selectedPaymentMethod");
     return Card(
       elevation: 1,
       color: Colors.white,
       margin: const EdgeInsets.symmetric(vertical: 6.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-      child: RadioListTile<PaymentMethod>(
+      child: RadioListTile<MembershipPaymentMethod>(
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
         value: value,
         groupValue: _selectedPaymentMethod,
-        onChanged: (PaymentMethod? newValue) {
+        onChanged: (MembershipPaymentMethod? newValue) {
+          print(
+            "DEBUG: RadioListTile onChanged para '$title'. Nuevo valor: $newValue. Valor anterior de _selectedPaymentMethod: $_selectedPaymentMethod",
+          );
           setState(() {
+            print("DEBUG: setState llamado en onChanged. _selectedPaymentMethod será: $newValue");
             _selectedPaymentMethod = newValue;
           });
         },
-        secondary:
-            isIconAsset
-                ? Image.asset(
-                  iconAsset,
-                  width: 30,
-                  height: 30,
-                  errorBuilder:
-                      (context, error, stackTrace) => const Icon(Icons.credit_card, size: 30),
-                )
-                : Icon(Icons.local_atm, color: primaryColor.withOpacity(0.7), size: 30),
+        secondary: Image.asset(
+          iconAsset,
+          width: 30,
+          height: 30,
+          errorBuilder: (context, error, stackTrace) => const Icon(Icons.credit_card, size: 30),
+        ),
         activeColor: primaryColor,
         controlAffinity: ListTileControlAffinity.trailing,
       ),
@@ -167,6 +159,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print(
+      "DEBUG: MembershipPaymentScreen build() llamado. Valor actual de _selectedPaymentMethod: $_selectedPaymentMethod",
+    );
     return Scaffold(
       body: Stack(
         children: [
@@ -181,10 +176,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   child: Row(
                     children: [
                       InkWell(
-                        onTap:
-                            () => Navigator.pop(
-                              context,
-                            ), // Botón para ir atrás (a ShoppingCartScreen)
+                        onTap: () {
+                          print("DEBUG: Botón de retroceso presionado.");
+                          Navigator.pop(context);
+                        },
                         child: Container(
                           padding: const EdgeInsets.all(10.0),
                           decoration: BoxDecoration(
@@ -198,19 +193,18 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           ),
                         ),
                       ),
-                      // Puedes añadir un título aquí si lo deseas, centrado
-                      // const Expanded(
-                      //   child: Text(
-                      //     'Confirm Payment',
-                      //     textAlign: TextAlign.center,
-                      //     style: TextStyle(
-                      //       fontSize: 20,
-                      //       fontWeight: FontWeight.bold,
-                      //       color: Colors.black87, // O el color que prefieras
-                      //     ),
-                      //   ),
-                      // ),
-                      // const SizedBox(width: 40), // Para balancear el botón de retroceso si hay título
+                      const Expanded(
+                        child: Text(
+                          'Membership Payment',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 40),
                     ],
                   ),
                 ),
@@ -221,7 +215,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Delivery address',
+                          'Account Details',
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
@@ -263,14 +257,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                 Row(
                                   children: [
                                     const Icon(
-                                      Icons.location_on_outlined,
+                                      Icons.email_outlined,
                                       color: Colors.black54,
                                       size: 20,
                                     ),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
-                                        _userAddress,
+                                        _userEmail,
                                         style: const TextStyle(fontSize: 14, color: Colors.black54),
                                       ),
                                     ),
@@ -290,55 +284,63 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        _buildPaymentOption(
+                        _buildMembershipPaymentOption(
                           title: 'Visa',
                           subtitle: 'Enter information on the card',
                           iconAsset: 'assets/logos/visa.png',
-                          value: PaymentMethod.visa,
+                          value: MembershipPaymentMethod.visa,
                         ),
-                        _buildPaymentOption(
+                        _buildMembershipPaymentOption(
                           title: 'MasterCard',
                           subtitle: 'Enter information on the card',
                           iconAsset: 'assets/logos/masterCard.png',
-                          value: PaymentMethod.mastercard,
+                          value: MembershipPaymentMethod.mastercard,
                         ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 12.0),
-                          child: Center(
-                            child: Text(
-                              '- or -',
-                              style: TextStyle(fontSize: 14, color: Colors.grey),
+                        const SizedBox(height: 24),
+                        Card(
+                          elevation: 2,
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Membership Fee:',
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                ),
+                                Text(
+                                  '€${membershipPrice.toStringAsFixed(2)}',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: primaryColor,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                        _buildPaymentOption(
-                          title: 'Cash on delivery',
-                          subtitle: 'Pay when your order arrives',
-                          iconAsset: '',
-                          value: PaymentMethod.cash,
-                          isIconAsset: false,
-                        ),
-                        const SizedBox(height: 30), // Espacio antes del botón
+                        const SizedBox(height: 30),
                       ],
                     ),
                   ),
                 ),
                 Padding(
-                  // Botón de finalizar orden
-                  padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0), // Ajustar padding
+                  padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0),
                   child: SizedBox(
                     width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: _finishOrder,
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: primaryColor,
-                        side: const BorderSide(color: primaryColor, width: 1.5),
+                    child: ElevatedButton(
+                      onPressed: _processSubscription,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
                         textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                      child: const Text('Finish order'),
+                      child: const Text('Subscribe Now'),
                     ),
                   ),
                 ),
@@ -348,7 +350,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         ],
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _selectedIndex, // Siempre 0 para el flujo del carrito
+        currentIndex: _navBarIndex,
         onTabChanged: _onTabTapped,
         backgroundColor: Colors.white.withOpacity(0.95),
       ),

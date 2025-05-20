@@ -3,7 +3,7 @@ import '../customBottomNavigationBar.dart';
 import '../homeScreen.dart';
 import '../cart/shoppingCart.dart';
 import '../account/profile.dart';
-import '../membership/membership.dart';
+import '../orders/orders.dart';
 import 'productDetailKfc.dart';
 import '../../../auth/auth.dart';
 
@@ -98,30 +98,44 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
   }
 
   void _onTabTapped(int index) {
+    // Si el índice seleccionado es el mismo que el actual Y es la pestaña Home (1),
+    // y ya estamos en una pantalla del flujo de Home, no hacer nada o ir a la HomeScreen principal.
+    // Si es otra pestaña, siempre navegar.
+    if (_selectedIndex == index && index == 1) {
+      // Si el usuario está en KfcMenuScreen y presiona "Home" de nuevo,
+      // lo llevamos a la HomeScreen principal, limpiando la pila.
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        (Route<dynamic> route) => false,
+      );
+      return;
+    }
+    // Si se presiona una pestaña diferente a la actual (_selectedIndex), navegar.
     if (_selectedIndex == index) return;
-
-    // No es necesario llamar a setState aquí si siempre usas pushReplacement,
-    // ya que la pantalla se reconstruirá con el _selectedIndex correcto.
 
     switch (index) {
       case 0: // Cart
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+          (Route<dynamic> route) => false,
         );
         break;
       case 1: // Home
-        // Si KfcMenuScreen es una pantalla "profunda" y el usuario quiere volver a la HomeScreen principal
+        // Si se llega aquí desde otra pestaña (Cart, Orders, Account),
+        // o si se presionó Home estando en KfcMenuScreen (manejado arriba),
+        // ir a la HomeScreen principal.
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
-          (Route<dynamic> route) => false, // Limpia la pila hasta HomeScreen
+          (Route<dynamic> route) => false,
         );
         break;
-      case 2: // Membership
+      case 2: // Orders (ANTERIORMENTE Membership)
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const MembershipScreen()),
+          MaterialPageRoute(builder: (context) => const OrdersScreen()), // NAVEGAR A OrdersScreen
           (Route<dynamic> route) => false,
         );
         break;
@@ -461,9 +475,9 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
         ),
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _selectedIndex, // Asegúrate de que sea 1
+        currentIndex: _selectedIndex, // Sigue siendo 1 porque esta pantalla es del flujo "Home"
         onTabChanged: _onTabTapped,
-        backgroundColor: Colors.white, // O el color que prefieras
+        backgroundColor: Colors.white,
       ),
     );
   }

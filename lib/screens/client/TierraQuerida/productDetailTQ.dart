@@ -3,7 +3,7 @@ import '../homeScreen.dart';
 import '../customBottomNavigationBar.dart';
 import '../account/profile.dart';
 import '../cart/shoppingCart.dart';
-import '../membership/membership.dart'; // NUEVA IMPORTACIÓN
+import '../orders/orders.dart';
 
 // Definición de colores consistentes
 const primaryColor = Color(0xFFf05000);
@@ -36,16 +36,12 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
   OverlayEntry? _overlayEntry; // Para el overlay
 
   void _onTabTapped(int index) {
-    // No es necesario llamar a setState para _selectedIndex aquí si siempre usas
-    // pushReplacement o pushAndRemoveUntil, ya que la nueva pantalla se reconstruirá.
-    // Sin embargo, si alguna navegación no reemplaza la pantalla actual (ej. un Navigator.push simple
-    // a una sub-pantalla dentro de la misma pestaña), entonces sí sería útil.
-
-    if (_selectedIndex == index && index != 1)
-      return; // Evitar recarga innecesaria si ya está en la pestaña (excepto Home)
-
-    if (index == 1 && _selectedIndex == 1) {
-      // Si ya está en Home y tapea Home, ir a la raíz de Home
+    // Si el índice seleccionado es el mismo que el actual Y es la pestaña Home (1),
+    // y ya estamos en una pantalla del flujo de Home, no hacer nada o ir a la HomeScreen principal.
+    // Si es otra pestaña, siempre navegar.
+    if (_selectedIndex == index && index == 1) {
+      // Si el usuario está en ProductDetailTQ y presiona "Home" de nuevo,
+      // lo llevamos a la HomeScreen principal, limpiando la pila.
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -53,13 +49,17 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
       );
       return;
     }
+    // Si se presiona una pestaña diferente a la actual (_selectedIndex), navegar.
+    if (_selectedIndex == index) return;
 
     switch (index) {
       case 0: // Cart
-        // Usar push para poder volver a ProductDetail si el usuario quiere seguir comprando
-        Navigator.push(context, MaterialPageRoute(builder: (context) => ShoppingCartScreen()));
-        // Si se usa push, y quieres que el ícono del carrito se active inmediatamente:
-        // if (mounted) setState(() => _selectedIndex = index);
+        Navigator.pushAndRemoveUntil(
+          // Cambiado a pushAndRemoveUntil para consistencia
+          context,
+          MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+          (Route<dynamic> route) => false,
+        );
         break;
       case 1: // Home
         // Navegar a la pantalla principal de Home, limpiando la pila.
@@ -69,10 +69,10 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
           (Route<dynamic> route) => false,
         );
         break;
-      case 2: // Membership
+      case 2: // Orders (ANTERIORMENTE Membership)
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const MembershipScreen()),
+          MaterialPageRoute(builder: (context) => const OrdersScreen()), // NAVEGAR A OrdersScreen
           (Route<dynamic> route) => false,
         );
         break;

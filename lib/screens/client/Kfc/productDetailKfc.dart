@@ -3,7 +3,7 @@ import '../customBottomNavigationBar.dart';
 import '../homeScreen.dart';
 import '../cart/shoppingCart.dart';
 import '../account/profile.dart';
-import '../membership/membership.dart';
+import '../orders/orders.dart'; // IMPORTACIÓN PARA LA PANTALLA DE ÓRDENES
 
 // Definición de colores consistentes
 const primaryColor = Color(0xFFf05000);
@@ -52,9 +52,12 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
   }
 
   void _onTabTapped(int index) {
-    if (_selectedIndex == index && index != 1) return;
-
-    if (index == 1 && _selectedIndex == 1) {
+    // Si el índice seleccionado es el mismo que el actual Y es la pestaña Home (1),
+    // y ya estamos en una pantalla del flujo de Home, no hacer nada o ir a la HomeScreen principal.
+    // Si es otra pestaña, siempre navegar.
+    if (_selectedIndex == index && index == 1) {
+      // Si el usuario está en ProductDetailKFC y presiona "Home" de nuevo,
+      // lo llevamos a la HomeScreen principal, limpiando la pila.
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -62,22 +65,30 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
       );
       return;
     }
+    // Si se presiona una pestaña diferente a la actual (_selectedIndex), navegar.
+    if (_selectedIndex == index) return;
 
     switch (index) {
       case 0: // Cart
-        Navigator.push(context, MaterialPageRoute(builder: (context) => ShoppingCartScreen()));
+        Navigator.pushAndRemoveUntil(
+          // Cambiado a pushAndRemoveUntil para consistencia
+          context,
+          MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+          (Route<dynamic> route) => false,
+        );
         break;
       case 1: // Home
+        // Navegar a la pantalla principal de Home, limpiando la pila.
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 2: // Membership
+      case 2: // Orders (ANTERIORMENTE Membership)
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const MembershipScreen()),
+          MaterialPageRoute(builder: (context) => const OrdersScreen()), // NAVEGAR A OrdersScreen
           (Route<dynamic> route) => false,
         );
         break;
@@ -380,9 +391,10 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
           Align(
             alignment: Alignment.bottomCenter,
             child: CustomBottomNavigationBar(
-              currentIndex: _selectedIndex, // Asegúrate de que sea 1
+              currentIndex:
+                  _selectedIndex, // Sigue siendo 1 porque esta pantalla es del flujo "Home"
               onTabChanged: _onTabTapped,
-              backgroundColor: Colors.white, // O el color que prefieras
+              backgroundColor: Colors.white,
             ),
           ),
         ],

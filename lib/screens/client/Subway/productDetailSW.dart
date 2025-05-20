@@ -3,9 +3,7 @@ import '../customBottomNavigationBar.dart';
 import '../homeScreen.dart';
 import '../cart/shoppingCart.dart';
 import '../account/profile.dart';
-import '../membership/membership.dart'; // NUEVA IMPORTACIÓN
-// Asegúrate de que SubwayMenuScreen esté importado si decides navegar a él en el caso 'Home'
-// import 'menuSubway.dart';
+import '../orders/orders.dart';
 
 const primaryColor = Color(0xFFf05000);
 const lightAccentColor = Color(0xFFFEEAE6);
@@ -51,12 +49,12 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
   }
 
   void _onTabTapped(int index) {
-    if (_selectedIndex == index && index != 1)
-      return; // Si ya está en la pestaña (y no es Home para evitar pop innecesario)
-
-    // Si el índice es 1 (Home) y ya estamos en el flujo de Home (_selectedIndex == 1),
-    // y el usuario quiere ir a la pantalla principal de Home.
-    if (index == 1 && _selectedIndex == 1) {
+    // Si el índice seleccionado es el mismo que el actual Y es la pestaña Home (1),
+    // y ya estamos en una pantalla del flujo de Home, no hacer nada o ir a la HomeScreen principal.
+    // Si es otra pestaña, siempre navegar.
+    if (_selectedIndex == index && index == 1) {
+      // Si el usuario está en ProductDetailSW y presiona "Home" de nuevo,
+      // lo llevamos a la HomeScreen principal, limpiando la pila.
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -64,19 +62,17 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
       );
       return;
     }
-
-    // No es estrictamente necesario llamar a setState para _selectedIndex aquí si siempre usas
-    // pushReplacement o pushAndRemoveUntil, ya que la nueva pantalla se reconstruirá.
-    // Sin embargo, si alguna navegación no reemplaza la pantalla actual (ej. un Navigator.push simple
-    // a una sub-pantalla dentro de la misma pestaña), entonces sí sería útil.
+    // Si se presiona una pestaña diferente a la actual (_selectedIndex), navegar.
+    if (_selectedIndex == index) return;
 
     switch (index) {
       case 0: // Cart
-        // Usar push para poder volver a ProductDetail si el usuario quiere seguir comprando
-        // o pushReplacement si se considera una navegación principal.
-        Navigator.push(context, MaterialPageRoute(builder: (context) => ShoppingCartScreen()));
-        // Si se usa push, y quieres que el ícono del carrito se active inmediatamente:
-        // if (mounted) setState(() => _selectedIndex = index);
+        Navigator.pushAndRemoveUntil(
+          // Cambiado a pushAndRemoveUntil para consistencia
+          context,
+          MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+          (Route<dynamic> route) => false,
+        );
         break;
       case 1: // Home
         // Navegar a la pantalla principal de Home, limpiando la pila.
@@ -85,18 +81,11 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
           MaterialPageRoute(builder: (context) => const HomeScreen()),
           (Route<dynamic> route) => false,
         );
-        // Alternativamente, si quieres volver solo a SubwayMenuScreen:
-        // Navigator.pop(context); // Si ProductDetailSW fue pusheado desde SubwayMenuScreen
-        // O:
-        // Navigator.pushReplacement(
-        //   context,
-        //   MaterialPageRoute(builder: (context) => const SubwayMenuScreen()),
-        // );
         break;
-      case 2: // Membership
+      case 2: // Orders (ANTERIORMENTE Membership)
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const MembershipScreen()),
+          MaterialPageRoute(builder: (context) => const OrdersScreen()), // NAVEGAR A OrdersScreen
           (Route<dynamic> route) => false,
         );
         break;
@@ -393,7 +382,8 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
           Align(
             alignment: Alignment.bottomCenter,
             child: CustomBottomNavigationBar(
-              currentIndex: _selectedIndex, // Asegúrate de que sea 1
+              currentIndex:
+                  _selectedIndex, // Sigue siendo 1 porque esta pantalla es del flujo "Home"
               onTabChanged: _onTabTapped,
               backgroundColor: Colors.white,
             ),

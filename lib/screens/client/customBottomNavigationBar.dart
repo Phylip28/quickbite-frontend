@@ -17,13 +17,9 @@ class CustomBottomNavigationBar extends StatelessWidget {
     const Color activeColor = Color(0xFFf05000);
     const Color inactiveColor = Colors.grey;
 
-    // Asegúrate de tener este icono en tu carpeta assets/icons/
-    // o reemplázalo con el que desees usar.
-    const String membershipIconPath = 'assets/icons/membership.png';
-
     return BottomNavigationBar(
       backgroundColor: backgroundColor ?? Colors.white,
-      type: BottomNavigationBarType.fixed, // Recomendado para 4 o más ítems
+      type: BottomNavigationBarType.fixed,
       items: <BottomNavigationBarItem>[
         BottomNavigationBarItem(
           icon: ImageIcon(
@@ -40,16 +36,17 @@ class CustomBottomNavigationBar extends StatelessWidget {
           label: 'Home',
         ),
         BottomNavigationBarItem(
-          // NUEVO ÍTEM DE MEMBRESÍA - Índice 2
-          icon: ImageIcon(
-            const AssetImage(membershipIconPath),
+          // ÍTEM DE ÓRDENES - Índice 2
+          icon: Icon(
+            // Usando un ícono de Material Design
+            Icons.receipt_long, // O Icons.list_alt, Icons.article, etc.
             color: currentIndex == 2 ? activeColor : inactiveColor,
           ),
-          label: 'Membership',
+          label: 'Orders', // Cambia la etiqueta a 'Orders'
         ),
         BottomNavigationBarItem(
           icon: ImageIcon(
-            const AssetImage('assets/icons/profile.png'), // Índice 3 (anteriormente 2)
+            const AssetImage('assets/icons/profile.png'), // Índice 3
             color: currentIndex == 3 ? activeColor : inactiveColor,
           ),
           label: 'Account',
@@ -58,8 +55,8 @@ class CustomBottomNavigationBar extends StatelessWidget {
       currentIndex: currentIndex,
       selectedItemColor: activeColor,
       unselectedItemColor: inactiveColor,
-      showSelectedLabels: false, // Opcional: puedes ponerlas en true si quieres ver los labels
-      showUnselectedLabels: false, // Opcional
+      showSelectedLabels: false,
+      showUnselectedLabels: false,
       onTap: onTabChanged,
     );
   }

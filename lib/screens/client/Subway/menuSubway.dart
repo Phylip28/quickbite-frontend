@@ -4,7 +4,7 @@ import '../homeScreen.dart';
 import '../customBottomNavigationBar.dart';
 import '../account/profile.dart';
 import '../cart/shoppingCart.dart';
-import '../membership/membership.dart';
+import '../orders/orders.dart'; // IMPORTACIÓN PARA LA PANTALLA DE ÓRDENES
 import '../../../auth/auth.dart';
 
 const primaryColor = Color(0xFFf05000);
@@ -37,39 +37,49 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
   }
 
   void _onTabTapped(int index) {
-    if (_selectedIndex == index) return; // Si ya está en la pestaña, no hacer nada
-
-    // No es necesario llamar a setState aquí si siempre usas pushReplacement,
-    // ya que la pantalla se reconstruirá con el _selectedIndex correcto.
+    // Si el índice seleccionado es el mismo que el actual Y es la pestaña Home (1),
+    // y ya estamos en una pantalla del flujo de Home, no hacer nada o ir a la HomeScreen principal.
+    // Si es otra pestaña, siempre navegar.
+    if (_selectedIndex == index && index == 1) {
+      // Si el usuario está en SubwayMenuScreen y presiona "Home" de nuevo,
+      // lo llevamos a la HomeScreen principal, limpiando la pila.
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        (Route<dynamic> route) => false,
+      );
+      return;
+    }
+    // Si se presiona una pestaña diferente a la actual (_selectedIndex), navegar.
+    if (_selectedIndex == index) return;
 
     switch (index) {
       case 0: // Cart
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+          (Route<dynamic> route) => false,
         );
         break;
       case 1: // Home
-        // Si SubwayMenuScreen es una pantalla "profunda" y el usuario quiere volver a la HomeScreen principal
+        // Si se llega aquí desde otra pestaña (Cart, Orders, Account),
+        // o si se presionó Home estando en SubwayMenuScreen (manejado arriba),
+        // ir a la HomeScreen principal.
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
-          (Route<dynamic> route) => false, // Limpia la pila hasta HomeScreen
+          (Route<dynamic> route) => false,
         );
-        // Si SubwayMenuScreen actúa como una de las pantallas principales del índice 1,
-        // y el usuario ya está aquí, no se haría nada (cubierto por el primer if).
         break;
-      case 2: // Membership
+      case 2: // Orders (ANTERIORMENTE Membership)
         Navigator.pushAndRemoveUntil(
-          // O pushReplacement si prefieres
           context,
-          MaterialPageRoute(builder: (context) => const MembershipScreen()),
+          MaterialPageRoute(builder: (context) => const OrdersScreen()), // NAVEGAR A OrdersScreen
           (Route<dynamic> route) => false,
         );
         break;
       case 3: // Account (Profile)
         Navigator.pushAndRemoveUntil(
-          // O pushReplacement
           context,
           MaterialPageRoute(builder: (context) => const ProfileClient()),
           (Route<dynamic> route) => false,
@@ -511,7 +521,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
         ),
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _selectedIndex, // Asegúrate de que sea 1
+        currentIndex: _selectedIndex, // Sigue siendo 1 porque esta pantalla es del flujo "Home"
         onTabChanged: _onTabTapped,
         backgroundColor: Colors.white,
       ),

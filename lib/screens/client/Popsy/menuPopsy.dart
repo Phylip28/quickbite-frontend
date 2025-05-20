@@ -4,8 +4,8 @@ import '../homeScreen.dart';
 import '../customBottomNavigationBar.dart';
 import '../account/profile.dart';
 import '../cart/shoppingCart.dart';
-import '../membership/membership.dart';
-import '../../../auth/auth.dart'; // Para _loadUserAddress
+import '../orders/orders.dart';
+import '../../../auth/auth.dart';
 
 // Definición de colores consistentes
 const primaryColor = Color(0xFFf05000);
@@ -40,26 +40,45 @@ class _PopsyMenuScreenState extends State<PopsyMenuScreen> {
   }
 
   void _onTabTapped(int index) {
+    // Si el índice seleccionado es el mismo que el actual Y es la pestaña Home (1),
+    // y ya estamos en una pantalla del flujo de Home, no hacer nada o ir a la HomeScreen principal.
+    // Si es otra pestaña, siempre navegar.
+    if (_selectedIndex == index && index == 1) {
+      // Si el usuario está en PopsyMenuScreen y presiona "Home" de nuevo,
+      // lo llevamos a la HomeScreen principal, limpiando la pila.
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        (Route<dynamic> route) => false,
+      );
+      return;
+    }
+    // Si se presiona una pestaña diferente a la actual (_selectedIndex), navegar.
     if (_selectedIndex == index) return;
 
     switch (index) {
       case 0: // Cart
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
+          // Cambiado a pushAndRemoveUntil para consistencia
           context,
           MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+          (Route<dynamic> route) => false,
         );
         break;
       case 1: // Home
+        // Si se llega aquí desde otra pestaña (Cart, Orders, Account),
+        // o si se presionó Home estando en PopsyMenuScreen (manejado arriba),
+        // ir a la HomeScreen principal.
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 2: // Membership
+      case 2: // Orders (ANTERIORMENTE Membership)
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const MembershipScreen()),
+          MaterialPageRoute(builder: (context) => const OrdersScreen()), // NAVEGAR A OrdersScreen
           (Route<dynamic> route) => false,
         );
         break;

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../customBottomNavigationBar.dart';
 import '../homeScreen.dart';
 import '../account/profile.dart';
-import '../membership/membership.dart'; // NUEVA IMPORTACIÓN
+import '../orders/orders.dart';
 import 'paymentScreen.dart';
 
 // --- Lista de ítems del carrito accesible estáticamente ---
@@ -109,32 +109,41 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
   }
 
   void _onTabTapped(int index) {
-    if (_selectedIndex == index) return; // Evitar reconstrucción si ya está en la pestaña
-
-    // setState(() { // No es estrictamente necesario si siempre usas pushReplacement
-    //   _selectedIndex = index;
-    // });
+    if (_selectedIndex == index && index != 1 /* Permitir recargar HomeScreen */ ) {
+      // Si es HomeScreen y ya está seleccionada, permitir recargarla (o manejar de otra forma)
+      if (index == 1) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (Route<dynamic> route) => false,
+        );
+      }
+      return;
+    }
 
     switch (index) {
       case 0: // Cart
         // Ya estamos en ShoppingCartScreen
         break;
       case 1: // Home
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (Route<dynamic> route) => false,
         );
         break;
-      case 2: // Membership
-        Navigator.pushReplacement(
+      case 2: // Orders (ANTERIORMENTE Membership)
+        Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const MembershipScreen()),
+          MaterialPageRoute(builder: (context) => const OrdersScreen()), // NAVEGAR A OrdersScreen
+          (Route<dynamic> route) => false,
         );
         break;
       case 3: // Account (Profile)
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const ProfileClient()),
+          (Route<dynamic> route) => false,
         );
         break;
     }

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../customBottomNavigationBar.dart';
-import '../homeScreen.dart';
-import '../cart/shoppingCart.dart';
-import '../account/profile.dart';
+import '../../customBottomNavigationBar.dart';
+import '../../homeScreen.dart';
+import '../../cart/shoppingCart.dart';
+import '../profile.dart';
 import 'membershipPaymentScreen.dart';
 import 'membershipTerms.dart';
-import '../orders/orders.dart';
+import '../../orders/orders.dart';
 
 const primaryColor = Color(0xFFf05000);
 const starColor = Colors.amber;
@@ -18,50 +18,61 @@ class MembershipScreen extends StatefulWidget {
 }
 
 class _MembershipScreenState extends State<MembershipScreen> {
-  // MembershipScreen ahora es parte del flujo de "Account", por lo que el índice seleccionado
-  // en la barra de navegación debe ser el de "Account".
-  final int _selectedIndex = 3; // Índice de "Account"
+  // final int _selectedIndex = 2; // ANTERIOR: Esto hacía que "Pedidos" se marcara como activo
+  final int _selectedIndex = 3; // CORREGIDO: "Cuenta" (índice 3) debe estar activo
 
   void _onTabTapped(int index) {
-    // Si el usuario está en MembershipScreen y presiona "Account" (índice 3),
-    // debería volver a ProfileClient.
-    if (index == 3) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const ProfileClient()),
-        (Route<dynamic> route) => false,
-      );
+    if (_selectedIndex == index && index != 3) {
+      // Si ya está en la pestaña y no es "Cuenta" (para permitir volver a Perfil)
+      // Si es una de las pestañas principales y ya está seleccionada (y no es la propia "Cuenta"),
+      // no hacer nada o refrescar si es necesario.
+      // Si es la pestaña "Cuenta" (índice 3) y ya estamos en MembershipScreen (que es una sub-pantalla de Cuenta),
+      // podríamos querer navegar a ProfileClient si el usuario la presiona.
+      if (index == 3) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfileClient()),
+        );
+      }
+      return;
+    }
+    if (_selectedIndex == index && index == 3) {
+      // Si ya está en la pestaña "Cuenta" y la presiona de nuevo
+      Navigator.pop(context); // Volver a la pantalla de Perfil
       return;
     }
 
-    // Si se presiona una pestaña diferente a la actual (_selectedIndex), navegar.
-    // Esto es por si el usuario quiere saltar a otra sección principal desde aquí.
-    if (_selectedIndex == index) return;
-
     switch (index) {
       case 0: // Cart
-        Navigator.pushAndRemoveUntil(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
-          (Route<dynamic> route) => false,
         );
         break;
       case 1: // Home
-        Navigator.pushAndRemoveUntil(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
-          (Route<dynamic> route) => false,
         );
         break;
       case 2: // Orders
-        Navigator.pushAndRemoveUntil(
+        Navigator.pushReplacement(
+          // CAMBIO: Navegar a OrdersScreen
           context,
-          MaterialPageRoute(builder: (context) => const OrdersScreen()), // NAVEGAR A OrdersScreen
-          (Route<dynamic> route) => false,
+          MaterialPageRoute(builder: (context) => const OrdersScreen()),
         );
         break;
-      // case 3 (Account) ya se maneja arriba para volver a ProfileClient si es necesario,
-      // o si se llega desde otra pestaña, se irá a ProfileClient.
+      case 3: // Account (Profile)
+        // Si el usuario está en MembershipScreen y presiona "Account",
+        // lo llevamos de vuelta a la pantalla principal de ProfileClient.
+        // O simplemente hacemos pop si MembershipScreen siempre se abre desde ProfileClient.
+        Navigator.pop(context); // Opción 1: Simplemente volver
+        // Opción 2: Asegurar que va a ProfileClient (más robusto si se pudiera llegar de otra forma)
+        // Navigator.pushReplacement(
+        //   context,
+        //   MaterialPageRoute(builder: (context) => const ProfileClient()),
+        // );
+        break;
     }
   }
 
@@ -71,11 +82,6 @@ class _MembershipScreenState extends State<MembershipScreen> {
       backgroundColor: Colors.white,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        leading: IconButton(
-          // AÑADIR BOTÓN DE RETROCESO
-          icon: const Icon(Icons.arrow_back_ios_new, color: primaryColor),
-          onPressed: () => Navigator.of(context).pop(), // Acción para volver
-        ),
         title: const Text(
           'QuickBite Team',
           style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
@@ -83,12 +89,19 @@ class _MembershipScreenState extends State<MembershipScreen> {
         centerTitle: true,
         backgroundColor: Colors.white.withOpacity(0.85),
         elevation: 0.5,
-        // iconTheme: const IconThemeData(color: primaryColor), // Ya no es necesario si 'leading' lo define
-        // automaticallyImplyLeading: false, // ELIMINAR O PONER EN TRUE
+        iconTheme: const IconThemeData(color: primaryColor),
+        // automaticallyImplyLeading: false, // ANTERIOR: Esto ocultaba la flecha
+        automaticallyImplyLeading: true, // CORREGIDO: Mostrar la flecha de regreso
       ),
       body: SingleChildScrollView(
+        // El padding superior del SingleChildScrollView ayuda a que el contenido no quede oculto
+        // por la AppBar translúcida. Si es necesario, se puede envolver el Column
+        // dentro de un SafeArea y ajustar el padding.
         padding: EdgeInsets.only(
-          top: kToolbarHeight + MediaQuery.of(context).padding.top + 20.0,
+          top:
+              kToolbarHeight +
+              MediaQuery.of(context).padding.top +
+              20.0, // Ajuste para AppBar y status bar
           left: 16.0,
           right: 16.0,
           bottom: 80.0,
@@ -97,9 +110,10 @@ class _MembershipScreenState extends State<MembershipScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Container(
+              // CONTENEDOR SUPERIOR
               padding: const EdgeInsets.all(20.0),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Colors.white, // FONDO BLANCO
                 borderRadius: BorderRadius.circular(12.0),
                 boxShadow: [
                   BoxShadow(
@@ -113,7 +127,11 @@ class _MembershipScreenState extends State<MembershipScreen> {
               ),
               child: Column(
                 children: [
-                  Icon(Icons.star_purple500_outlined, size: 60, color: starColor),
+                  Icon(
+                    Icons.star_purple500_outlined,
+                    size: 60,
+                    color: starColor,
+                  ), // ESTRELLA AMARILLA
                   const SizedBox(height: 12),
                   const Text(
                     'Unlock Exclusive Benefits!',
@@ -121,14 +139,18 @@ class _MembershipScreenState extends State<MembershipScreen> {
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
-                      color: primaryColor,
+                      color: primaryColor, // LETRAS DEL TÍTULO EN NARANJA
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Join QuickBite Premium today and elevate your food ordering experience with perks designed just for you.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, color: Colors.grey[700], height: 1.4),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[700], // Texto descriptivo en gris oscuro
+                      height: 1.4,
+                    ),
                   ),
                 ],
               ),
@@ -185,19 +207,32 @@ class _MembershipScreenState extends State<MembershipScreen> {
                 textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               onPressed: () {
+                // ANTERIORMENTE LLEVABA DIRECTO A MembershipSuccessfulScreen
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(builder: (context) => const MembershipSuccessfulScreen()),
+                // );
+
+                // CORRECCIÓN: Navegar a MembershipPaymentScreen
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const MembershipPaymentScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const MembershipPaymentScreen(),
+                  ), // CAMBIO AQUÍ
                 );
               },
               child: const Text(
-                'Subscribe Now for €9.99/month',
+                'Subscribe Now for €9.99/month', // Cambiado de $ a €
                 style: TextStyle(color: Colors.white),
               ),
             ),
             const SizedBox(height: 12),
             TextButton(
               onPressed: () {
+                // ANTERIOR:
+                // print('Learn more / Terms tapped');
+
+                // NUEVO: Navegar a MembershipTermsScreen
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const MembershipTermsScreen()),
@@ -209,9 +244,9 @@ class _MembershipScreenState extends State<MembershipScreen> {
         ),
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _selectedIndex, // Ahora es 3 (Account)
+        currentIndex: _selectedIndex,
         onTabChanged: _onTabTapped,
-        backgroundColor: Colors.white.withOpacity(0.95),
+        backgroundColor: Colors.white.withOpacity(0.95), // También puedes hacerlo semitransparente
       ),
     );
   }

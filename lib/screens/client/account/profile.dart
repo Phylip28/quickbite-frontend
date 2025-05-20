@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../loginScreen.dart';
 import '../homeScreen.dart';
 import '../cart/shoppingCart.dart';
+import '../orders/orders.dart';
 import '../membership/membership.dart';
 import '../customBottomNavigationBar.dart';
 import '../../../auth/auth.dart';
@@ -10,7 +11,7 @@ import 'changePassword.dart';
 import 'inviteFriends.dart';
 import 'help/helpCenter.dart';
 import 'help/privacy&policy.dart';
-import 'help/terms&conditions.dart';
+import 'help/terms&conditions.dart'; // Asegúrate que el nombre del archivo sea correcto si es 'terms_and_conditions.dart'
 
 class ProfileClient extends StatefulWidget {
   const ProfileClient({super.key});
@@ -20,7 +21,7 @@ class ProfileClient extends StatefulWidget {
 }
 
 class _ProfileClientState extends State<ProfileClient> {
-  int _selectedIndex = 3; // ASEGÚRATE DE QUE ESTÉ INICIALIZADO A 3
+  final int _selectedIndex = 3; // El índice de "Account" en la navbar
   String? _userName;
   String? _userEmail;
 
@@ -42,45 +43,54 @@ class _ProfileClientState extends State<ProfileClient> {
   }
 
   void _onTabTapped(int index) {
-    if (_selectedIndex == index) return; // Si ya está en la pestaña, no hacer nada
+    if (_selectedIndex == index && index != 1 /* Permitir recargar HomeScreen */ ) {
+      // Si es HomeScreen y ya está seleccionada, permitir recargarla (o manejar de otra forma)
+      if (index == 1) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (Route<dynamic> route) => false,
+        );
+      }
+      return;
+    }
 
-    // Si se navega a una pantalla diferente, esa pantalla se encargará de su propio _selectedIndex.
-    // Si se usa pushReplacement, esta instancia de ProfileClient se destruirá y reconstruirá
-    // si se navega de vuelta, inicializando _selectedIndex a 3 de nuevo.
-
-    // setState(() { // Esta línea es importante si NO usas pushReplacement para todas las navegaciones
-    //   _selectedIndex = index; // y quieres que el estado visual se actualice inmediatamente.
-    // });                 // Con pushReplacement para las pestañas principales, la reconstrucción se encarga.
+    // Actualizar el índice seleccionado ANTES de navegar si la pantalla actual no se reemplaza completamente
+    // y si la barra de navegación necesita reflejar el cambio inmediatamente.
+    // Sin embargo, con pushReplacement/pushAndRemoveUntil, la pantalla se reconstruye.
+    // setState(() {
+    //   _selectedIndex = index;
+    // });
 
     switch (index) {
       case 0: // Cart
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
+          // Usar pushAndRemoveUntil para limpiar la pila
           context,
           MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+          (Route<dynamic> route) => false,
         );
         break;
       case 1: // Home
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (Route<dynamic> route) => false,
         );
         break;
-      case 2: // Membership
-        Navigator.pushReplacement(
+      case 2: // Orders (NUEVO en lugar de Membership)
+        Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const MembershipScreen()),
+          MaterialPageRoute(
+            builder: (context) => const OrdersScreen(),
+          ), // NAVEGAR A LA PANTALLA DE ÓRDENES
+          (Route<dynamic> route) => false,
         );
         break;
       case 3: // Account (Profile)
-        // Ya estamos en ProfileClient, no se necesita acción de navegación si _selectedIndex ya es 3.
-        // Si por alguna razón _selectedIndex no fuera 3 y se llega aquí,
-        // la inicialización de la pantalla (si se reconstruye) o un setState asegurarían el estado correcto.
-        if (_selectedIndex != 3 && mounted) {
-          // Solo si es necesario y para asegurar consistencia
-          setState(() {
-            _selectedIndex = 3;
-          });
-        }
+        // Ya estamos en ProfileClient, no se necesita acción si _selectedIndex ya es 3.
+        // Si se llega aquí desde otra pestaña, la pantalla se reconstruirá y _selectedIndex se inicializará a 3.
+        // No es necesario un setState aquí si se usa pushAndRemoveUntil para las otras pestañas.
         break;
     }
   }
@@ -103,12 +113,14 @@ class _ProfileClientState extends State<ProfileClient> {
                     children: [
                       InkWell(
                         onTap: () {
-                          Navigator.pushReplacement(
+                          // Al presionar atrás, usualmente se vuelve a la pantalla anterior en la pila.
+                          // Si la pila está vacía o se quiere un comportamiento específico como ir a HomeScreen:
+                          Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(builder: (context) => const HomeScreen()),
+                            (Route<dynamic> route) => false,
                           );
                         },
-                        // Reemplazar Image.asset con un Icon para consistencia y mejor escalabilidad
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
@@ -140,8 +152,8 @@ class _ProfileClientState extends State<ProfileClient> {
                   Container(
                     padding: const EdgeInsets.all(14.0),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9), // Aumentar opacidad para legibilidad
-                      borderRadius: BorderRadius.circular(12.0), // Bordes más suaves
+                      color: Colors.white.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(12.0),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.1),
@@ -172,10 +184,7 @@ class _ProfileClientState extends State<ProfileClient> {
                               ),
                               Text(
                                 _userEmail ?? 'Loading email...',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  color: Colors.grey[700],
-                                ), // Color más oscuro para el email
+                                style: TextStyle(fontSize: 15, color: Colors.grey[700]),
                               ),
                             ],
                           ),
@@ -185,10 +194,7 @@ class _ProfileClientState extends State<ProfileClient> {
                   ),
                   const SizedBox(height: 32),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 16.0,
-                      horizontal: 8.0,
-                    ), // Ajustar padding
+                    padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.9),
                       borderRadius: BorderRadius.circular(12.0),
@@ -218,7 +224,7 @@ class _ProfileClientState extends State<ProfileClient> {
                           context,
                           'Account information',
                           'Change your account information',
-                          icon: Icons.person_outline, // Añadir icono
+                          icon: Icons.person_outline,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -232,7 +238,7 @@ class _ProfileClientState extends State<ProfileClient> {
                           context,
                           'Password',
                           'Change your Password',
-                          icon: Icons.lock_outline, // Añadir icono
+                          icon: Icons.lock_outline,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -240,11 +246,24 @@ class _ProfileClientState extends State<ProfileClient> {
                             );
                           },
                         ),
+                        // AÑADIR OPCIÓN DE MEMBRESÍA AQUÍ
+                        _buildListTile(
+                          context,
+                          'Membership',
+                          'Manage your QuickBite membership',
+                          icon: Icons.card_membership, // Icono para membresía
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const MembershipScreen()),
+                            );
+                          },
+                        ),
                         _buildListTile(
                           context,
                           'Invite your friends',
                           'Get \$59 for each invitation!',
-                          icon: Icons.people_outline, // Añadir icono
+                          icon: Icons.people_outline,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -252,7 +271,7 @@ class _ProfileClientState extends State<ProfileClient> {
                             );
                           },
                         ),
-                        const SizedBox(height: 24), // Espacio entre secciones
+                        const SizedBox(height: 24),
                         const Padding(
                           padding: EdgeInsets.only(left: 8.0, bottom: 16.0),
                           child: Text(
@@ -267,8 +286,8 @@ class _ProfileClientState extends State<ProfileClient> {
                         _buildListTile(
                           context,
                           'Help Center',
-                          'Find answers and contact support', // Subtítulo más descriptivo
-                          icon: Icons.help_outline, // Añadir icono
+                          'Find answers and contact support',
+                          icon: Icons.help_outline,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -279,8 +298,8 @@ class _ProfileClientState extends State<ProfileClient> {
                         _buildListTile(
                           context,
                           'Privacy & Policy',
-                          'Read our privacy policy', // Subtítulo más descriptivo
-                          icon: Icons.shield_outlined, // Añadir icono
+                          'Read our privacy policy',
+                          icon: Icons.shield_outlined,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -291,14 +310,15 @@ class _ProfileClientState extends State<ProfileClient> {
                         _buildListTile(
                           context,
                           'Terms & Conditions',
-                          'Read our terms and conditions', // Subtítulo más descriptivo
-                          icon: Icons.description_outlined, // Añadir icono
+                          'Read our terms and conditions',
+                          icon: Icons.description_outlined,
                           onTap: () {
-                            // CAMBIO AQUÍ
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const TermsAndConditionsScreen(),
+                                builder:
+                                    (context) =>
+                                        const TermsAndConditionsScreen(), // Asegúrate que el nombre de la clase sea correcto
                               ),
                             );
                           },
@@ -313,7 +333,6 @@ class _ProfileClientState extends State<ProfileClient> {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         OutlinedButton.icon(
-                          // Usar .icon para mejor UI
                           icon: const Icon(Icons.delete_outline, color: Colors.red),
                           label: const Text('Delete account', style: TextStyle(color: Colors.red)),
                           onPressed: () {
@@ -327,17 +346,14 @@ class _ProfileClientState extends State<ProfileClient> {
                           ),
                         ),
                         ElevatedButton.icon(
-                          // Usar .icon para mejor UI
                           icon: const Icon(Icons.logout, color: Colors.white),
                           label: const Text('Log Out', style: TextStyle(color: Colors.white)),
                           onPressed: () async {
                             await deleteAuthToken();
                             Navigator.pushAndRemoveUntil(
-                              // Limpiar pila de navegación
                               context,
                               MaterialPageRoute(builder: (context) => const LoginScreen()),
-                              (Route<dynamic> route) =>
-                                  false, // Eliminar todas las rutas anteriores
+                              (Route<dynamic> route) => false,
                             );
                           },
                           style: ElevatedButton.styleFrom(
@@ -349,7 +365,7 @@ class _ProfileClientState extends State<ProfileClient> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 80), // Espacio para la barra de navegación inferior
+                  const SizedBox(height: 80),
                 ],
               ),
             ),
@@ -357,28 +373,27 @@ class _ProfileClientState extends State<ProfileClient> {
         ],
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _selectedIndex, // ASEGÚRATE DE PASAR EL _selectedIndex CORRECTO
+        currentIndex: _selectedIndex,
         onTabChanged: _onTabTapped,
-        backgroundColor: Colors.white, // O el color que uses
+        backgroundColor: Colors.white,
       ),
     );
   }
 
-  // Modificar _buildListTile para aceptar un icono opcional
   static Widget _buildListTile(
     BuildContext context,
     String title,
     String subtitle, {
-    IconData? icon, // NUEVO: Parámetro de icono opcional
+    IconData? icon,
     VoidCallback? onTap,
   }) {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8.0), // Ajustar padding
+        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 8.0),
         child: Row(
           children: [
-            if (icon != null) // Mostrar icono si se proporciona
+            if (icon != null)
               Padding(
                 padding: const EdgeInsets.only(right: 16.0),
                 child: Icon(icon, color: const Color(0xFFf05000), size: 24),
@@ -400,11 +415,7 @@ class _ProfileClientState extends State<ProfileClient> {
                 ],
               ),
             ),
-            const Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.grey,
-              size: 18,
-            ), // Tamaño de flecha ajustado
+            const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 18),
           ],
         ),
       ),
