@@ -17,6 +17,7 @@ import 'Popsy/productDetailPSY.dart';
 import 'Starbucks/productDetailSB.dart';
 import 'Subway/productDetailSW.dart';
 import 'TierraQuerida/productDetailTQ.dart';
+import 'categories.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -55,18 +56,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onTabTapped(int index) {
-    // setState(() { // Descomentar si CustomBottomNavigationBar no maneja su propio estado de índice
-    //   _selectedIndex = index;
-    // });
-
     switch (index) {
       case 0: // Cart
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ShoppingCartScreen(), // Corregido: sin parámetros
-          ),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (context) => ShoppingCartScreen()));
         break;
       case 1: // Home
         // Ya estamos en HomeScreen
@@ -88,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Map<String, String>> _categories = [
     {'name': 'Ice cream', 'image': 'assets/images/cliente/iceCream.png'},
-    {'name': 'Sushi', 'image': 'assets/images/cliente/sushi.png'},
+    {'name': 'Frappuccino', 'image': 'assets/images/cliente/frappuccino.png'},
     {'name': 'Hamburgers', 'image': 'assets/images/cliente/hamburger.png'},
   ];
 
@@ -100,7 +92,6 @@ class _HomeScreenState extends State<HomeScreen> {
     {'name': 'Popsy', 'image': 'assets/logos/popsy.png'},
   ];
 
-  // Considera añadir un campo 'description' a cada producto si tienes descripciones específicas.
   final List<Map<String, String>> _allProducts = [
     // KFC
     {
@@ -109,7 +100,8 @@ class _HomeScreenState extends State<HomeScreen> {
       'price': '\$22.99',
       'restaurantName': 'KFC',
       'rating': '4.8',
-      'description': 'Un festín familiar con el sabor único de KFC.', // Ejemplo de descripción
+      'description': 'A family feast with the unique KFC flavor.', // Translated
+      'category': 'Chicken',
     },
     {
       'name': 'Wow Duo Deluxe Nuggets',
@@ -117,7 +109,8 @@ class _HomeScreenState extends State<HomeScreen> {
       'price': '\$25.99',
       'restaurantName': 'KFC',
       'rating': '4.7',
-      'description': 'Deliciosos nuggets para compartir, estilo deluxe.',
+      'description': 'Delicious nuggets to share, deluxe style.', // Translated
+      'category': 'Hamburgers', // Assuming this is a general "main course" type category
     },
     {
       'name': 'Combo Nuggets',
@@ -125,7 +118,8 @@ class _HomeScreenState extends State<HomeScreen> {
       'price': '\$11.50',
       'restaurantName': 'KFC',
       'rating': '4.8',
-      'description': 'El combo perfecto de nuggets crujientes.',
+      'description': 'The perfect combo of crispy nuggets.', // Translated
+      'category': 'Chicken',
     },
     {
       'name': 'Parte y Comparte Alas',
@@ -133,7 +127,8 @@ class _HomeScreenState extends State<HomeScreen> {
       'price': '\$25.99',
       'restaurantName': 'KFC',
       'rating': '4.7',
-      'description': 'Alitas picantes y sabrosas, ideales para compartir.',
+      'description': 'Spicy and tasty wings, ideal for sharing.', // Translated
+      'category': 'Chicken',
     },
     {
       'name': 'BigBox Kentucky Coronel',
@@ -141,7 +136,8 @@ class _HomeScreenState extends State<HomeScreen> {
       'price': '\$21.99',
       'restaurantName': 'KFC',
       'rating': '4.8',
-      'description': 'Una caja llena de los favoritos del Coronel.',
+      'description': "A box full of the Colonel's favorites.", // Translated
+      'category': 'Hamburgers',
     },
     {
       'name': 'Combo Pop Corn',
@@ -149,7 +145,8 @@ class _HomeScreenState extends State<HomeScreen> {
       'price': '\$14.99',
       'restaurantName': 'KFC',
       'rating': '4.7',
-      'description': 'Crujiente pollo Pop Corn en un combo irresistible.',
+      'description': 'Crispy Pop Corn chicken in an irresistible combo.', // Translated
+      'category': 'Chicken',
     },
     // Subway
     {
@@ -158,7 +155,8 @@ class _HomeScreenState extends State<HomeScreen> {
       'price': '\$6.50',
       'restaurantName': 'Subway',
       'rating': '4.8',
-      'description': 'Clásico sub de pavo y jamón, fresco y delicioso.',
+      'description': 'Classic turkey and ham sub, fresh and delicious.', // Translated
+      'category': 'Sandwich',
     },
     {
       'name': 'Rotisserie Style Chicken Subs',
@@ -166,7 +164,8 @@ class _HomeScreenState extends State<HomeScreen> {
       'price': '\$6.60',
       'restaurantName': 'Subway',
       'rating': '4.7',
-      'description': 'Sabroso pollo estilo rotisserie en tu sub favorito.',
+      'description': 'Tasty rotisserie-style chicken in your favorite sub.', // Translated
+      'category': 'Sandwich',
     },
     {
       'name': 'Subs Footlong Bacon Melt',
@@ -174,7 +173,8 @@ class _HomeScreenState extends State<HomeScreen> {
       'price': '\$5.50',
       'restaurantName': 'Subway',
       'rating': '4.6',
-      'description': 'Irresistible sub con tocino derretido.',
+      'description': 'Irresistible sub with melted bacon.', // Translated
+      'category': 'Sandwich',
     },
     // Popsy
     {
@@ -183,7 +183,8 @@ class _HomeScreenState extends State<HomeScreen> {
       'price': '\$4.50',
       'restaurantName': 'Popsy',
       'rating': '4.8',
-      'description': 'Malteada refrescante con el dulce sabor de la cereza.',
+      'description': 'Refreshing milkshake with the sweet taste of cherry.', // Translated
+      'category': 'Ice cream',
     },
     {
       'name': 'Vainilla Gourmet Milkshake',
@@ -191,7 +192,8 @@ class _HomeScreenState extends State<HomeScreen> {
       'price': '\$4.60',
       'restaurantName': 'Popsy',
       'rating': '4.7',
-      'description': 'Clásica malteada de vainilla con un toque gourmet.',
+      'description': 'Classic vanilla milkshake with a gourmet touch.', // Translated
+      'category': 'Ice cream',
     },
     {
       'name': 'M&M Milkshake',
@@ -199,7 +201,8 @@ class _HomeScreenState extends State<HomeScreen> {
       'price': '\$4.50',
       'restaurantName': 'Popsy',
       'rating': '4.6',
-      'description': 'Divertida y deliciosa malteada con trozos de M&M.',
+      'description': 'Fun and delicious milkshake with M&M pieces.', // Translated
+      'category': 'Ice cream',
     },
     {
       'name': 'Cereza Italiana Milkshake',
@@ -207,7 +210,8 @@ class _HomeScreenState extends State<HomeScreen> {
       'price': '\$5.00',
       'restaurantName': 'Popsy',
       'rating': '4.8',
-      'description': 'Exquisita malteada de cereza al estilo italiano.',
+      'description': 'Exquisite Italian-style cherry milkshake.', // Translated
+      'category': 'Ice cream',
     },
     // Starbucks
     {
@@ -216,15 +220,17 @@ class _HomeScreenState extends State<HomeScreen> {
       'price': '\$4.50',
       'restaurantName': 'Starbucks',
       'rating': '4.8',
-      'description': 'Cremoso Frappuccino con el dulce sabor de la fresa.',
+      'description': 'Creamy Frappuccino with the sweet taste of strawberry.', // Translated
+      'category': 'Frappuccino',
     },
     {
       'name': 'Cookies&Cream Frappuccino',
       'image': 'assets/images/cliente/starbucks/cookies&CreamFrappuccino.png',
-      'price': '\$5.20', // Asumiendo un precio más estándar para Starbucks
+      'price': '\$5.20',
       'restaurantName': 'Starbucks',
       'rating': '4.7',
-      'description': 'Delicioso Frappuccino con trozos de galleta y crema.',
+      'description': 'Delicious Frappuccino with cookie pieces and cream.', // Translated
+      'category': 'Frappuccino',
     },
     {
       'name': 'Mocha Blanco Frappuccino',
@@ -232,7 +238,8 @@ class _HomeScreenState extends State<HomeScreen> {
       'price': '\$4.80',
       'restaurantName': 'Starbucks',
       'rating': '4.6',
-      'description': 'Suave y dulce Frappuccino de mocha blanco.',
+      'description': 'Smooth and sweet white mocha Frappuccino.', // Translated
+      'category': 'Frappuccino',
     },
     {
       'name': 'Caramel Frappuccino',
@@ -240,7 +247,8 @@ class _HomeScreenState extends State<HomeScreen> {
       'price': '\$5.00',
       'restaurantName': 'Starbucks',
       'rating': '4.8',
-      'description': 'El clásico y amado Frappuccino de caramelo.',
+      'description': 'The classic and beloved Caramel Frappuccino.', // Translated
+      'category': 'Frappuccino',
     },
     // Tierra Querida
     {
@@ -249,7 +257,8 @@ class _HomeScreenState extends State<HomeScreen> {
       'price': '\$3.40',
       'restaurantName': 'Tierra Querida',
       'rating': '4.8',
-      'description': 'Hamburguesa clásica con ingredientes frescos.',
+      'description': 'Classic hamburger with fresh ingredients.', // Translated
+      'category': 'Hamburgers',
     },
     {
       'name': 'Double hamburger',
@@ -257,7 +266,8 @@ class _HomeScreenState extends State<HomeScreen> {
       'price': '\$4.50',
       'restaurantName': 'Tierra Querida',
       'rating': '4.7',
-      'description': 'Doble carne, doble sabor en esta hamburguesa.',
+      'description': 'Double meat, double flavor in this hamburger.', // Translated
+      'category': 'Hamburgers',
     },
     {
       'name': 'Triple hamburger',
@@ -265,7 +275,8 @@ class _HomeScreenState extends State<HomeScreen> {
       'price': '\$5.80',
       'restaurantName': 'Tierra Querida',
       'rating': '4.6',
-      'description': 'Para los más hambrientos, una hamburguesa triple.',
+      'description': 'For the hungriest, a triple hamburger.', // Translated
+      'category': 'Hamburgers',
     },
     {
       'name': 'French fries',
@@ -273,7 +284,8 @@ class _HomeScreenState extends State<HomeScreen> {
       'price': '\$1.00',
       'restaurantName': 'Tierra Querida',
       'rating': '4.8',
-      'description': 'Crujientes y doradas papas fritas.',
+      'description': 'Crispy and golden french fries.', // Translated
+      'category': 'Fries',
     },
   ];
 
@@ -362,15 +374,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8.0),
                     child: Container(
-                      // Envuelve la imagen en un Container para controlar el fondo si es necesario
                       height: 120,
                       width: double.infinity,
-                      color: Colors.grey[100], // Color de fondo por si BoxFit.contain deja espacios
+                      color: Colors.grey[100],
                       child: Image.asset(
                         product['image']!,
                         height: 120,
                         width: double.infinity,
-                        fit: BoxFit.contain, // CAMBIO: De BoxFit.cover a BoxFit.contain
+                        fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
                             height: 120,
@@ -592,17 +603,39 @@ class _HomeScreenState extends State<HomeScreen> {
                                 final category = _categories.elementAt(index);
                                 return Padding(
                                   padding: const EdgeInsets.only(right: 16.0),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Image.asset(
-                                        category['image']!,
-                                        height: 80,
-                                        fit: BoxFit.contain,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(category['name']!, style: const TextStyle(fontSize: 12)),
-                                    ],
+                                  child: InkWell(
+                                    // <-- CAMBIO: InkWell para hacer la categoría tappable
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) => CategoriesScreen(
+                                                categoryName: category['name']!,
+                                                allProducts: _allProducts,
+                                                restaurants: _restaurants,
+                                              ),
+                                        ),
+                                      );
+                                    },
+                                    borderRadius: BorderRadius.circular(
+                                      8.0,
+                                    ), // Para el efecto ripple
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Image.asset(
+                                          category['image']!,
+                                          height: 80,
+                                          fit: BoxFit.contain,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          category['name']!,
+                                          style: const TextStyle(fontSize: 12),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 );
                               },
