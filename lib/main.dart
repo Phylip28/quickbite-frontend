@@ -13,7 +13,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter MPV',
       theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple)),
-      home: HomeScreen(), // Pantalla de carga
+      debugShowCheckedModeBanner: false,
+      home: HomeScreen(),
       routes: {
         '/home': (context) => HomeScreen(), // Mantenemos la ruta /home
       },
