@@ -7,10 +7,17 @@ import 'Starbucks/productDetailSB.dart';
 import 'Subway/productDetailSW.dart';
 import 'TierraQuerida/productDetailTQ.dart';
 
+// Importa lo necesario para el carrito y el overlay
+// Asegúrate de que esta ruta sea correcta y que CartItem y globalCartItems estén definidos.
+import 'cart/shoppingCart.dart'; // Para CartItem, globalCartItems y navegar a ShoppingCartScreen
+
+// Define el color primario si no está ya accesible globalmente
+const Color primaryColor = Color(0xFFf05000);
+
 class CategoriesScreen extends StatefulWidget {
   final String categoryName;
   final List<Map<String, String>> allProducts;
-  final List<Map<String, String>> restaurants; // Necesario para los logos
+  final List<Map<String, String>> restaurants;
 
   const CategoriesScreen({
     super.key,
@@ -25,6 +32,7 @@ class CategoriesScreen extends StatefulWidget {
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
   List<Map<String, String>> _filteredProducts = [];
+  OverlayEntry? _overlayEntry; // Para manejar el overlay
 
   @override
   void initState() {
@@ -32,28 +40,129 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     _filterProducts();
   }
 
-  void _filterProducts() {
-    // Filtra los productos que coinciden con el categoryName.
-    // Asegúrate de que el campo 'category' en tus Mapas de producto
-    // coincida exactamente con los categoryName que pasas (ej. 'Ice cream', 'Hamburgers').
-    _filteredProducts =
-        widget.allProducts.where((product) => product['category'] == widget.categoryName).toList();
-    // No es necesario llamar a setState aquí si _filteredProducts solo se usa en el build,
-    // pero si la lista pudiera cambiar dinámicamente después de initState, setState sería necesario.
-    // Para este caso, filtrar en initState es suficiente. Si quisieras re-filtrar
-    // en respuesta a alguna acción del usuario, entonces setState sería crucial.
+  @override
+  void dispose() {
+    _overlayEntry?.remove(); // Limpia el overlay si aún está visible al salir de la pantalla
+    _overlayEntry = null; // Asegura que la referencia se limpie
+    super.dispose();
   }
 
-  // Helper para convertir precio String a double
+  void _filterProducts() {
+    _filteredProducts =
+        widget.allProducts.where((product) => product['category'] == widget.categoryName).toList();
+  }
+
   double _parsePrice(String? priceString) {
     if (priceString == null) return 0.0;
     return double.tryParse(priceString.replaceAll('\$', '').replaceAll(',', '')) ?? 0.0;
   }
 
+  void _showAddedToCartOverlay(String productName) {
+    _overlayEntry?.remove(); // Remueve cualquier overlay existente
+    _overlayEntry = OverlayEntry(
+      builder:
+          (context) => Positioned(
+            top: MediaQuery.of(context).padding.top + 10, // Posición desde el top
+            left: 20,
+            right: 20,
+            child: Material(
+              elevation: 4.0,
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: primaryColor, width: 1.5),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '$productName added to cart!',
+                        style: const TextStyle(
+                          color: primaryColor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                      onPressed: () {
+                        _overlayEntry?.remove();
+                        _overlayEntry = null;
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+                        );
+                      },
+                      child: const Text('VIEW CART'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+
+    // Auto-remover el overlay después de unos segundos
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted && _overlayEntry != null) {
+        _overlayEntry?.remove();
+        _overlayEntry = null;
+      }
+    });
+  }
+
+  void _addToCart(Map<String, String> product) {
+    final String productName = product['name']!;
+    final double productPrice = _parsePrice(product['price']);
+    final String imageUrl = product['image']!;
+    final String restaurantName = product['restaurantName']!; // Necesario para la unicidad del ítem
+
+    // Busca si el ítem ya existe en el carrito (considerando el restaurante)
+    final existingItemIndex = globalCartItems.indexWhere(
+      (item) => item.name == productName && item.restaurant == restaurantName,
+    );
+
+    if (mounted) {
+      setState(() {
+        // setState es necesario si la UI de esta pantalla depende del carrito directamente
+        // En este caso, solo actualiza la lista global y muestra el overlay.
+        // Si tuvieras un contador de ítems del carrito en esta pantalla, setState sería crucial aquí.
+        if (existingItemIndex != -1) {
+          globalCartItems[existingItemIndex].quantity++;
+        } else {
+          globalCartItems.add(
+            CartItem(
+              name: productName,
+              price: productPrice,
+              quantity: 1,
+              imageUrl: imageUrl,
+              restaurant: restaurantName, // Asegúrate que tu clase CartItem tenga este campo
+            ),
+          );
+        }
+      });
+    }
+    _showAddedToCartOverlay(productName);
+  }
+
   Widget _buildCategoryProductItem(BuildContext context, Map<String, String> product) {
     final restaurantData = widget.restaurants.firstWhere(
       (r) => r['name'] == product['restaurantName'],
-      orElse: () => {'image': '', 'name': 'Unknown Restaurant'}, // Fallback
+      orElse: () => {'image': '', 'name': 'Unknown Restaurant'},
     );
     final String? restaurantLogo = restaurantData['image'];
 
@@ -65,12 +174,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       child: InkWell(
         onTap: () {
           Widget? detailScreen;
-          final String productName = product['name'] ?? 'Producto sin nombre';
-          // Usa la descripción del producto si existe, sino el nombre del producto.
+          final String productName = product['name'] ?? 'Product without name';
           final String productDescription = product['description'] ?? productName;
           final double productPrice = _parsePrice(product['price']);
-          final String imageUrl =
-              product['image'] ?? 'assets/images/placeholder.png'; // Imagen de fallback
+          final String imageUrl = product['image'] ?? 'assets/images/placeholder.png';
 
           switch (product['restaurantName']) {
             case 'KFC':
@@ -114,24 +221,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               );
               break;
             default:
-              // Si el restaurante no está en la lista, muestra un mensaje y no navegues.
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(
-                    'Pantalla de detalle no disponible para ${product['restaurantName']}',
-                  ),
+                  content: Text('Detail screen not available for ${product['restaurantName']}'),
                 ),
               );
-              return; // No continúa a Navigator.push
+              return;
           }
-
-          // El `return` en el caso default asegura que detailScreen no será null aquí si se llega a este punto.
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => detailScreen!,
-            ), // Usamos ! porque estamos seguros que no es null.
-          );
+          Navigator.push(context, MaterialPageRoute(builder: (context) => detailScreen!));
         },
         borderRadius: BorderRadius.circular(12.0),
         child: Padding(
@@ -146,15 +243,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     child: Container(
                       height: 120,
                       width: double.infinity,
-                      color: Colors.grey[100], // Fondo para BoxFit.contain
+                      color: Colors.grey[100],
                       child: Image.asset(
-                        product['image']!, // Asumimos que la imagen siempre existe
+                        product['image']!,
                         height: 120,
                         width: double.infinity,
-                        fit: BoxFit.contain, // Para mostrar la imagen completa
+                        fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
-                            // Fallback si la imagen no carga
                             height: 120,
                             width: double.infinity,
                             color: Colors.grey[200],
@@ -206,7 +302,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      product['restaurantName'] ?? 'Restaurante',
+                      product['restaurantName'] ?? 'Restaurant',
                       style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -235,26 +331,21 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFFf05000),
+                      color: primaryColor,
                     ),
                   ),
                   Material(
                     color: Colors.transparent,
                     child: InkWell(
                       onTap: () {
-                        // Lógica para añadir al carrito (a implementar)
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Añadir ${product['name']} al carrito (no implementado)'),
-                            duration: const Duration(seconds: 1),
-                          ),
-                        );
+                        // Llama a la función _addToCart para agregar el producto y mostrar el overlay
+                        _addToCart(product);
                       },
                       borderRadius: BorderRadius.circular(20),
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFf05000),
+                          color: primaryColor,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Icon(Icons.add, color: Colors.white, size: 20),
@@ -276,17 +367,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       appBar: AppBar(
         title: Text(
           widget.categoryName,
-          style: const TextStyle(
-            color: Color(0xFFf05000), // Color naranja para el título
-            fontWeight: FontWeight.bold, // Opcional: si quieres que sea negrita
-          ),
+          style: const TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
         ),
-        centerTitle: true, // Centra el título
-        backgroundColor: Colors.white, // Fondo blanco
-        elevation: 1, // Sombra ligera, puedes ajustarla o quitarla (elevation: 0)
-        iconTheme: const IconThemeData(
-          color: Color(0xFFf05000), // Color naranja para el icono de "atrás"
-        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 1,
+        iconTheme: const IconThemeData(color: primaryColor),
       ),
       backgroundColor: Colors.grey[100],
       body:
@@ -295,7 +381,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Text(
-                    'No products available in the "${widget.categoryName}" category.', // Translated
+                    'No products available in the "${widget.categoryName}" category.',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                   ),
