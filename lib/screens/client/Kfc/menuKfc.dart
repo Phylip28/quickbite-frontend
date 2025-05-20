@@ -30,6 +30,14 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
     _loadUserAddress();
   }
 
+  @override
+  void dispose() {
+    // Limpiar el overlay si aún está visible al salir de la pantalla
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+    super.dispose();
+  }
+
   Future<void> _loadUserAddress() async {
     final address = await getUserAddress();
     if (mounted) {
@@ -150,56 +158,75 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
   }
 
   void _showAddedToCartOverlay(String productName) {
-    _overlayEntry?.remove();
+    _overlayEntry?.remove(); // Elimina cualquier overlay anterior
+    _overlayEntry = null; // Asegura que la referencia se limpie
+
+    // Crear una clave única para el Dismissible
+    final UniqueKey dismissibleKey = UniqueKey();
+
     _overlayEntry = OverlayEntry(
       builder:
           (context) => Positioned(
             top: MediaQuery.of(context).padding.top + 10,
             left: 20,
             right: 20,
-            child: Material(
-              elevation: 4.0,
-              borderRadius: BorderRadius.circular(10),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: primaryColor, width: 1.5),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        '$productName added to cart!',
-                        style: const TextStyle(
-                          color: primaryColor,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
+            child: Dismissible(
+              // ENVOLVER CON DISMISSIBLE
+              key: dismissibleKey, // Usar la clave única
+              direction: DismissDirection.horizontal, // Permitir deslizar horizontalmente
+              onDismissed: (direction) {
+                // Cuando se descarta, eliminar el overlay
+                if (mounted && _overlayEntry != null) {
+                  _overlayEntry?.remove();
+                  _overlayEntry = null;
+                }
+              },
+              child: Material(
+                elevation: 4.0,
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: primaryColor, width: 1.5),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '$productName added to cart!',
+                          style: const TextStyle(
+                            color: primaryColor,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      const SizedBox(width: 10),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                        onPressed: () {
+                          if (mounted && _overlayEntry != null) {
+                            _overlayEntry?.remove();
+                            _overlayEntry = null;
+                          }
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+                          );
+                        },
+                        child: const Text('VIEW CART'),
                       ),
-                      onPressed: () {
-                        _overlayEntry?.remove();
-                        _overlayEntry = null;
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
-                        );
-                      },
-                      child: const Text('VIEW CART'),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -208,7 +235,10 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
 
     Overlay.of(context).insert(_overlayEntry!);
 
+    // El temporizador para auto-eliminar sigue siendo útil como fallback
     Future.delayed(const Duration(seconds: 4), () {
+      // Solo remover si el overlay todavía existe (no fue descartado manualmente)
+      // y si el widget todavía está montado
       if (mounted && _overlayEntry != null) {
         _overlayEntry?.remove();
         _overlayEntry = null;
@@ -223,30 +253,27 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
       (item) => item.name == product['name'] && item.restaurant == restaurantName,
     );
 
-    // Asegurarse de que el precio se parsea correctamente sin el símbolo de moneda
     final double productPrice =
         double.tryParse(product['price']!.replaceAll('€', '').replaceAll(',', '.')) ?? 0.0;
 
+    // No es necesario llamar a setState aquí si la UI de esta pantalla no depende directamente de globalCartItems
+    // para reconstruirse al añadir un ítem. El cambio se reflejará en ShoppingCartScreen.
     if (existingItemIndex != -1) {
-      setState(() {
-        globalCartItems[existingItemIndex].quantity++;
-      });
+      globalCartItems[existingItemIndex].quantity++;
     } else {
-      setState(() {
-        globalCartItems.add(
-          CartItem(
-            name: product['name']!,
-            price: productPrice, // Usar el precio parseado
-            quantity: 1,
-            imageUrl: product['image']!,
-            restaurant: restaurantName,
-          ),
-        );
-      });
+      globalCartItems.add(
+        CartItem(
+          name: product['name']!,
+          price: productPrice,
+          quantity: 1,
+          imageUrl: product['image']!,
+          restaurant: restaurantName,
+        ),
+      );
     }
     _showAddedToCartOverlay(product['name']!);
-    print('Added to cart: ${product['name']} from $restaurantName');
-    print('Current cart: $globalCartItems');
+    // print('Added to cart: ${product['name']} from $restaurantName');
+    // print('Current cart: $globalCartItems');
   }
 
   // Definición del método _buildHeader
@@ -306,10 +333,9 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
                     const Text("Deliver to", style: TextStyle(fontSize: 12, color: Colors.grey)),
                     InkWell(
                       onTap: () {
-                        print("Change address tapped");
+                        // print("Change address tapped"); // Acción para cambiar dirección si es necesario
                       },
                       child: Row(
-                        // Esta es la fila que estamos modificando
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Flexible(
@@ -330,7 +356,6 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
                   ],
                 ),
               ),
-              // SizedBox para balancear el botón de retroceso
               const SizedBox(width: 48), // Ajusta este valor si es necesario
             ],
           ),
@@ -354,7 +379,6 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
   }
 
   Widget _buildMenuItemCard(BuildContext context, Map<String, String> item) {
-    // Asegurarse de que el precio se parsea correctamente sin el símbolo de moneda para la pantalla de detalle
     final double productPriceForDetail =
         double.tryParse(item['price']!.replaceAll('€', '').replaceAll(',', '.')) ?? 0.0;
 

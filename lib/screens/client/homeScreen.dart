@@ -361,56 +361,73 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showAddedToCartOverlay(String productName) {
-    _overlayEntry?.remove();
+    _overlayEntry?.remove(); // Elimina cualquier overlay anterior
+    _overlayEntry = null;
+
+    // Crear una clave única para el Dismissible
+    final UniqueKey dismissibleKey = UniqueKey();
+
     _overlayEntry = OverlayEntry(
       builder:
           (context) => Positioned(
             top: MediaQuery.of(context).padding.top + 10,
             left: 20,
             right: 20,
-            child: Material(
-              elevation: 4.0,
-              borderRadius: BorderRadius.circular(10),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: primaryColor, width: 1.5),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        '$productName added to cart!',
-                        style: const TextStyle(
-                          color: primaryColor,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
+            child: Dismissible(
+              // ENVOLVER CON DISMISSIBLE
+              key: dismissibleKey, // Usar la clave única
+              direction: DismissDirection.horizontal, // Permitir deslizar horizontalmente
+              onDismissed: (direction) {
+                // Cuando se descarta, eliminar el overlay
+                if (mounted && _overlayEntry != null) {
+                  _overlayEntry?.remove();
+                  _overlayEntry = null;
+                }
+              },
+              child: Material(
+                elevation: 4.0,
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: primaryColor, width: 1.5),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '$productName added to cart!',
+                          style: const TextStyle(
+                            color: primaryColor,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      const SizedBox(width: 10),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                        onPressed: () {
+                          _overlayEntry?.remove();
+                          _overlayEntry = null;
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+                          );
+                        },
+                        child: const Text('VIEW CART'),
                       ),
-                      onPressed: () {
-                        _overlayEntry?.remove();
-                        _overlayEntry = null;
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
-                        );
-                      },
-                      child: const Text('VIEW CART'),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -419,7 +436,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     Overlay.of(context).insert(_overlayEntry!);
 
+    // El temporizador para auto-eliminar sigue siendo útil como fallback
     Future.delayed(const Duration(seconds: 4), () {
+      // Solo remover si el overlay todavía existe (no fue descartado manualmente)
       if (mounted && _overlayEntry != null) {
         _overlayEntry?.remove();
         _overlayEntry = null;

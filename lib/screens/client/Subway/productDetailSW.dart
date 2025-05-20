@@ -32,6 +32,14 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
   final int _selectedIndex = 1; // ProductDetailSW es parte del flujo de Home (índice 1)
   OverlayEntry? _overlayEntry;
 
+  @override
+  void dispose() {
+    // Limpiar el overlay si aún está visible al salir de la pantalla
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+    super.dispose();
+  }
+
   void _incrementQuantity() {
     if (_quantity < 10) {
       setState(() {
@@ -53,8 +61,6 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
     // y ya estamos en una pantalla del flujo de Home, no hacer nada o ir a la HomeScreen principal.
     // Si es otra pestaña, siempre navegar.
     if (_selectedIndex == index && index == 1) {
-      // Si el usuario está en ProductDetailSW y presiona "Home" de nuevo,
-      // lo llevamos a la HomeScreen principal, limpiando la pila.
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -62,34 +68,31 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
       );
       return;
     }
-    // Si se presiona una pestaña diferente a la actual (_selectedIndex), navegar.
     if (_selectedIndex == index) return;
 
     switch (index) {
-      case 0: // Cart
+      case 0:
         Navigator.pushAndRemoveUntil(
-          // Cambiado a pushAndRemoveUntil para consistencia
           context,
           MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 1: // Home
-        // Navegar a la pantalla principal de Home, limpiando la pila.
+      case 1:
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 2: // Orders (ANTERIORMENTE Membership)
+      case 2:
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const OrdersScreen()), // NAVEGAR A OrdersScreen
+          MaterialPageRoute(builder: (context) => const OrdersScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 3: // Account (Profile)
+      case 3:
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const ProfileClient()),
@@ -100,56 +103,74 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
   }
 
   void _showAddedToCartOverlay(String productName, int quantity) {
-    _overlayEntry?.remove();
+    _overlayEntry?.remove(); // Elimina cualquier overlay anterior
+    _overlayEntry = null; // Asegura que la referencia se limpie
+
+    // Crear una clave única para el Dismissible
+    final UniqueKey dismissibleKey = UniqueKey();
+
     _overlayEntry = OverlayEntry(
       builder:
           (context) => Positioned(
             top: MediaQuery.of(context).padding.top + 10,
             left: 20,
             right: 20,
-            child: Material(
-              elevation: 4.0,
-              borderRadius: BorderRadius.circular(10),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: primaryColor, width: 1.5),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        '$productName (x$quantity) added to cart!',
-                        style: const TextStyle(
-                          color: primaryColor,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
+            child: Dismissible(
+              key: dismissibleKey, // Usar la clave única
+              direction: DismissDirection.horizontal, // Permitir deslizar horizontalmente
+              onDismissed: (direction) {
+                // Cuando se descarta, eliminar el overlay
+                if (mounted && _overlayEntry != null) {
+                  _overlayEntry?.remove();
+                  _overlayEntry = null;
+                }
+              },
+              child: Material(
+                elevation: 4.0,
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: primaryColor, width: 1.5),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '$productName (x$quantity) added to cart!',
+                          style: const TextStyle(
+                            color: primaryColor,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      const SizedBox(width: 10),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                        onPressed: () {
+                          if (mounted && _overlayEntry != null) {
+                            _overlayEntry?.remove();
+                            _overlayEntry = null;
+                          }
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
+                          );
+                        },
+                        child: const Text('VIEW CART'),
                       ),
-                      onPressed: () {
-                        _overlayEntry?.remove();
-                        _overlayEntry = null;
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
-                        );
-                      },
-                      child: const Text('VIEW CART'),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -158,7 +179,10 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
 
     Overlay.of(context).insert(_overlayEntry!);
 
+    // El temporizador para auto-eliminar sigue siendo útil como fallback
     Future.delayed(const Duration(seconds: 4), () {
+      // Solo remover si el overlay todavía existe (no fue descartado manualmente)
+      // y si el widget todavía está montado
       if (mounted && _overlayEntry != null) {
         _overlayEntry?.remove();
         _overlayEntry = null;
@@ -199,7 +223,7 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
       shoppingCartScreenKey.currentState!.setState(() {});
     }
 
-    print('$name (x$quantity) added to cart from $restaurantName.');
+    // print('$name (x$quantity) added to cart from $restaurantName.');
     _showAddedToCartOverlay(name, quantity);
   }
 
@@ -309,7 +333,7 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          '€${(widget.productPrice * _quantity).toStringAsFixed(2)}', // Cambiado de $ a €
+                          '€${(widget.productPrice * _quantity).toStringAsFixed(2)}',
                           style: const TextStyle(
                             fontSize: 30,
                             fontWeight: FontWeight.bold,
@@ -373,7 +397,9 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 60 + MediaQuery.of(context).padding.bottom),
+                    SizedBox(
+                      height: 60 + MediaQuery.of(context).padding.bottom,
+                    ), // Espacio para la BottomNavBar
                   ],
                 ),
               ),
@@ -382,8 +408,7 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
           Align(
             alignment: Alignment.bottomCenter,
             child: CustomBottomNavigationBar(
-              currentIndex:
-                  _selectedIndex, // Sigue siendo 1 porque esta pantalla es del flujo "Home"
+              currentIndex: _selectedIndex,
               onTabChanged: _onTabTapped,
               backgroundColor: Colors.white,
             ),
