@@ -119,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Mega Family Feast',
       'image': 'assets/images/cliente/kfc/megaFamily.png',
-      'price': '\$22.99',
+      'price': '€22.99', // Cambiado de $ a €
       'restaurantName': 'KFC',
       'rating': '4.8',
       'description': 'A family feast with the unique KFC flavor.',
@@ -128,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Wow Duo Deluxe Nuggets',
       'image': 'assets/images/cliente/kfc/wowDuoDeluxeNuggets.png',
-      'price': '\$25.99',
+      'price': '€25.99', // Cambiado de $ a €
       'restaurantName': 'KFC',
       'rating': '4.7',
       'description': 'Delicious nuggets to share, deluxe style.',
@@ -137,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Nuggets Combo',
       'image': 'assets/images/cliente/kfc/comboNuggets.png',
-      'price': '\$11.50',
+      'price': '€11.50', // Cambiado de $ a €
       'restaurantName': 'KFC',
       'rating': '4.8',
       'description': 'The perfect combo of crispy nuggets.',
@@ -146,7 +146,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Shareable Wings Platter',
       'image': 'assets/images/cliente/kfc/shareAndSplitWings.png',
-      'price': '\$25.99',
+      'price': '€25.99', // Cambiado de $ a €
       'restaurantName': 'KFC',
       'rating': '4.7',
       'description': 'Spicy and tasty wings, ideal for sharing.',
@@ -155,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Big Box Kentucky Colonel',
       'image': 'assets/images/cliente/kfc/bigBoxKentuckyCoronel.png',
-      'price': '\$21.99',
+      'price': '€21.99', // Cambiado de $ a €
       'restaurantName': 'KFC',
       'rating': '4.8',
       'description': "A box full of the Colonel's favorites.",
@@ -164,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Popcorn Chicken Combo',
       'image': 'assets/images/cliente/kfc/comboPopCorn.png',
-      'price': '\$14.99',
+      'price': '€14.99', // Cambiado de $ a €
       'restaurantName': 'KFC',
       'rating': '4.7',
       'description': 'Crispy Pop Corn chicken in an irresistible combo.',
@@ -174,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Turkey and Ham Sub',
       'image': 'assets/images/cliente/subway/turkeyAndHamSubsFootlong.png',
-      'price': '\$6.50',
+      'price': '€6.50', // Cambiado de $ a €
       'restaurantName': 'Subway',
       'rating': '4.8',
       'description': 'Classic turkey and ham sub, fresh and delicious.',
@@ -183,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Rotisserie-Style Chicken Sub',
       'image': 'assets/images/cliente/subway/rotisserieStyleChickenSubs.png',
-      'price': '\$6.60',
+      'price': '€6.60', // Cambiado de $ a €
       'restaurantName': 'Subway',
       'rating': '4.7',
       'description': 'Tasty rotisserie-style chicken in your favorite sub.',
@@ -192,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Footlong Bacon Melt Sub',
       'image': 'assets/images/cliente/subway/subsFootlongBaconMelt.png',
-      'price': '\$5.50',
+      'price': '€5.50', // Cambiado de $ a €
       'restaurantName': 'Subway',
       'rating': '4.6',
       'description': 'Irresistible sub with melted bacon.',
@@ -202,7 +202,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Cherrymania Milkshake',
       'image': 'assets/images/cliente/popsy/cherrymaniaMilkshake.png',
-      'price': '\$4.50',
+      'price': '€4.50', // Cambiado de $ a €
       'restaurantName': 'Popsy',
       'rating': '4.8',
       'description': 'Refreshing milkshake with the sweet taste of cherry.',
@@ -211,7 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Vanilla Gourmet Milkshake',
       'image': 'assets/images/cliente/popsy/vainillaGourmetMilkshake.png',
-      'price': '\$4.60',
+      'price': '€4.60', // Cambiado de $ a €
       'restaurantName': 'Popsy',
       'rating': '4.7',
       'description': 'Classic vanilla milkshake with a gourmet touch.',
@@ -220,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'M&M Milkshake',
       'image': 'assets/images/cliente/popsy/m&mMilkShake.png',
-      'price': '\$4.50',
+      'price': '€4.50', // Cambiado de $ a €
       'restaurantName': 'Popsy',
       'rating': '4.6',
       'description': 'Fun and delicious milkshake with M&M pieces.',
@@ -229,7 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Italian Cherry Milkshake',
       'image': 'assets/images/cliente/popsy/cerezaItalianaMilkshakeFrappuccino.png',
-      'price': '\$5.00',
+      'price': '€5.00', // Cambiado de $ a €
       'restaurantName': 'Popsy',
       'rating': '4.8',
       'description': 'Exquisite Italian-style cherry milkshake.',
@@ -239,7 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Strawberry Cream Frappuccino',
       'image': 'assets/images/cliente/starbucks/fresaCreamFrappuccino.png',
-      'price': '\$4.50',
+      'price': '€4.50', // Cambiado de $ a €
       'restaurantName': 'Starbucks',
       'rating': '4.8',
       'description': 'Creamy Frappuccino with the sweet taste of strawberry.',
@@ -248,7 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Cookies & Cream Frappuccino',
       'image': 'assets/images/cliente/starbucks/cookies&CreamFrappuccino.png',
-      'price': '\$5.20',
+      'price': '€5.20', // Cambiado de $ a €
       'restaurantName': 'Starbucks',
       'rating': '4.7',
       'description': 'Delicious Frappuccino with cookie pieces and cream.',
@@ -257,7 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'White Mocha Frappuccino',
       'image': 'assets/images/cliente/starbucks/mochaBlancoFrappuccino.png',
-      'price': '\$4.80',
+      'price': '€4.80', // Cambiado de $ a €
       'restaurantName': 'Starbucks',
       'rating': '4.6',
       'description': 'Smooth and sweet white mocha Frappuccino.',
@@ -266,7 +266,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Caramel Frappuccino',
       'image': 'assets/images/cliente/starbucks/caramelFrappuccino.png',
-      'price': '\$5.00',
+      'price': '€5.00', // Cambiado de $ a €
       'restaurantName': 'Starbucks',
       'rating': '4.8',
       'description': 'The classic and beloved Caramel Frappuccino.',
@@ -276,7 +276,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Simple Hamburger',
       'image': 'assets/images/cliente/tierraQuerida/simpleHamburgerDescription.png',
-      'price': '\$3.40',
+      'price': '€3.40', // Cambiado de $ a €
       'restaurantName': 'Tierra Querida',
       'rating': '4.8',
       'description': 'Classic hamburger with fresh ingredients.',
@@ -285,7 +285,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Double Hamburger',
       'image': 'assets/images/cliente/tierraQuerida/dobleHamburgerDescription.png',
-      'price': '\$4.50',
+      'price': '€4.50', // Cambiado de $ a €
       'restaurantName': 'Tierra Querida',
       'rating': '4.7',
       'description': 'Double meat, double flavor in this hamburger.',
@@ -294,7 +294,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'Triple Hamburger',
       'image': 'assets/images/cliente/tierraQuerida/tripleHamburgerDescription.png',
-      'price': '\$5.80',
+      'price': '€5.80', // Cambiado de $ a €
       'restaurantName': 'Tierra Querida',
       'rating': '4.6',
       'description': 'For the hungriest, a triple hamburger.',
@@ -303,7 +303,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'name': 'French Fries',
       'image': 'assets/images/cliente/tierraQuerida/frenchFriesDescription.png',
-      'price': '\$1.00',
+      'price': '€1.00', // Cambiado de $ a €
       'restaurantName': 'Tierra Querida',
       'rating': '4.8',
       'description': 'Crispy and golden french fries.',
@@ -337,7 +337,8 @@ class _HomeScreenState extends State<HomeScreen> {
   // --- Métodos para el Overlay y agregar al carrito ---
   double _parsePrice(String? priceString) {
     if (priceString == null) return 0.0;
-    return double.tryParse(priceString.replaceAll('\$', '').replaceAll(',', '')) ?? 0.0;
+    return double.tryParse(priceString.replaceAll('€', '').replaceAll(',', '')) ??
+        0.0; // Cambiado de $ a €
   }
 
   void _showAddedToCartOverlay(String productName) {

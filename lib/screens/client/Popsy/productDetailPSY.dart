@@ -293,7 +293,7 @@ class _ProductDetailPSYState extends State<ProductDetailPSY> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          '\$${(widget.productPrice * _quantity).toStringAsFixed(2)}',
+                          '€${(widget.productPrice * _quantity).toStringAsFixed(2)}', // Cambiado de $ a €
                           style: const TextStyle(
                             fontSize: 30,
                             fontWeight: FontWeight.bold,

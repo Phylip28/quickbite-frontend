@@ -209,6 +209,10 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
       (item) => item.name == product['name'] && item.restaurant == restaurantName,
     );
 
+    // Asegurarse de que el precio se parsea correctamente sin el símbolo de moneda
+    final double productPrice =
+        double.tryParse(product['price']!.replaceAll('€', '').replaceAll(',', '.')) ?? 0.0;
+
     if (existingItemIndex != -1) {
       setState(() {
         globalCartItems[existingItemIndex].quantity++;
@@ -218,7 +222,7 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
         globalCartItems.add(
           CartItem(
             name: product['name']!,
-            price: double.parse(product['price']!),
+            price: productPrice, // Usar el precio parseado
             quantity: 1,
             imageUrl: product['image']!,
             restaurant: restaurantName,
@@ -336,6 +340,10 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
   }
 
   Widget _buildMenuItemCard(BuildContext context, Map<String, String> item) {
+    // Asegurarse de que el precio se parsea correctamente sin el símbolo de moneda para la pantalla de detalle
+    final double productPriceForDetail =
+        double.tryParse(item['price']!.replaceAll('€', '').replaceAll(',', '.')) ?? 0.0;
+
     return Card(
       color: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -350,7 +358,7 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
                   (context) => ProductDetailKFC(
                     productName: item['name']!,
                     productDescription: _getProductDescription(item['name']!),
-                    productPrice: double.parse(item['price']!),
+                    productPrice: productPriceForDetail, // Usar el precio parseado
                     imageUrl: item['image']!,
                   ),
             ),
@@ -392,7 +400,7 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    '\$${item['price']}',
+                    '€${item['price']}', // Cambiado de $ a €
                     style: const TextStyle(
                       color: primaryColor, // Color naranja para el precio
                       fontSize: 16,

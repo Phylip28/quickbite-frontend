@@ -382,7 +382,7 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
                                                     ),
                                                   ),
                                                   Text(
-                                                    '\$${item.price.toStringAsFixed(2)}',
+                                                    '€${item.price.toStringAsFixed(2)}', // Cambiado de $ a €
                                                     style: const TextStyle(
                                                       color: Color(0xFFf05000),
                                                       fontWeight: FontWeight.bold,
@@ -438,7 +438,7 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
                                         ),
                                         decoration: InputDecoration(
                                           labelText: 'Tip (Optional)',
-                                          prefixText: '\$',
+                                          prefixText: '€', // Cambiado de $ a €
                                           border: OutlineInputBorder(
                                             borderRadius: BorderRadius.circular(8.0),
                                           ),
@@ -455,7 +455,7 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
                                         children: [
                                           const Text('Subtotal', style: TextStyle(fontSize: 16)),
                                           Text(
-                                            '\$${subtotal.toStringAsFixed(2)}',
+                                            '€${subtotal.toStringAsFixed(2)}', // Cambiado de $ a €
                                             style: const TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w500,
@@ -474,7 +474,7 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
                                           Text(
                                             deliveryFee == 0.00
                                                 ? 'Free'
-                                                : '\$${deliveryFee.toStringAsFixed(2)}',
+                                                : '€${deliveryFee.toStringAsFixed(2)}', // Cambiado de $ a €
                                             style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w500,
@@ -495,7 +495,7 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
                                               return AlertDialog(
                                                 title: const Text('Discount Detail'),
                                                 content: Text(
-                                                  'A discount of \$${_discountAmount.toStringAsFixed(2)} was applied.',
+                                                  'A discount of €${_discountAmount.toStringAsFixed(2)} was applied.', // Cambiado de $ a €
                                                 ),
                                                 actions: <Widget>[
                                                   TextButton(
@@ -517,7 +517,7 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
                                               style: TextStyle(color: Colors.green, fontSize: 16),
                                             ),
                                             Text(
-                                              '- \$${_discountAmount.toStringAsFixed(2)}',
+                                              '- €${_discountAmount.toStringAsFixed(2)}', // Cambiado de $ a €
                                               style: const TextStyle(
                                                 color: Colors.green,
                                                 fontWeight: FontWeight.bold,
@@ -539,7 +539,7 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
                                             ),
                                           ),
                                           Text(
-                                            '\$${total.toStringAsFixed(2)}',
+                                            '€${total.toStringAsFixed(2)}', // Cambiado de $ a €
                                             style: const TextStyle(
                                               fontWeight: FontWeight.bold,
                                               fontSize: 20,

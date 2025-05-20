@@ -346,7 +346,7 @@ class _PopsyMenuScreenState extends State<PopsyMenuScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    '\$${item['price']}',
+                    '€${item['price']}', // Cambiado de $ a €
                     style: const TextStyle(
                       color: primaryColor,
                       fontSize: 16,

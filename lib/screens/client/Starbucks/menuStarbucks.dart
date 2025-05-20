@@ -355,7 +355,9 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
                                     (context) => ProductDetailSB(
                                       productName: item['name']!,
                                       productDescription: _getProductDescription(item['name']!),
-                                      productPrice: double.parse(item['price']!),
+                                      productPrice: double.parse(
+                                        item['price']!,
+                                      ), // El precio se pasa como double
                                       imageUrl: item['image']!,
                                     ),
                               ),
@@ -397,7 +399,7 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Text(
-                                      '\$${item['price']}',
+                                      '€${item['price']}', // Cambiado de $ a €
                                       style: const TextStyle(
                                         color: primaryColor,
                                         fontSize: 16,

@@ -327,7 +327,7 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          '\$${(widget.productPrice * _quantity).toStringAsFixed(2)}', // Precio total
+                          '€${(widget.productPrice * _quantity).toStringAsFixed(2)}', // Cambiado de $ a €
                           style: const TextStyle(
                             fontSize: 30,
                             fontWeight: FontWeight.bold,

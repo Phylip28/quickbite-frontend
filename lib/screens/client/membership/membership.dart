@@ -190,7 +190,7 @@ class _MembershipScreenState extends State<MembershipScreen> {
                 );
               },
               child: const Text(
-                'Subscribe Now for \$9.99/month',
+                'Subscribe Now for €9.99/month', // Cambiado de $ a €
                 style: TextStyle(color: Colors.white),
               ),
             ),

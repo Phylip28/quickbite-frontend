@@ -325,7 +325,7 @@ class _ProductDetailSBState extends State<ProductDetailSB> {
                       children: [
                         Text(
                           // Actualizar precio dinámicamente según la cantidad
-                          '\$${(widget.productPrice * _quantity).toStringAsFixed(2)}',
+                          '€${(widget.productPrice * _quantity).toStringAsFixed(2)}', // Cambiado de $ a €
                           style: const TextStyle(
                             fontSize: 30,
                             fontWeight: FontWeight.bold,

@@ -54,7 +54,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
   double _parsePrice(String? priceString) {
     if (priceString == null) return 0.0;
-    return double.tryParse(priceString.replaceAll('\$', '').replaceAll(',', '')) ?? 0.0;
+    return double.tryParse(priceString.replaceAll('€', '').replaceAll(',', '')) ??
+        0.0; // Cambiado de $ a €
   }
 
   void _showAddedToCartOverlay(String productName) {

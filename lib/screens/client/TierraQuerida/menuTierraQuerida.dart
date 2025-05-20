@@ -218,6 +218,102 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
     }
   }
 
+  Widget _buildMenuItemCard(BuildContext context, Map<String, String> item) {
+    return Card(
+      color: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), // Similar a Popsy
+      elevation: 3, // Similar a Popsy
+      margin: const EdgeInsets.all(4), // Similar a Popsy
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) => ProductDetailTQ(
+                    productName: item['name']!,
+                    productDescription: _getProductDescription(item['name']!),
+                    productPrice: double.parse(item['price']!),
+                    imageUrl: item['image']!,
+                  ),
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(12.0), // Similar a Popsy
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  const Icon(Icons.star, color: Colors.amber, size: 16), // Similar a Popsy
+                  const SizedBox(width: 4),
+                  Text(
+                    item['rating']!,
+                    style: const TextStyle(fontSize: 12, color: Colors.black54), // Similar a Popsy
+                  ),
+                ],
+              ),
+              Expanded(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0), // Similar a Popsy
+                    child: Image.asset(
+                      item['image']!,
+                      fit: BoxFit.contain,
+                      errorBuilder:
+                          (context, error, stackTrace) => const Center(
+                            // Error builder como en Popsy
+                            child: Icon(Icons.image_not_supported, size: 40, color: Colors.grey),
+                          ),
+                    ),
+                  ),
+                ),
+              ),
+              Text(
+                item['name']!,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ), // Similar a Popsy
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4), // Similar a Popsy
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    '€${item['price']}',
+                    style: const TextStyle(
+                      color: primaryColor,
+                      fontSize: 16, // Ajustado para ser igual a Popsy
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () => _addToCart(item),
+                    child: Container(
+                      // Botón de añadir similar a Popsy
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: primaryColor,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Icon(Icons.add, color: Colors.white, size: 20),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -327,88 +423,7 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
               itemCount: _menuItems.length,
               itemBuilder: (context, index) {
                 final item = _menuItems[index];
-                return Card(
-                  color: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  child: InkWell(
-                    // Hacer toda la tarjeta clickeable
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => ProductDetailTQ(
-                                productName: item['name']!,
-                                productDescription: _getProductDescription(item['name']!),
-                                productPrice: double.parse(item['price']!),
-                                imageUrl: item['image']!,
-                              ),
-                        ),
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(Icons.star, color: Colors.amber, size: 16),
-                                  const SizedBox(width: 4),
-                                  Text(item['rating']!, style: const TextStyle(fontSize: 12)),
-                                ],
-                              ),
-                            ],
-                          ),
-                          Expanded(
-                            flex: 3,
-                            child: Center(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                child: Image.asset(item['image']!, fit: BoxFit.contain),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            item['name']!,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                '\$${item['price']}', // Añadido el signo de dólar
-                                style: const TextStyle(
-                                  color: primaryColor, // Usar constante definida
-                                  fontSize: 12,
-                                ),
-                              ),
-                              InkWell(
-                                // Hacer el botón de añadir clickeable
-                                onTap: () {
-                                  _addToCart(item);
-                                },
-                                child: const CircleAvatar(
-                                  backgroundColor: primaryColor, // Usar constante definida
-                                  radius: 14,
-                                  child: Icon(Icons.add, color: Colors.white, size: 16),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
+                return _buildMenuItemCard(context, item);
               },
             ),
           ],

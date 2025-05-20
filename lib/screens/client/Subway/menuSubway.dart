@@ -152,6 +152,10 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
       (item) => item.name == product['name'] && item.restaurant == 'Subway',
     );
 
+    // Asegurarse de que el precio se parsea correctamente sin el símbolo de moneda
+    final double productPrice =
+        double.tryParse(product['price']!.replaceAll('€', '').replaceAll(',', '.')) ?? 0.0;
+
     if (existingItemIndex != -1) {
       setState(() {
         globalCartItems[existingItemIndex].quantity++;
@@ -161,7 +165,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
         globalCartItems.add(
           CartItem(
             name: product['name']!,
-            price: double.parse(product['price']!),
+            price: productPrice, // Usar el precio parseado
             quantity: 1,
             imageUrl: product['image']!,
             restaurant: 'Subway',
@@ -176,6 +180,9 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
 
   // Helper method to build cards for regular grid items
   Widget _buildRegularItemCard(BuildContext context, Map<String, String> item) {
+    // Asegurarse de que el precio se parsea correctamente sin el símbolo de moneda para la pantalla de detalle
+    final double productPriceForDetail =
+        double.tryParse(item['price']!.replaceAll('€', '').replaceAll(',', '.')) ?? 0.0;
     return Card(
       color: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -203,7 +210,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                             (context) => ProductDetailSW(
                               productName: item['name']!,
                               productDescription: _getProductDescription(item['name']!),
-                              productPrice: double.tryParse(item['price']!) ?? 0.0,
+                              productPrice: productPriceForDetail, // Usar el precio parseado
                               imageUrl: item['image']!,
                             ),
                       ),
@@ -235,7 +242,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  '\$${item['price']}',
+                  '€${item['price']}', // Cambiado de $ a €
                   style: const TextStyle(
                     color: primaryColor,
                     fontSize: 16,
@@ -243,9 +250,8 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                   ),
                 ),
                 GestureDetector(
-                  // MODIFICADO: Envolver en GestureDetector
                   onTap: () {
-                    _addToCart(item); // LLAMAR A _addToCart
+                    _addToCart(item);
                   },
                   child: Container(
                     padding: const EdgeInsets.all(4),
@@ -266,6 +272,9 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
 
   // Helper method to build the spanning card for "Subs Footlong Bacon Melt"
   Widget _buildSpanningItemCard(BuildContext context, Map<String, String> item) {
+    // Asegurarse de que el precio se parsea correctamente sin el símbolo de moneda para la pantalla de detalle
+    final double productPriceForDetail =
+        double.tryParse(item['price']!.replaceAll('€', '').replaceAll(',', '.')) ?? 0.0;
     return Card(
       color: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -294,7 +303,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                           (context) => ProductDetailSW(
                             productName: item['name']!,
                             productDescription: _getProductDescription(item['name']!),
-                            productPrice: double.tryParse(item['price']!) ?? 0.0,
+                            productPrice: productPriceForDetail, // Usar el precio parseado
                             imageUrl: item['image']!,
                           ),
                     ),
@@ -326,7 +335,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  '\$${item['price']}',
+                  '€${item['price']}', // Cambiado de $ a €
                   style: const TextStyle(
                     color: primaryColor,
                     fontSize: 16,
@@ -334,9 +343,8 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                   ),
                 ),
                 GestureDetector(
-                  // MODIFICADO: Envolver en GestureDetector
                   onTap: () {
-                    _addToCart(item); // LLAMAR A _addToCart
+                    _addToCart(item);
                   },
                   child: Container(
                     padding: const EdgeInsets.all(4),
@@ -514,19 +522,19 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
     {
       'name': 'Turkey and Ham Subs',
       'image': 'assets/images/cliente/subway/turkeyAndHamSubsFootlong.png',
-      'price': '6.50',
+      'price': '6.50', // Mantenido sin símbolo, el símbolo se añade en la UI
       'rating': '4.8',
     },
     {
       'name': 'Rotisserie Style Chicken Subs',
       'image': 'assets/images/cliente/subway/rotisserieStyleChickenSubs.png',
-      'price': '6.60',
+      'price': '6.60', // Mantenido sin símbolo
       'rating': '4.7',
     },
     {
       'name': 'Subs Footlong Bacon Melt',
       'image': 'assets/images/cliente/subway/subsFootlongBaconMelt.png',
-      'price': '5.50',
+      'price': '5.50', // Mantenido sin símbolo
       'rating': '4.6',
     },
   ];
