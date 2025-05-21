@@ -329,19 +329,39 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 15),
 
-                // Separador "o inicia sesión con"
+                // Separador "o inicia sesión con" - ESTILO ACTUALIZADO
                 Container(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
-                  child: const Row(
+                  // decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)), // Ya no es necesario si solo es texto
+                  child: Row(
+                    // Mantenemos el Row para centrar el texto
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Expanded(child: Divider(endIndent: 10, color: Colors.black54)),
-                      Text(
-                        "or sign in with",
-                        style: TextStyle(fontSize: 12, color: Colors.black87),
+                      // Eliminamos las Dividers
+                      // Expanded(
+                      //   child: Divider(
+                      //     endIndent: 10,
+                      //     color: Colors.grey.shade400,
+                      //     thickness: 0.8,
+                      //   ),
+                      // ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8.0,
+                        ), // Mantenemos el padding
+                        child: Text(
+                          "- or sign in with -", // <--- CAMBIO AQUÍ: Guiones añadidos al texto
+                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                        ),
                       ),
-                      Expanded(child: Divider(indent: 10, color: Colors.black54)),
+                      // Eliminamos las Dividers
+                      // Expanded(
+                      //   child: Divider(
+                      //     indent: 10,
+                      //     color: Colors.grey.shade400,
+                      //     thickness: 0.8,
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),
@@ -372,9 +392,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
+                      Text(
+                        // <--- CAMBIO AQUÍ
                         "Don't have an account?",
-                        style: TextStyle(fontSize: 13, color: Colors.black87),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade700,
+                        ), // <--- CAMBIO: Color y tamaño
                       ),
                       TextButton(
                         onPressed: () {
@@ -386,7 +410,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Text(
                           'Register!',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 14, // Mantenemos tamaño 14 para el botón de acción
                             color: orangeColor,
                             fontWeight: FontWeight.bold,
                           ),

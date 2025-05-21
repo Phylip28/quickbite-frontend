@@ -1,51 +1,16 @@
 import 'package:flutter/material.dart';
 import 'customBottomNavigationBar.dart';
+import 'account/profile.dart'; // Para ProfileDelivery
+// Importa las otras pantallas principales si están en archivos separados
+// import 'map/map.dart'; // Si DeliveryRouteMapScreen está en map.dart
+// import 'history_screen.dart'; // Si DeliveryHistoryScreen está en history_screen.dart
 
-// Placeholder screens (sin cambios)
-class DeliveryOrdersScreen extends StatelessWidget {
-  const DeliveryOrdersScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Orders Screen (Content)'));
-  }
-}
-
-class DeliveryMapScreen extends StatelessWidget {
-  const DeliveryMapScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Map Screen (Content)'));
-  }
-}
-
-class DeliveryHistoryScreen extends StatelessWidget {
-  const DeliveryHistoryScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('History Screen (Content)'));
-  }
-}
-
-class DeliveryProfileScreen extends StatelessWidget {
-  final String repartidorNombre;
-  final int repartidorId;
-
-  const DeliveryProfileScreen({
-    super.key,
-    required this.repartidorNombre,
-    required this.repartidorId,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // El logout podría moverse a esta pantalla de perfil si se desea
-    return Center(child: Text('Profile Screen for $repartidorNombre (ID: $repartidorId)'));
-  }
-}
+// Las clases DeliveryDashboardContent, DeliveryRouteMapScreen, DeliveryHistoryScreen
+// deben estar definidas (pueden estar en este archivo o importadas).
+// CADA UNA DE ESTAS DEBE TENER SU PROPIA AppBar.
 
 class DeliveryHomeScreen extends StatefulWidget {
   static const String routeName = '/delivery-home';
-
   final String repartidorNombre;
   final int repartidorId;
 
@@ -58,58 +23,56 @@ class DeliveryHomeScreen extends StatefulWidget {
 class _DeliveryHomeScreenState extends State<DeliveryHomeScreen> {
   int _selectedIndex = 0;
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+  // _appBarTitles ya no es necesario aquí, cada pantalla maneja su título.
 
   @override
   Widget build(BuildContext context) {
-    final Color primaryColor = const Color(0xFFf05000);
-
-    const String appBarTitle = 'Delivery Panel';
+    // Define widgetOptions directamente en el método build.
+    // CADA WIDGET EN ESTA LISTA DEBE SER UN SCAFFOLD CON SU PROPIA AppBar.
+    final List<Widget> widgetOptions = <Widget>[
+      DeliveryDashboardContent(
+        // Index 0
+        repartidorNombre: widget.repartidorNombre,
+        repartidorId: widget.repartidorId,
+      ),
+      const DeliveryRouteMapScreen(), // Index 1
+      const DeliveryHistoryScreen(), // Index 2
+      const ProfileDelivery(), // Index 3
+    ];
 
     return Scaffold(
-      backgroundColor: Colors.white, // Asegura fondo blanco para el Scaffold
-      appBar: AppBar(
-        title: Text(
-          appBarTitle,
-          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold), // Texto Naranja
-        ),
-        backgroundColor: Colors.white, // Fondo Blanco
-        elevation: 1.0, // Una elevación sutil o 0.0 si prefieres sin sombra
-        iconTheme: IconThemeData(color: primaryColor), // Iconos (si los hubiera) en Naranja
-        automaticallyImplyLeading: false, // Elimina la flecha de retroceso
-        // actions: [], // Eliminada la sección de actions (botón de logout)
-      ),
+      // backgroundColor: Colors.white, // El color de fondo lo manejará cada pantalla individual
+      // appBar: AppBar(...), // <--- NO HAY AppBar EN DeliveryHomeScreen
       body: IndexedStack(
-        index: _selectedIndex,
-        children: [
-          DeliveryDashboardContent(
-            repartidorNombre: widget.repartidorNombre,
-            repartidorId: widget.repartidorId,
-          ),
-          const DeliveryMapScreen(),
-          const DeliveryHistoryScreen(),
-          DeliveryProfileScreen(
-            repartidorNombre: widget.repartidorNombre,
-            repartidorId: widget.repartidorId,
-          ),
-        ],
+        index: (_selectedIndex < widgetOptions.length) ? _selectedIndex : 0,
+        children: widgetOptions,
       ),
       bottomNavigationBar: DeliveryCustomBottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+        currentIndex: (_selectedIndex < widgetOptions.length) ? _selectedIndex : 0,
+        onTap: (int index) {
+          // Simplemente actualiza el índice para cambiar la pestaña
+          if (index < widgetOptions.length) {
+            setState(() {
+              _selectedIndex = index;
+            });
+          }
+        },
+        // Asegúrate que DeliveryCustomBottomNavigationBar tenga 4 items
+        // (Dashboard, Map, History, Profile)
       ),
     );
   }
 }
 
+// -------------------------------------------------------------------------
+// EJEMPLOS DE CÓMO DEBEN SER LAS PANTALLAS DEL IndexedStack
+// CADA UNA DEBE SER UN SCAFFOLD CON SU PROPIA AppBar
+// -------------------------------------------------------------------------
+
+// Ejemplo para DeliveryDashboardContent:
 class DeliveryDashboardContent extends StatelessWidget {
   final String repartidorNombre;
   final int repartidorId;
-
   const DeliveryDashboardContent({
     super.key,
     required this.repartidorNombre,
@@ -119,73 +82,57 @@ class DeliveryDashboardContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color primaryColor = const Color(0xFFf05000);
-    final Color textColorOnPrimary =
-        Colors.white; // Se sigue usando para las cards con fondo naranja
-    final Color subtleTextColor = Colors.grey.shade700;
-
-    return Container(
-      color: Colors.white, // Asegura fondo blanco para el contenido del dashboard
-      // decoration: BoxDecoration( // Eliminado el gradiente
-      //   gradient: LinearGradient(
-      //     colors: [primaryColor.withOpacity(0.05), Colors.grey.shade100.withOpacity(0.5)],
-      //     begin: Alignment.topCenter,
-      //     end: Alignment.bottomCenter,
-      //   ),
-      // ),
-      child: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
-        children: <Widget>[
-          _buildWelcomeHeader(context, primaryColor, textColorOnPrimary, repartidorNombre),
-          const SizedBox(height: 24),
-          _buildInfoSection(context, primaryColor, subtleTextColor, repartidorId),
-          const SizedBox(height: 24),
-          _buildActionsGrid(context, primaryColor, textColorOnPrimary),
-          const SizedBox(height: 20),
-        ],
+    return Scaffold(
+      // <--- DEBE SER UN SCAFFOLD
+      appBar: AppBar(
+        // <--- CON SU PROPIA AppBar
+        title: Text(
+          'Delivery Panel',
+          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 1.0,
+        automaticallyImplyLeading:
+            false, // No botón de retroceso si es una pantalla base de la navbar
+      ),
+      body: Container(
+        // El contenido del dashboard
+        color: Colors.grey[100],
+        child: ListView(
+          padding: const EdgeInsets.all(16.0),
+          children: <Widget>[
+            _buildWelcomeHeader(context, repartidorNombre),
+            const SizedBox(height: 20),
+            _buildInfoSection(context, repartidorId),
+            const SizedBox(height: 20),
+            _buildActionsGrid(context),
+            const SizedBox(height: 20),
+          ],
+        ),
       ),
     );
   }
 
-  // _buildWelcomeHeader, _buildInfoSection, _buildActionsGrid (sin cambios en su lógica interna,
-  // solo se adaptan al fondo blanco general si es necesario, pero sus Cards internas mantienen sus colores)
-
-  Widget _buildWelcomeHeader(
-    BuildContext context,
-    Color primaryColor,
-    Color textColorOnPrimary,
-    String repartidorNombre,
-  ) {
+  Widget _buildWelcomeHeader(BuildContext context, String repartidorNombre) {
     return Card(
-      elevation: 6.0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-      color: primaryColor, // Esta card mantiene su color naranja
+      elevation: 2.0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+      color: Colors.white,
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.delivery_dining_outlined,
-                  size: 40,
-                  color: textColorOnPrimary.withOpacity(0.8),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'QuickBite Delivery',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: textColorOnPrimary,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Hello, $repartidorNombre!',
-              style: TextStyle(fontSize: 20, color: textColorOnPrimary.withOpacity(0.9)),
+            Icon(Icons.delivery_dining_outlined, size: 48, color: Colors.grey.shade600),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                'Hello, $repartidorNombre!',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+              ),
             ),
           ],
         ),
@@ -193,30 +140,38 @@ class DeliveryDashboardContent extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoSection(
-    BuildContext context,
-    Color primaryColor,
-    Color subtleTextColor,
-    int repartidorId,
-  ) {
+  Widget _buildInfoSection(BuildContext context, int repartidorId) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Your Information',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor),
+        Padding(
+          padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
+          child: Text(
+            'Your Information',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+          ),
         ),
-        const SizedBox(height: 8),
         Card(
           elevation: 2.0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-          color: Colors.white, // Aseguramos que esta card sea blanca si el fondo general lo es
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+            side: BorderSide(color: Colors.grey.shade300, width: 1),
+          ),
+          color: Colors.white,
           child: ListTile(
-            leading: Icon(Icons.badge_outlined, color: primaryColor),
-            title: const Text('Driver ID'),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            leading: Icon(Icons.badge_outlined, color: Colors.grey.shade600, size: 28),
+            title: Text(
+              'Driver ID',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black87),
+            ),
             subtitle: Text(
               '$repartidorId',
-              style: TextStyle(fontSize: 16, color: subtleTextColor, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.normal,
+              ),
             ),
           ),
         ),
@@ -224,38 +179,38 @@ class DeliveryDashboardContent extends StatelessWidget {
     );
   }
 
-  Widget _buildActionsGrid(BuildContext context, Color primaryColor, Color textColorOnPrimary) {
+  Widget _buildActionsGrid(BuildContext context) {
     Widget buildActionCardLocal({
       required IconData icon,
       required String label,
       required VoidCallback onTap,
-      required Color backgroundColor,
-      required Color iconColor,
-      required Color textColor,
-      Color? borderColor,
     }) {
       return Card(
-        elevation: 3.0,
+        elevation: 2.0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.0),
-          side: borderColor != null ? BorderSide(color: borderColor, width: 1.5) : BorderSide.none,
+          borderRadius: BorderRadius.circular(12.0),
+          side: BorderSide(color: Colors.grey.shade300, width: 1),
         ),
-        color: backgroundColor, // Las cards de acción mantienen sus colores definidos
+        color: Colors.white,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16.0),
+          borderRadius: BorderRadius.circular(11.0),
           child: Padding(
-            padding: const EdgeInsets.all(12.0),
+            padding: const EdgeInsets.all(16.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                Icon(icon, size: 36, color: iconColor),
+                Icon(icon, size: 30, color: Colors.grey.shade600),
                 const SizedBox(height: 10),
                 Text(
                   label,
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textColor),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
                 ),
               ],
             ),
@@ -267,73 +222,51 @@ class DeliveryDashboardContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Quick Actions',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor),
+        Padding(
+          padding: const EdgeInsets.only(left: 4.0, bottom: 12.0),
+          child: Text(
+            'Quick Actions',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+          ),
         ),
-        const SizedBox(height: 12),
         GridView.count(
           crossAxisCount: 2,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           crossAxisSpacing: 12.0,
           mainAxisSpacing: 12.0,
+          childAspectRatio: 1.1,
           children: <Widget>[
             buildActionCardLocal(
               icon: Icons.list_alt_rounded,
               label: 'Available\nOrders',
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Feature: View Available Orders (Coming Soon)')),
-                );
+                /* ... */
               },
-              backgroundColor: primaryColor,
-              iconColor: textColorOnPrimary,
-              textColor: textColorOnPrimary,
             ),
             buildActionCardLocal(
               icon: Icons.two_wheeler_rounded,
               label: 'My Assigned\nOrders',
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Feature: My Assigned Orders (Coming Soon)')),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const DeliveryRouteMapScreen()),
                 );
               },
-              backgroundColor: primaryColor,
-              iconColor: textColorOnPrimary,
-              textColor: textColorOnPrimary,
             ),
             buildActionCardLocal(
               icon: Icons.history_edu_rounded,
               label: 'Delivery\nHistory',
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Feature: Delivery History (Coming Soon)')),
-                );
+                /* ... */
               },
-              backgroundColor: Colors.white,
-              iconColor: primaryColor,
-              textColor: primaryColor,
-              borderColor: primaryColor,
             ),
             buildActionCardLocal(
               icon: Icons.manage_accounts_rounded,
               label: 'Profile\nSettings',
               onTap: () {
-                // Aquí podrías navegar a la pestaña de perfil si lo deseas
-                // _onItemTapped(3); // Si _onItemTapped fuera accesible aquí
-                // O directamente:
-                // DefaultTabController.of(context)?.animateTo(3); // Si usaras TabBarView
-                // O manejar la navegación de otra forma.
-                // Por ahora, un SnackBar.
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text('Feature: Settings (Coming Soon)')));
+                /* ... */
               },
-              backgroundColor: Colors.white,
-              iconColor: primaryColor,
-              textColor: primaryColor,
-              borderColor: primaryColor,
             ),
           ],
         ),
@@ -341,3 +274,91 @@ class DeliveryDashboardContent extends StatelessWidget {
     );
   }
 }
+
+// Ejemplo para DeliveryRouteMapScreen:
+// (Asegúrate que esté en su propio archivo o aquí, y que sea un Scaffold con AppBar)
+class DeliveryRouteMapScreen extends StatelessWidget {
+  const DeliveryRouteMapScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final Color primaryColor = const Color(0xFFf05000);
+    final String mapImagePath = 'assets/images/england.png';
+
+    return Scaffold(
+      // <--- DEBE SER UN SCAFFOLD
+      appBar: AppBar(
+        // <--- CON SU PROPIA AppBar
+        title: Text(
+          'Route Map',
+          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 1.0,
+        automaticallyImplyLeading: false,
+      ),
+      body: Stack(
+        // El contenido del mapa
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            mapImagePath,
+            fit: BoxFit.cover,
+            errorBuilder:
+                (context, error, stackTrace) => Container(
+                  color: Colors.grey.shade200,
+                  child: const Center(child: Text('Map image not available')),
+                ),
+          ),
+          Container(color: Colors.black.withOpacity(0.5)),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                'Map Feature\nComing Soon!',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Ejemplo para DeliveryHistoryScreen:
+class DeliveryHistoryScreen extends StatelessWidget {
+  const DeliveryHistoryScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final Color primaryColor = const Color(0xFFf05000);
+    return Scaffold(
+      // <--- DEBE SER UN SCAFFOLD
+      appBar: AppBar(
+        // <--- CON SU PROPIA AppBar
+        title: Text(
+          'Delivery History',
+          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 1.0,
+        automaticallyImplyLeading: false,
+      ),
+      body: const Center(child: Text('History Screen (Content)')), // El contenido del historial
+    );
+  }
+}
+
+// ProfileDelivery ya debería tener su propia estructura con un encabezado personalizado
+// que actúa como AppBar y su propia BottomNavigationBar si esa es la intención final para ella.
+// Si ProfileDelivery también va a ser una pestaña simple SIN su propia navbar inferior
+// y usando el encabezado personalizado como AppBar, entonces su estructura interna
+// (el Scaffold y el encabezado personalizado) está bien, y se incluye en widgetOptions.

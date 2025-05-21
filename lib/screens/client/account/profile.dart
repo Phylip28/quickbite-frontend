@@ -330,36 +330,58 @@ class _ProfileClientState extends State<ProfileClient> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      mainAxisAlignment:
+                          MainAxisAlignment.spaceAround, // Keeps the spacing distribution
                       children: [
-                        OutlinedButton.icon(
-                          icon: const Icon(Icons.delete_outline, color: Colors.red),
-                          label: const Text('Delete account', style: TextStyle(color: Colors.red)),
-                          onPressed: () {
-                            // TODO: Implementar diálogo de confirmación para eliminar cuenta
-                            print('Delete account pressed');
-                          },
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Colors.red),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        Flexible(
+                          // Wrap the "Delete account" button
+                          child: OutlinedButton.icon(
+                            icon: const Icon(Icons.delete_outline, color: Colors.red),
+                            label: const Text(
+                              'Delete account',
+                              textAlign: TextAlign.center, // Center text if it wraps
+                              style: TextStyle(color: Colors.red),
+                            ),
+                            onPressed: () {
+                              // TODO: Implementar diálogo de confirmación para eliminar cuenta
+                              print('Delete account pressed');
+                            },
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Colors.red),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
                           ),
                         ),
-                        ElevatedButton.icon(
-                          icon: const Icon(Icons.logout, color: Colors.white),
-                          label: const Text('Log Out', style: TextStyle(color: Colors.white)),
-                          onPressed: () async {
-                            await deleteAuthToken();
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(builder: (context) => const LoginScreen()),
-                              (Route<dynamic> route) => false,
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFf05000),
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        // Add a small SizedBox for a guaranteed minimum space,
+                        // though spaceAround might make this less critical.
+                        // You can adjust or remove this if spaceAround provides enough.
+                        const SizedBox(width: 8.0),
+                        Flexible(
+                          // Wrap the "Log Out" button
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.logout, color: Colors.white),
+                            label: const Text(
+                              'Log Out',
+                              textAlign: TextAlign.center, // Center text if it wraps
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            onPressed: () async {
+                              await deleteAuthToken();
+                              if (mounted) {
+                                // Add mounted check
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                                  (Route<dynamic> route) => false,
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFf05000),
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
                           ),
                         ),
                       ],
