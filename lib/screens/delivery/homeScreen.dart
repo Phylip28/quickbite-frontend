@@ -1,95 +1,164 @@
 import 'package:flutter/material.dart';
-import '../../auth/auth.dart' as auth_service; // Importado con alias
-import '../loginScreen.dart'; // For navigation after logout
+import 'customBottomNavigationBar.dart';
 
-class DeliveryHomeScreen extends StatelessWidget {
+// Placeholder screens (sin cambios)
+class DeliveryOrdersScreen extends StatelessWidget {
+  const DeliveryOrdersScreen({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return const Center(child: Text('Orders Screen (Content)'));
+  }
+}
+
+class DeliveryMapScreen extends StatelessWidget {
+  const DeliveryMapScreen({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return const Center(child: Text('Map Screen (Content)'));
+  }
+}
+
+class DeliveryHistoryScreen extends StatelessWidget {
+  const DeliveryHistoryScreen({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return const Center(child: Text('History Screen (Content)'));
+  }
+}
+
+class DeliveryProfileScreen extends StatelessWidget {
   final String repartidorNombre;
   final int repartidorId;
-  // Considerar pasar también el correo si se va a mostrar:
-  // final String repartidorCorreo;
 
-  const DeliveryHomeScreen({
+  const DeliveryProfileScreen({
     super.key,
     required this.repartidorNombre,
     required this.repartidorId,
-    // required this.repartidorCorreo,
   });
 
+  @override
+  Widget build(BuildContext context) {
+    // El logout podría moverse a esta pantalla de perfil si se desea
+    return Center(child: Text('Profile Screen for $repartidorNombre (ID: $repartidorId)'));
+  }
+}
+
+class DeliveryHomeScreen extends StatefulWidget {
   static const String routeName = '/delivery-home';
+
+  final String repartidorNombre;
+  final int repartidorId;
+
+  const DeliveryHomeScreen({super.key, required this.repartidorNombre, required this.repartidorId});
+
+  @override
+  State<DeliveryHomeScreen> createState() => _DeliveryHomeScreenState();
+}
+
+class _DeliveryHomeScreenState extends State<DeliveryHomeScreen> {
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final Color primaryColor = const Color(0xFFf05000);
-    final Color cardBackgroundColor = Colors.white;
-    final Color textColorOnPrimary = Colors.white;
-    final Color subtleTextColor = Colors.grey.shade700;
+
+    const String appBarTitle = 'Delivery Panel';
 
     return Scaffold(
+      backgroundColor: Colors.white, // Asegura fondo blanco para el Scaffold
       appBar: AppBar(
         title: Text(
-          'Panel de Repartidor',
-          style: TextStyle(color: textColorOnPrimary, fontWeight: FontWeight.bold),
+          appBarTitle,
+          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold), // Texto Naranja
         ),
-        backgroundColor: primaryColor,
-        elevation: 4.0,
-        iconTheme: IconThemeData(
-          color: textColorOnPrimary,
-        ), // Para el botón de "atrás" si es aplicable
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout, color: textColorOnPrimary),
-            tooltip: 'Cerrar Sesión',
-            onPressed: () async {
-              await auth_service.deleteAuthToken();
-              // Es buena práctica también limpiar el rol si se guarda por separado
-              // Si no tienes deleteUserRole, puedes comentarlo o añadir la función en auth.dart
-              await auth_service.deleteUserRole();
-
-              if (context.mounted) {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                  (Route<dynamic> route) => false,
-                );
-              }
-            },
+        backgroundColor: Colors.white, // Fondo Blanco
+        elevation: 1.0, // Una elevación sutil o 0.0 si prefieres sin sombra
+        iconTheme: IconThemeData(color: primaryColor), // Iconos (si los hubiera) en Naranja
+        automaticallyImplyLeading: false, // Elimina la flecha de retroceso
+        // actions: [], // Eliminada la sección de actions (botón de logout)
+      ),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          DeliveryDashboardContent(
+            repartidorNombre: widget.repartidorNombre,
+            repartidorId: widget.repartidorId,
+          ),
+          const DeliveryMapScreen(),
+          const DeliveryHistoryScreen(),
+          DeliveryProfileScreen(
+            repartidorNombre: widget.repartidorNombre,
+            repartidorId: widget.repartidorId,
           ),
         ],
       ),
-      body: Container(
-        // Fondo con un gradiente sutil para dar profundidad
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [primaryColor.withOpacity(0.05), Colors.grey.shade100.withOpacity(0.5)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
-          children: <Widget>[
-            _buildWelcomeHeader(context, primaryColor, textColorOnPrimary, cardBackgroundColor),
-            const SizedBox(height: 24),
-            _buildInfoSection(context, primaryColor, subtleTextColor),
-            const SizedBox(height: 24),
-            _buildActionsGrid(context, primaryColor, textColorOnPrimary),
-            const SizedBox(height: 20),
-            // Puedes añadir más secciones aquí, como "Estadísticas Rápidas" o "Notificaciones"
-          ],
-        ),
+      bottomNavigationBar: DeliveryCustomBottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     );
   }
+}
+
+class DeliveryDashboardContent extends StatelessWidget {
+  final String repartidorNombre;
+  final int repartidorId;
+
+  const DeliveryDashboardContent({
+    super.key,
+    required this.repartidorNombre,
+    required this.repartidorId,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final Color primaryColor = const Color(0xFFf05000);
+    final Color textColorOnPrimary =
+        Colors.white; // Se sigue usando para las cards con fondo naranja
+    final Color subtleTextColor = Colors.grey.shade700;
+
+    return Container(
+      color: Colors.white, // Asegura fondo blanco para el contenido del dashboard
+      // decoration: BoxDecoration( // Eliminado el gradiente
+      //   gradient: LinearGradient(
+      //     colors: [primaryColor.withOpacity(0.05), Colors.grey.shade100.withOpacity(0.5)],
+      //     begin: Alignment.topCenter,
+      //     end: Alignment.bottomCenter,
+      //   ),
+      // ),
+      child: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+        children: <Widget>[
+          _buildWelcomeHeader(context, primaryColor, textColorOnPrimary, repartidorNombre),
+          const SizedBox(height: 24),
+          _buildInfoSection(context, primaryColor, subtleTextColor, repartidorId),
+          const SizedBox(height: 24),
+          _buildActionsGrid(context, primaryColor, textColorOnPrimary),
+          const SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
+
+  // _buildWelcomeHeader, _buildInfoSection, _buildActionsGrid (sin cambios en su lógica interna,
+  // solo se adaptan al fondo blanco general si es necesario, pero sus Cards internas mantienen sus colores)
 
   Widget _buildWelcomeHeader(
     BuildContext context,
     Color primaryColor,
     Color textColorOnPrimary,
-    Color cardBackgroundColor,
+    String repartidorNombre,
   ) {
     return Card(
       elevation: 6.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-      color: primaryColor,
+      color: primaryColor, // Esta card mantiene su color naranja
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -115,7 +184,7 @@ class DeliveryHomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              '¡Hola, $repartidorNombre!',
+              'Hello, $repartidorNombre!',
               style: TextStyle(fontSize: 20, color: textColorOnPrimary.withOpacity(0.9)),
             ),
           ],
@@ -124,97 +193,122 @@ class DeliveryHomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoSection(BuildContext context, Color primaryColor, Color subtleTextColor) {
+  Widget _buildInfoSection(
+    BuildContext context,
+    Color primaryColor,
+    Color subtleTextColor,
+    int repartidorId,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Tu Información',
+          'Your Information',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor),
         ),
         const SizedBox(height: 8),
         Card(
           elevation: 2.0,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+          color: Colors.white, // Aseguramos que esta card sea blanca si el fondo general lo es
           child: ListTile(
             leading: Icon(Icons.badge_outlined, color: primaryColor),
-            title: const Text('ID de Repartidor'),
+            title: const Text('Driver ID'),
             subtitle: Text(
               '$repartidorId',
               style: TextStyle(fontSize: 16, color: subtleTextColor, fontWeight: FontWeight.w500),
             ),
           ),
         ),
-        // Podrías añadir más información aquí si la pasas a la pantalla
-        // Card(
-        //   elevation: 2.0,
-        //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-        //   child: ListTile(
-        //     leading: Icon(Icons.email_outlined, color: primaryColor),
-        //     title: const Text('Correo Electrónico'),
-        //     subtitle: Text(repartidorCorreo, style: TextStyle(fontSize: 16, color: subtleTextColor, fontWeight: FontWeight.w500)),
-        //   ),
-        // ),
       ],
     );
   }
 
   Widget _buildActionsGrid(BuildContext context, Color primaryColor, Color textColorOnPrimary) {
+    Widget buildActionCardLocal({
+      required IconData icon,
+      required String label,
+      required VoidCallback onTap,
+      required Color backgroundColor,
+      required Color iconColor,
+      required Color textColor,
+      Color? borderColor,
+    }) {
+      return Card(
+        elevation: 3.0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+          side: borderColor != null ? BorderSide(color: borderColor, width: 1.5) : BorderSide.none,
+        ),
+        color: backgroundColor, // Las cards de acción mantienen sus colores definidos
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16.0),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Icon(icon, size: 36, color: iconColor),
+                const SizedBox(height: 10),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textColor),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Acciones Rápidas',
+          'Quick Actions',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor),
         ),
         const SizedBox(height: 12),
         GridView.count(
           crossAxisCount: 2,
           shrinkWrap: true,
-          physics:
-              const NeverScrollableScrollPhysics(), // Para deshabilitar el scroll de GridView dentro de ListView
+          physics: const NeverScrollableScrollPhysics(),
           crossAxisSpacing: 12.0,
           mainAxisSpacing: 12.0,
           children: <Widget>[
-            _buildActionCard(
-              context,
+            buildActionCardLocal(
               icon: Icons.list_alt_rounded,
-              label: 'Pedidos\nDisponibles',
+              label: 'Available\nOrders',
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Funcionalidad: Ver Pedidos Disponibles (Próximamente)'),
-                  ),
+                  const SnackBar(content: Text('Feature: View Available Orders (Coming Soon)')),
                 );
               },
               backgroundColor: primaryColor,
               iconColor: textColorOnPrimary,
               textColor: textColorOnPrimary,
             ),
-            _buildActionCard(
-              context,
-              icon: Icons.two_wheeler_rounded, // Icono más específico
-              label: 'Mis Pedidos\nAsignados',
+            buildActionCardLocal(
+              icon: Icons.two_wheeler_rounded,
+              label: 'My Assigned\nOrders',
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Funcionalidad: Mis Pedidos Asignados (Próximamente)'),
-                  ),
+                  const SnackBar(content: Text('Feature: My Assigned Orders (Coming Soon)')),
                 );
               },
               backgroundColor: primaryColor,
               iconColor: textColorOnPrimary,
               textColor: textColorOnPrimary,
             ),
-            _buildActionCard(
-              context,
-              icon: Icons.history_edu_rounded, // Icono diferente
-              label: 'Historial de\nEntregas',
+            buildActionCardLocal(
+              icon: Icons.history_edu_rounded,
+              label: 'Delivery\nHistory',
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Funcionalidad: Historial de Entregas (Próximamente)'),
-                  ),
+                  const SnackBar(content: Text('Feature: Delivery History (Coming Soon)')),
                 );
               },
               backgroundColor: Colors.white,
@@ -222,14 +316,19 @@ class DeliveryHomeScreen extends StatelessWidget {
               textColor: primaryColor,
               borderColor: primaryColor,
             ),
-            _buildActionCard(
-              context,
-              icon: Icons.manage_accounts_rounded, // Icono más específico
-              label: 'Configurar\nPerfil',
+            buildActionCardLocal(
+              icon: Icons.manage_accounts_rounded,
+              label: 'Profile\nSettings',
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Funcionalidad: Configuración (Próximamente)')),
-                );
+                // Aquí podrías navegar a la pestaña de perfil si lo deseas
+                // _onItemTapped(3); // Si _onItemTapped fuera accesible aquí
+                // O directamente:
+                // DefaultTabController.of(context)?.animateTo(3); // Si usaras TabBarView
+                // O manejar la navegación de otra forma.
+                // Por ahora, un SnackBar.
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Feature: Settings (Coming Soon)')));
               },
               backgroundColor: Colors.white,
               iconColor: primaryColor,
@@ -239,46 +338,6 @@ class DeliveryHomeScreen extends StatelessWidget {
           ],
         ),
       ],
-    );
-  }
-
-  Widget _buildActionCard(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    required Color backgroundColor,
-    required Color iconColor,
-    required Color textColor,
-    Color? borderColor,
-  }) {
-    return Card(
-      elevation: 3.0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.0),
-        side: borderColor != null ? BorderSide(color: borderColor, width: 1.5) : BorderSide.none,
-      ),
-      color: backgroundColor,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16.0),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Icon(icon, size: 36, color: iconColor),
-              const SizedBox(height: 10),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textColor),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

@@ -24,6 +24,8 @@ import 'categories.dart';
 const Color primaryColor = Color(0xFFf05000);
 
 class HomeScreen extends StatefulWidget {
+  static const String routeName = '/client-home'; // <--- AÑADE ESTA LÍNEA
+
   const HomeScreen({super.key});
 
   @override

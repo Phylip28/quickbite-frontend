@@ -55,8 +55,8 @@ class CustomBottomNavigationBar extends StatelessWidget {
       currentIndex: currentIndex,
       selectedItemColor: activeColor,
       unselectedItemColor: inactiveColor,
-      showSelectedLabels: false,
-      showUnselectedLabels: false,
+      showSelectedLabels: true, // <--- CAMBIO AQUÍ
+      showUnselectedLabels: true, // <--- CAMBIO AQUÍ
       onTap: onTabChanged,
     );
   }

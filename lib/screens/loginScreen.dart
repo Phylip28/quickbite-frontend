@@ -7,7 +7,9 @@ import 'dart:convert';
 import '../auth/auth.dart'; // Importa todas tus funciones de auth.dart
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  static const String routeName = '/login'; // <--- AÑADE ESTA LÍNEA
+
+  const LoginScreen({super.key}); // Asegúrate de que el constructor esté bien
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -97,11 +99,13 @@ class _LoginScreenState extends State<LoginScreen> {
             await saveUserLastName(responseData['apellido_cliente']);
             await saveUserEmail(responseData['correo_cliente']);
             // Guarda otros datos del cliente si es necesario (dirección, teléfono)
-            if (responseData.containsKey('direccion_cliente'))
+            if (responseData.containsKey('direccion_cliente')) {
               await saveUserAddress(responseData['direccion_cliente']);
-            if (responseData.containsKey('telefono_cliente'))
+            }
+            if (responseData.containsKey('telefono_cliente')) {
               await saveUserPhone(responseData['telefono_cliente']);
-            await saveUserRole('cliente'); // Guardar rol
+            }
+            await saveUserRole('customer'); // <--- CAMBIO AQUÍ: de 'cliente' a 'customer'
 
             ScaffoldMessenger.of(
               context,
