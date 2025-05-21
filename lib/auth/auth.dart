@@ -1,17 +1,20 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+// Claves para SharedPreferences
 const String _authTokenKey = 'authToken';
 const String _userIdKey = 'userId';
 const String _userNameKey = 'userName';
-const String _userLastNameKey = 'userLastName';
-const String _userAddressKey = 'userAddress';
-const String _userPhoneKey = 'userPhone';
+const String _userLastNameKey = 'userLastName'; // Asumo que lo usas para clientes y repartidores
+const String _userAddressKey = 'userAddress'; // Asumo que lo usas para clientes y repartidores
+const String _userPhoneKey = 'userPhone'; // Asumo que lo usas para clientes y repartidores
 const String _userEmailKey = 'userEmail';
+const String _userRoleKey = 'userRole'; // <--- CLAVE AÑADIDA PARA EL ROL
 
+// --- Token de Autenticación ---
 Future<void> saveAuthToken(String token) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setString(_authTokenKey, token);
-  print('Token guardado: $token');
+  print('AuthToken guardado: $token');
 }
 
 Future<String?> getAuthToken() async {
@@ -22,11 +25,34 @@ Future<String?> getAuthToken() async {
 Future<void> deleteAuthToken() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.remove(_authTokenKey);
-  await _removeAllUserInfo(); // Limpia también la info del usuario al cerrar sesión
-  print('Token eliminado');
+  await _removeAllUserInfo(); // Llama a limpiar toda la info del usuario
+  print('AuthToken eliminado y toda la info de usuario limpiada.');
 }
 
-// Funciones para guardar y leer el ID del usuario
+// --- Rol del Usuario ---
+Future<void> saveUserRole(String role) async {
+  // <--- FUNCIÓN AÑADIDA
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString(_userRoleKey, role);
+  print('UserRole guardado: $role');
+}
+
+Future<String?> getUserRole() async {
+  // <--- FUNCIÓN AÑADIDA
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  final role = prefs.getString(_userRoleKey);
+  print('UserRole obtenido: $role');
+  return role;
+}
+
+Future<void> deleteUserRole() async {
+  // <--- FUNCIÓN AÑADIDA
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.remove(_userRoleKey);
+  print('UserRole eliminado.');
+}
+
+// --- ID del Usuario (Cliente o Repartidor) ---
 Future<void> saveUserId(int userId) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setInt(_userIdKey, userId);
@@ -38,7 +64,7 @@ Future<int?> getUserId() async {
   return prefs.getInt(_userIdKey);
 }
 
-// Funciones para guardar y leer el nombre del usuario
+// --- Nombre del Usuario (Cliente o Repartidor) ---
 Future<void> saveUserName(String userName) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setString(_userNameKey, userName);
@@ -50,7 +76,7 @@ Future<String?> getUserName() async {
   return prefs.getString(_userNameKey);
 }
 
-// Funciones para guardar y leer el apellido del usuario
+// --- Apellido del Usuario ---
 Future<void> saveUserLastName(String lastName) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setString(_userLastNameKey, lastName);
@@ -62,7 +88,7 @@ Future<String?> getUserLastName() async {
   return prefs.getString(_userLastNameKey);
 }
 
-// Funciones para guardar y leer la dirección del usuario
+// --- Dirección del Usuario ---
 Future<void> saveUserAddress(String address) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setString(_userAddressKey, address);
@@ -74,7 +100,7 @@ Future<String?> getUserAddress() async {
   return prefs.getString(_userAddressKey);
 }
 
-// Funciones para guardar y leer el teléfono del usuario
+// --- Teléfono del Usuario ---
 Future<void> saveUserPhone(String phone) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setString(_userPhoneKey, phone);
@@ -86,7 +112,7 @@ Future<String?> getUserPhone() async {
   return prefs.getString(_userPhoneKey);
 }
 
-// Funciones para guardar y leer el correo electrónico del usuario
+// --- Correo del Usuario ---
 Future<void> saveUserEmail(String email) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setString(_userEmailKey, email);
@@ -98,7 +124,7 @@ Future<String?> getUserEmail() async {
   return prefs.getString(_userEmailKey);
 }
 
-// Función para limpiar toda la información del usuario
+// --- Limpiar toda la información del usuario ---
 Future<void> _removeAllUserInfo() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.remove(_userIdKey);
@@ -107,7 +133,10 @@ Future<void> _removeAllUserInfo() async {
   await prefs.remove(_userAddressKey);
   await prefs.remove(_userPhoneKey);
   await prefs.remove(_userEmailKey);
-  print('Información del usuario eliminada');
+  await prefs.remove(_userRoleKey); // <--- ASEGÚRATE QUE EL ROL SE LIMPIE AQUÍ
+  print(
+    'Toda la información del usuario (ID, Nombre, Apellido, Dirección, Teléfono, Email, Rol) ha sido eliminada.',
+  );
 }
 
 // (Opcional) Puedes mantener tu clase AuthService aquí si lo deseas
