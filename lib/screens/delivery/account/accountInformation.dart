@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../auth/auth.dart'; // For getUserName, getUserEmail, getUserPhone
+import '../../../auth/auth.dart'; // For getUserName, getUserEmail, getUserPhone, getUserLastName
 
 const Color primaryColor = Color(0xFFf05000); // Orange color
 const Color lightAccentColor = Color(0xFFFEEAE6); // Light orange accent
@@ -12,7 +12,7 @@ class DeliveryAccountInformationScreen extends StatefulWidget {
 }
 
 class _DeliveryAccountInformationScreenState extends State<DeliveryAccountInformationScreen> {
-  String? _deliveryPersonName;
+  String? _deliveryPersonFullName; // Cambiado para reflejar nombre completo
   String? _deliveryPersonEmail;
   String? _deliveryPersonPhoneNumber;
   String? _vehicleDetails; // Example delivery-specific field
@@ -24,19 +24,32 @@ class _DeliveryAccountInformationScreenState extends State<DeliveryAccountInform
   }
 
   Future<void> _loadDeliveryUserProfileData() async {
-    // Assuming these auth functions return general user data
-    // Adapt if you have delivery-specific functions in auth.dart
-    final name = await getUserName();
+    final firstName = await getUserName(); // Obtiene el primer nombre
+    final lastName = await getUserLastName(); // Obtiene el apellido
     final email = await getUserEmail();
     final phoneNumber = await getUserPhone();
-    // final vehicle = await getDeliveryVehicleDetails(); // Example for a new field
+    final vehicle = await getDeliveryVehicleDetails(); // Usa la nueva función de auth.dart
+
+    String fullName = "";
+    if (firstName != null && firstName.isNotEmpty) {
+      fullName += firstName;
+    }
+    if (lastName != null && lastName.isNotEmpty) {
+      if (fullName.isNotEmpty) {
+        fullName += " "; // Añade un espacio si ya hay un primer nombre
+      }
+      fullName += lastName;
+    }
+    if (fullName.isEmpty) {
+      fullName = "Not available";
+    }
 
     if (mounted) {
       setState(() {
-        _deliveryPersonName = name;
+        _deliveryPersonFullName = fullName; // Asigna el nombre completo
         _deliveryPersonEmail = email;
         _deliveryPersonPhoneNumber = phoneNumber ?? "Not available";
-        _vehicleDetails = "Not available"; // Placeholder for vehicle details
+        _vehicleDetails = vehicle ?? "Not available"; // Asigna los detalles del vehículo
       });
     }
   }
@@ -81,10 +94,10 @@ class _DeliveryAccountInformationScreenState extends State<DeliveryAccountInform
         children: [
           Positioned.fill(
             child: Image.asset(
-              'assets/images/fondoSemiTransparente.png', // Reusing the background
+              'assets/images/fondoSemiTransparente.png',
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
-                return Container(color: Colors.grey.shade200); // Fallback color
+                return Container(color: Colors.grey.shade200);
               },
             ),
           ),
@@ -159,7 +172,11 @@ class _DeliveryAccountInformationScreenState extends State<DeliveryAccountInform
                             ),
                           ),
                           const SizedBox(height: 24),
-                          _buildInfoRow(Icons.badge_outlined, 'Full Name', _deliveryPersonName),
+                          _buildInfoRow(
+                            Icons.badge_outlined,
+                            'Full Name',
+                            _deliveryPersonFullName,
+                          ), // Usa la nueva variable
                           const Divider(),
                           _buildInfoRow(
                             Icons.phone_outlined,
@@ -175,7 +192,7 @@ class _DeliveryAccountInformationScreenState extends State<DeliveryAccountInform
                           const Divider(),
                           _buildInfoRow(
                             Icons.motorcycle_outlined,
-                            'Vehicle Details', // Example field
+                            'Vehicle Details',
                             _vehicleDetails,
                           ),
                           const SizedBox(height: 30),
@@ -193,7 +210,6 @@ class _DeliveryAccountInformationScreenState extends State<DeliveryAccountInform
                                 ),
                               ),
                               onPressed: () {
-                                // TODO: Implement navigation or logic for delivery profile update
                                 print('Update Delivery Profile tapped');
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(

@@ -134,7 +134,51 @@ class _LoginScreenState extends State<LoginScreen> {
             await saveUserName(responseData['nombre_repartidor']);
             await saveUserLastName(responseData['apellido_repartidor']);
             await saveUserEmail(responseData['correo_repartidor']);
-            await saveUserRole(responseData['role']); // Guardar rol 'repartidor'
+            await saveUserRole(responseData['role']);
+
+            // --- INICIO DE CAMBIOS SUGERIDOS ---
+            // Verificar y guardar el número de teléfono del repartidor si está presente
+            if (responseData.containsKey('telefono_repartidor')) {
+              await saveUserPhone(responseData['telefono_repartidor']);
+              print('Teléfono del repartidor guardado: ${responseData['telefono_repartidor']}');
+            } else {
+              print('Teléfono del repartidor no encontrado en la respuesta del login.');
+              // Opcionalmente, guardar un valor por defecto o null si prefieres
+              // await saveUserPhone("N/A");
+            }
+
+            // Verificar y guardar detalles del vehículo si están presentes
+            if (responseData.containsKey('vehiculo_repartidor')) {
+              // <--- CLAVE CORREGIDA
+              // Ahora que la clave es correcta, decidimos cómo guardarlo.
+              // Opción 1: Si tienes una función específica en auth.dart como saveVehicleDetails
+              // await saveVehicleDetails(responseData['vehiculo_repartidor']);
+              // print('Vehículo del repartidor guardado (usando saveVehicleDetails): ${responseData['vehiculo_repartidor']}');
+
+              // Opción 2: Si quieres usar una clave genérica en SharedPreferences
+              // y tienes una función como saveString('userVehicleDetailsKey', responseData['vehiculo_repartidor'])
+              // O si la pantalla DeliveryAccountInformationScreen espera cargar esto con una clave específica.
+
+              // Por ahora, solo imprimamos para confirmar que se lee correctamente:
+              print('Vehículo del repartidor RECIBIDO: ${responseData['vehiculo_repartidor']}');
+
+              // PARA QUE SE MUESTRE EN DeliveryAccountInformationScreen:
+              // Debes tener una función en auth.dart para guardar este dato, por ejemplo:
+              // Future<void> saveDeliveryVehicleDetails(String details) async {
+              //   SharedPreferences prefs = await SharedPreferences.getInstance();
+              //   await prefs.setString('deliveryVehicleDetails', details); // Usa una clave consistente
+              // }
+              // Y luego llamarla aquí:
+              await saveDeliveryVehicleDetails(
+                responseData['vehiculo_repartidor'],
+              ); // Asumiendo que creas esta función
+            } else {
+              // Este else ya no debería ejecutarse si el backend envía 'vehiculo_repartidor'
+              print(
+                'Vehículo del repartidor (vehiculo_repartidor) no encontrado en la respuesta del login.',
+              );
+            }
+            // --- FIN DE CAMBIOS SUGERIDOS ---
 
             ScaffoldMessenger.of(
               context,
@@ -144,10 +188,11 @@ class _LoginScreenState extends State<LoginScreen> {
               MaterialPageRoute(
                 builder:
                     (context) => DeliveryHomeScreen(
-                      // Pantalla de repartidor
-                      repartidorNombre: responseData['nombre_repartidor'],
+                      repartidorNombre:
+                          responseData['nombre_repartidor'] +
+                          " " +
+                          responseData['apellido_repartidor'], // Nombre completo
                       repartidorId: responseData['id_repartidor'],
-                      // Pasa otros datos si DeliveryHomeScreen los necesita
                     ),
               ),
             );

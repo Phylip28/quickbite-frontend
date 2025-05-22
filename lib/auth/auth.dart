@@ -9,6 +9,7 @@ const String userAddressKey = 'userAddress';
 const String userPhoneKey = 'userPhone';
 const String userEmailKey = 'userEmail';
 const String userRoleKey = 'userRole';
+const String deliveryVehicleDetailsKey = 'deliveryVehicleDetails'; // Nueva clave
 
 // --- Token de Autenticación ---
 Future<void> saveAuthToken(String token) async {
@@ -121,6 +122,18 @@ Future<String?> getUserEmail() async {
   return prefs.getString(userEmailKey); // Usar la clave pública
 }
 
+// --- Detalles del Vehículo de Entrega ---
+Future<void> saveDeliveryVehicleDetails(String details) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString(deliveryVehicleDetailsKey, details);
+  print('Detalles del vehículo del repartidor guardados en SharedPreferences: $details');
+}
+
+Future<String?> getDeliveryVehicleDetails() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString(deliveryVehicleDetailsKey);
+}
+
 // --- Limpiar toda la información del usuario ---
 Future<void> _removeAllUserInfo() async {
   // Esta puede seguir siendo privada si solo se llama desde aquí
@@ -132,6 +145,7 @@ Future<void> _removeAllUserInfo() async {
   await prefs.remove(userPhoneKey);
   await prefs.remove(userEmailKey);
   await prefs.remove(userRoleKey);
+  await prefs.remove(deliveryVehicleDetailsKey);
   print(
     'Toda la información del usuario (ID, Nombre, Apellido, Dirección, Teléfono, Email, Rol) ha sido eliminada.',
   );

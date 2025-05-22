@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../loginScreen.dart'; // Para el logout
 import '../../../auth/auth.dart'; // Para getUserName, getUserEmail, deleteAuthToken
 import '../homeScreen.dart'; // Para DeliveryHomeScreen
-import './info.dart'; // Importa la nueva pantalla de información de cuenta del repartidor
+import 'accountInformation.dart'; // Importa la nueva pantalla de información de cuenta del repartidor
 import './changePassword.dart'; // Importa la pantalla de cambio de contraseña
 
 class ProfileDelivery extends StatefulWidget {
