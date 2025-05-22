@@ -4,7 +4,9 @@ import 'TierraQuerida/menuTierraQuerida.dart';
 import 'account/profile.dart';
 import 'customBottomNavigationBar.dart';
 // Asegúrate de que CartItem y globalCartItems estén definidos y exportados en shoppingCart.dart
-import 'cart/shoppingCart.dart';
+import 'cart/shoppingCart.dart'; // Asegúrate que globalCartItems (List<CartItemModel>) esté aquí
+import 'models/productModel.dart'; // <--- IMPORTA ProductModel
+import 'models/cartItemModel.dart'; // <--- IMPORTA CartItemModel
 import 'Starbucks/menuStarbucks.dart';
 import 'Subway/menuSubway.dart';
 import 'Kfc/menuKfc.dart';
@@ -358,17 +360,13 @@ class _HomeScreenState extends State<HomeScreen> {
   // --- Métodos para el Overlay y agregar al carrito ---
   double _parsePrice(String? priceString) {
     if (priceString == null) return 0.0;
-    return double.tryParse(priceString.replaceAll('€', '').replaceAll(',', '')) ??
-        0.0; // Cambiado de $ a €
+    return double.tryParse(priceString.replaceAll('€', '').replaceAll(',', '')) ?? 0.0;
   }
 
   void _showAddedToCartOverlay(String productName) {
-    _overlayEntry?.remove(); // Elimina cualquier overlay anterior
+    _overlayEntry?.remove();
     _overlayEntry = null;
-
-    // Crear una clave única para el Dismissible
     final UniqueKey dismissibleKey = UniqueKey();
-
     _overlayEntry = OverlayEntry(
       builder:
           (context) => Positioned(
@@ -376,11 +374,9 @@ class _HomeScreenState extends State<HomeScreen> {
             left: 20,
             right: 20,
             child: Dismissible(
-              // ENVOLVER CON DISMISSIBLE
-              key: dismissibleKey, // Usar la clave única
-              direction: DismissDirection.horizontal, // Permitir deslizar horizontalmente
+              key: dismissibleKey,
+              direction: DismissDirection.horizontal,
               onDismissed: (direction) {
-                // Cuando se descarta, eliminar el overlay
                 if (mounted && _overlayEntry != null) {
                   _overlayEntry?.remove();
                   _overlayEntry = null;
@@ -448,35 +444,45 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _addToCart(Map<String, String> product) {
-    final String productName = product['name']!;
-    final double productPrice = _parsePrice(product['price']);
-    final String imageUrl = product['image']!;
-    final String restaurantName = product['restaurantName']!;
+  void _addToCart(Map<String, String> productDataFromList) {
+    // Extraer datos del mapa del producto de _allProducts
+    final String productName = productDataFromList['name']!;
+    final double productPrice = _parsePrice(productDataFromList['price']);
+    // final String imageUrl = productDataFromList['image']!; // No se usa en ProductModel MVP
+    // final String restaurantName = productDataFromList['restaurantName']!; // No se usa en ProductModel MVP
 
+    // Crear un ID único para el ProductModel (puedes hacerlo más robusto si es necesario)
+    // Para el MVP, combinamos nombre y restaurante para la unicidad del ID del producto.
+    // Si tus nombres de producto son únicos globalmente, solo productName podría bastar.
+    final String productId = "${productDataFromList['restaurantName']!}_$productName";
+
+    // Crear la instancia de ProductModel
+    final productToAdd = ProductModel(id: productId, name: productName, price: productPrice);
+
+    // Buscar si un CartItemModel con este ProductModel (basado en product.id) ya existe
     final existingItemIndex = globalCartItems.indexWhere(
-      (item) => item.name == productName && item.restaurant == restaurantName,
+      (cartItem) => cartItem.product.id == productToAdd.id,
     );
 
     if (mounted) {
       setState(() {
         if (existingItemIndex != -1) {
-          globalCartItems[existingItemIndex].quantity++;
+          // Si existe, solo incrementa la cantidad
+          globalCartItems[existingItemIndex].incrementQuantity();
         } else {
+          // Si no existe, añade un nuevo CartItemModel
           globalCartItems.add(
-            CartItem(
-              name: productName,
-              price: productPrice,
+            CartItemModel(
+              product: productToAdd, // Pasa la instancia de ProductModel
               quantity: 1,
-              imageUrl: imageUrl,
-              restaurant: restaurantName,
             ),
           );
         }
       });
     }
-    _showAddedToCartOverlay(productName);
+    _showAddedToCartOverlay(productName); // Esto puede seguir igual
   }
+
   // --- Fin de Métodos para el Overlay ---
 
   Widget _buildProductItem(BuildContext context, Map<String, String> product) {

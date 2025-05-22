@@ -6,6 +6,8 @@ import '../account/profile.dart';
 import '../orders/orders.dart';
 import 'productDetailKfc.dart';
 import '../../../auth/auth.dart';
+import '../models/productModel.dart'; // <--- RUTA CONFIRMADA
+import '../models/cartItemModel.dart'; // <--- RUTA CONFIRMADA
 
 // Definición de colores consistentes
 const primaryColor = Color(0xFFf05000);
@@ -20,7 +22,7 @@ class KfcMenuScreen extends StatefulWidget {
 }
 
 class _KfcMenuScreenState extends State<KfcMenuScreen> {
-  final int _selectedIndex = 1; // KfcMenuScreen es parte del flujo de Home (índice 1)
+  final int _selectedIndex = 1;
   OverlayEntry? _overlayEntry;
   String _userAddress = "Loading address...";
 
@@ -32,7 +34,6 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
 
   @override
   void dispose() {
-    // Limpiar el overlay si aún está visible al salir de la pantalla
     _overlayEntry?.remove();
     _overlayEntry = null;
     super.dispose();
@@ -106,12 +107,7 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
   }
 
   void _onTabTapped(int index) {
-    // Si el índice seleccionado es el mismo que el actual Y es la pestaña Home (1),
-    // y ya estamos en una pantalla del flujo de Home, no hacer nada o ir a la HomeScreen principal.
-    // Si es otra pestaña, siempre navegar.
     if (_selectedIndex == index && index == 1) {
-      // Si el usuario está en KfcMenuScreen y presiona "Home" de nuevo,
-      // lo llevamos a la HomeScreen principal, limpiando la pila.
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -119,35 +115,31 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
       );
       return;
     }
-    // Si se presiona una pestaña diferente a la actual (_selectedIndex), navegar.
     if (_selectedIndex == index) return;
 
     switch (index) {
-      case 0: // Cart
+      case 0:
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 1: // Home
-        // Si se llega aquí desde otra pestaña (Cart, Orders, Account),
-        // o si se presionó Home estando en KfcMenuScreen (manejado arriba),
-        // ir a la HomeScreen principal.
+      case 1:
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 2: // Orders (ANTERIORMENTE Membership)
+      case 2:
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const OrdersScreen()), // NAVEGAR A OrdersScreen
+          MaterialPageRoute(builder: (context) => const OrdersScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 3: // Account (Profile)
+      case 3:
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const ProfileClient()),
@@ -158,10 +150,9 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
   }
 
   void _showAddedToCartOverlay(String productName) {
-    _overlayEntry?.remove(); // Elimina cualquier overlay anterior
-    _overlayEntry = null; // Asegura que la referencia se limpie
+    _overlayEntry?.remove();
+    _overlayEntry = null;
 
-    // Crear una clave única para el Dismissible
     final UniqueKey dismissibleKey = UniqueKey();
 
     _overlayEntry = OverlayEntry(
@@ -171,11 +162,9 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
             left: 20,
             right: 20,
             child: Dismissible(
-              // ENVOLVER CON DISMISSIBLE
-              key: dismissibleKey, // Usar la clave única
-              direction: DismissDirection.horizontal, // Permitir deslizar horizontalmente
+              key: dismissibleKey,
+              direction: DismissDirection.horizontal,
               onDismissed: (direction) {
-                // Cuando se descarta, eliminar el overlay
                 if (mounted && _overlayEntry != null) {
                   _overlayEntry?.remove();
                   _overlayEntry = null;
@@ -235,10 +224,7 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
 
     Overlay.of(context).insert(_overlayEntry!);
 
-    // El temporizador para auto-eliminar sigue siendo útil como fallback
     Future.delayed(const Duration(seconds: 4), () {
-      // Solo remover si el overlay todavía existe (no fue descartado manualmente)
-      // y si el widget todavía está montado
       if (mounted && _overlayEntry != null) {
         _overlayEntry?.remove();
         _overlayEntry = null;
@@ -246,62 +232,66 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
     });
   }
 
-  void _addToCart(Map<String, String> product) {
-    final String restaurantName = 'KFC';
+  void _addToCart(Map<String, String> productDataFromList) {
+    final String productName = productDataFromList['name']!;
+    final double productPrice =
+        double.tryParse(productDataFromList['price']!.replaceAll('€', '').replaceAll(',', '.')) ??
+        0.0;
+    const String restaurantName = 'KFC'; // Fijo para esta pantalla
 
-    final existingItemIndex = globalCartItems.indexWhere(
-      (item) => item.name == product['name'] && item.restaurant == restaurantName,
+    // Crear un ID único para el ProductModel
+    final String productId = "${restaurantName}_$productName";
+
+    // Crear la instancia de ProductModel
+    final productToAdd = ProductModel(
+      id: productId,
+      name: productName,
+      price: productPrice,
+      // imageUrl no es parte del ProductModel simplificado, se usa productDataFromList['image'] para la UI
     );
 
-    final double productPrice =
-        double.tryParse(product['price']!.replaceAll('€', '').replaceAll(',', '.')) ?? 0.0;
+    // Buscar si un CartItemModel con este ProductModel (basado en product.id) ya existe
+    final existingItemIndex = globalCartItems.indexWhere(
+      (cartItem) => cartItem.product.id == productToAdd.id, // Compara por product.id
+    );
 
     // No es necesario llamar a setState aquí si la UI de esta pantalla no depende directamente de globalCartItems
-    // para reconstruirse al añadir un ítem. El cambio se reflejará en ShoppingCartScreen.
     if (existingItemIndex != -1) {
-      globalCartItems[existingItemIndex].quantity++;
+      globalCartItems[existingItemIndex].incrementQuantity();
     } else {
       globalCartItems.add(
-        CartItem(
-          name: product['name']!,
-          price: productPrice,
+        CartItemModel(
+          // Usa CartItemModel
+          product: productToAdd, // Pasa la instancia de ProductModel
           quantity: 1,
-          imageUrl: product['image']!,
-          restaurant: restaurantName,
         ),
       );
     }
-    _showAddedToCartOverlay(product['name']!);
-    // print('Added to cart: ${product['name']} from $restaurantName');
-    // print('Current cart: $globalCartItems');
+
+    // Actualizar la UI del carrito si la clave global está disponible y el widget montado
+    if (shoppingCartScreenKey.currentState != null && shoppingCartScreenKey.currentState!.mounted) {
+      shoppingCartScreenKey.currentState!.setState(() {});
+    }
+
+    _showAddedToCartOverlay(productName);
   }
 
-  // Definición del método _buildHeader
   Widget _buildHeader(BuildContext context) {
     return Column(
       children: [
-        // Contenedor blanco con sombra para la barra superior
         Container(
           width: double.infinity,
-          margin: const EdgeInsets.only(
-            top: 10.0,
-            left: 15,
-            right: 15,
-            bottom: 0,
-          ), // Margen para el contenedor
-          padding: const EdgeInsets.symmetric(
-            horizontal: 10.0,
-            vertical: 10.0,
-          ), // Padding interno del contenedor
+          margin: const EdgeInsets.only(top: 10.0, left: 15, right: 15, bottom: 0),
+          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12.0), // Bordes redondeados para el contenedor
+            borderRadius: BorderRadius.circular(12.0),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.1),
                 spreadRadius: 1,
                 blurRadius: 5,
-                offset: const Offset(0, 2), // Sombra sutil
+                offset: const Offset(0, 2),
               ),
             ],
           ),
@@ -309,12 +299,8 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Botón de retroceso
               InkWell(
-                onTap:
-                    () => Navigator.pop(
-                      context,
-                    ), // CAMBIO: Usar Navigator.pop para volver a la pantalla anterior (HomeScreen)
+                onTap: () => Navigator.pop(context),
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
@@ -324,7 +310,6 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
                   child: const Icon(Icons.arrow_back_ios_new, color: primaryColor, size: 20),
                 ),
               ),
-              // Columna para "Deliver to" y la dirección
               Expanded(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -333,7 +318,7 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
                     const Text("Deliver to", style: TextStyle(fontSize: 12, color: Colors.grey)),
                     InkWell(
                       onTap: () {
-                        // print("Change address tapped"); // Acción para cambiar dirección si es necesario
+                        // Acción para cambiar dirección
                       },
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -356,11 +341,11 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
                   ],
                 ),
               ),
-              const SizedBox(width: 48), // Ajusta este valor si es necesario
+              const SizedBox(width: 48),
             ],
           ),
         ),
-        const SizedBox(height: 20), // Espacio antes del logo
+        const SizedBox(height: 20),
         Image.asset('assets/logos/kfc.png', height: 80),
         const SizedBox(height: 10),
         const Text(
@@ -373,7 +358,7 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
           style: TextStyle(fontSize: 14, color: Colors.black54),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 25), // Espacio antes de la lista de productos
+        const SizedBox(height: 25),
       ],
     );
   }
@@ -386,7 +371,7 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
       color: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       elevation: 3,
-      margin: const EdgeInsets.all(4), // Pequeño margen alrededor de la tarjeta
+      margin: const EdgeInsets.all(4),
       child: InkWell(
         onTap: () {
           Navigator.push(
@@ -396,7 +381,7 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
                   (context) => ProductDetailKFC(
                     productName: item['name']!,
                     productDescription: _getProductDescription(item['name']!),
-                    productPrice: productPriceForDetail, // Usar el precio parseado
+                    productPrice: productPriceForDetail,
                     imageUrl: item['image']!,
                   ),
             ),
@@ -422,7 +407,14 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Image.asset(item['image']!, fit: BoxFit.contain),
+                    child: Image.asset(
+                      item['image']!,
+                      fit: BoxFit.contain,
+                      errorBuilder:
+                          (context, error, stackTrace) => const Center(
+                            child: Icon(Icons.image_not_supported, size: 40, color: Colors.grey),
+                          ),
+                    ),
                   ),
                 ),
               ),
@@ -438,22 +430,19 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    '€${item['price']}', // Cambiado de $ a €
+                    '€${item['price']}',
                     style: const TextStyle(
-                      color: primaryColor, // Color naranja para el precio
+                      color: primaryColor,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   InkWell(
-                    // CAMBIO: Envolver el icono de añadir en InkWell
-                    onTap: () {
-                      _addToCart(item); // LLAMADA a _addToCart
-                    },
+                    onTap: () => _addToCart(item), // Llama a la función _addToCart actualizada
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: primaryColor, // Color naranja para el botón
+                        color: primaryColor,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: const Icon(Icons.add, color: Colors.white, size: 20),
@@ -476,7 +465,7 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              _buildHeader(context), // Asegúrate de llamar a _buildHeader aquí
+              _buildHeader(context),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
                 child: GridView.builder(
@@ -494,12 +483,15 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
                   },
                 ),
               ),
+              SizedBox(
+                height: 60 + MediaQuery.of(context).padding.bottom,
+              ), // Espacio para el BottomNavBar
             ],
           ),
         ),
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _selectedIndex, // Sigue siendo 1 porque esta pantalla es del flujo "Home"
+        currentIndex: _selectedIndex,
         onTabChanged: _onTabTapped,
         backgroundColor: Colors.white,
       ),

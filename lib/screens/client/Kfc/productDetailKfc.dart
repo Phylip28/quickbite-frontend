@@ -3,7 +3,9 @@ import '../customBottomNavigationBar.dart';
 import '../homeScreen.dart';
 import '../cart/shoppingCart.dart';
 import '../account/profile.dart';
-import '../orders/orders.dart'; // IMPORTACIÓN PARA LA PANTALLA DE ÓRDENES
+import '../orders/orders.dart';
+import '../models/productModel.dart'; // <--- RUTA CONFIRMADA
+import '../models/cartItemModel.dart'; // <--- RUTA CONFIRMADA
 
 // Definición de colores consistentes
 const primaryColor = Color(0xFFf05000);
@@ -15,7 +17,7 @@ class ProductDetailKFC extends StatefulWidget {
   final String productDescription;
   final double productPrice;
   final String imageUrl;
-  final Function(String, double, int)? onAddToCart;
+  // final Function(String, double, int)? onAddToCart; // Comentado ya que manejaremos con globalCartItems
 
   const ProductDetailKFC({
     super.key,
@@ -23,7 +25,7 @@ class ProductDetailKFC extends StatefulWidget {
     required this.productDescription,
     required this.productPrice,
     required this.imageUrl,
-    this.onAddToCart,
+    // this.onAddToCart, // Comentado
   });
 
   @override
@@ -32,12 +34,11 @@ class ProductDetailKFC extends StatefulWidget {
 
 class _ProductDetailKFCState extends State<ProductDetailKFC> {
   int _quantity = 1;
-  final int _selectedIndex = 1; // ProductDetailKFC es parte del flujo de Home (índice 1)
+  final int _selectedIndex = 1;
   OverlayEntry? _overlayEntry;
 
   @override
   void dispose() {
-    // Limpiar el overlay si aún está visible al salir de la pantalla
     _overlayEntry?.remove();
     _overlayEntry = null;
     super.dispose();
@@ -60,12 +61,7 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
   }
 
   void _onTabTapped(int index) {
-    // Si el índice seleccionado es el mismo que el actual Y es la pestaña Home (1),
-    // y ya estamos en una pantalla del flujo de Home, no hacer nada o ir a la HomeScreen principal.
-    // Si es otra pestaña, siempre navegar.
     if (_selectedIndex == index && index == 1) {
-      // Si el usuario está en ProductDetailKFC y presiona "Home" de nuevo,
-      // lo llevamos a la HomeScreen principal, limpiando la pila.
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -73,34 +69,31 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
       );
       return;
     }
-    // Si se presiona una pestaña diferente a la actual (_selectedIndex), navegar.
     if (_selectedIndex == index) return;
 
     switch (index) {
-      case 0: // Cart
+      case 0:
         Navigator.pushAndRemoveUntil(
-          // Cambiado a pushAndRemoveUntil para consistencia
           context,
           MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 1: // Home
-        // Navegar a la pantalla principal de Home, limpiando la pila.
+      case 1:
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 2: // Orders (ANTERIORMENTE Membership)
+      case 2:
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const OrdersScreen()), // NAVEGAR A OrdersScreen
+          MaterialPageRoute(builder: (context) => const OrdersScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 3: // Account (Profile)
+      case 3:
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const ProfileClient()),
@@ -111,10 +104,9 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
   }
 
   void _showAddedToCartOverlay(String productName, int quantity) {
-    _overlayEntry?.remove(); // Elimina cualquier overlay anterior
-    _overlayEntry = null; // Asegura que la referencia se limpie
+    _overlayEntry?.remove();
+    _overlayEntry = null;
 
-    // Crear una clave única para el Dismissible
     final UniqueKey dismissibleKey = UniqueKey();
 
     _overlayEntry = OverlayEntry(
@@ -124,11 +116,9 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
             left: 20,
             right: 20,
             child: Dismissible(
-              // ENVOLVER CON DISMISSIBLE
-              key: dismissibleKey, // Usar la clave única
-              direction: DismissDirection.horizontal, // Permitir deslizar horizontalmente
+              key: dismissibleKey,
+              direction: DismissDirection.horizontal,
               onDismissed: (direction) {
-                // Cuando se descarta, eliminar el overlay
                 if (mounted && _overlayEntry != null) {
                   _overlayEntry?.remove();
                   _overlayEntry = null;
@@ -188,10 +178,7 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
 
     Overlay.of(context).insert(_overlayEntry!);
 
-    // El temporizador para auto-eliminar sigue siendo útil como fallback
     Future.delayed(const Duration(seconds: 4), () {
-      // Solo remover si el overlay todavía existe (no fue descartado manualmente)
-      // y si el widget todavía está montado
       if (mounted && _overlayEntry != null) {
         _overlayEntry?.remove();
         _overlayEntry = null;
@@ -200,44 +187,48 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
   }
 
   void _handleAddToCart() {
-    print('Add to Cart button pressed'); // DEBUG
-    final String name = widget.productName;
-    final double price = widget.productPrice;
-    final String imageUrl = widget.imageUrl;
-    final int quantityToAdd = _quantity;
-    const String restaurantName = 'KFC';
+    const String restaurantName = 'KFC'; // Fijo para esta pantalla de detalle
+    final String productId = "${restaurantName}_${widget.productName}";
 
-    print('Global cart items before add: $globalCartItems'); // DEBUG
-
-    final existingItemIndex = globalCartItems.indexWhere(
-      (item) => item.name == name && item.restaurant == restaurantName,
+    // Crear la instancia de ProductModel
+    final productToAdd = ProductModel(
+      id: productId,
+      name: widget.productName,
+      price: widget.productPrice,
+      // imageUrl no es parte del ProductModel simplificado, widget.imageUrl se usa para la UI
     );
 
-    if (existingItemIndex != -1) {
+    // Buscar si un CartItemModel con este ProductModel (basado en product.id) ya existe
+    final existingItemIndex = globalCartItems.indexWhere(
+      (cartItem) => cartItem.product.id == productToAdd.id, // Compara por product.id
+    );
+
+    if (mounted) {
+      // setState es necesario para actualizar la UI local si depende de _quantity
       setState(() {
-        globalCartItems[existingItemIndex].quantity += quantityToAdd;
-      });
-    } else {
-      setState(() {
-        globalCartItems.add(
-          CartItem(
-            name: name,
-            price: price,
-            quantity: quantityToAdd,
-            imageUrl: imageUrl,
-            restaurant: restaurantName,
-          ),
-        );
+        if (existingItemIndex != -1) {
+          // Si existe, solo incrementa la cantidad
+          globalCartItems[existingItemIndex].quantity += _quantity;
+        } else {
+          // Si no existe, añade un nuevo CartItemModel
+          globalCartItems.add(
+            CartItemModel(
+              // Usa CartItemModel
+              product: productToAdd, // Pasa la instancia de ProductModel
+              quantity: _quantity,
+            ),
+          );
+        }
       });
     }
 
-    print('Global cart items after add/update: $globalCartItems'); // DEBUG
-
+    // Notificar a ShoppingCartScreen para que se actualice, si es necesario y está visible
     if (shoppingCartScreenKey.currentState != null && shoppingCartScreenKey.currentState!.mounted) {
       shoppingCartScreenKey.currentState!.setState(() {});
     }
 
-    _showAddedToCartOverlay(name, quantityToAdd);
+    _showAddedToCartOverlay(widget.productName, _quantity);
+    // widget.onAddToCart?.call(widget.productName, widget.productPrice, _quantity); // Comentado
   }
 
   @override
@@ -346,7 +337,7 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          '€${(widget.productPrice * _quantity).toStringAsFixed(2)}', // Cambiado de $ a €
+                          '€${(widget.productPrice * _quantity).toStringAsFixed(2)}',
                           style: const TextStyle(
                             fontSize: 30,
                             fontWeight: FontWeight.bold,
@@ -410,9 +401,7 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
                         ),
                       ),
                     ),
-                    SizedBox(
-                      height: 60 + MediaQuery.of(context).padding.bottom,
-                    ), // Espacio para la barra de navegación
+                    SizedBox(height: 60 + MediaQuery.of(context).padding.bottom),
                   ],
                 ),
               ),
@@ -421,8 +410,7 @@ class _ProductDetailKFCState extends State<ProductDetailKFC> {
           Align(
             alignment: Alignment.bottomCenter,
             child: CustomBottomNavigationBar(
-              currentIndex:
-                  _selectedIndex, // Sigue siendo 1 porque esta pantalla es del flujo "Home"
+              currentIndex: _selectedIndex,
               onTabChanged: _onTabTapped,
               backgroundColor: Colors.white,
             ),

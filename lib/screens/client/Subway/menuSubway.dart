@@ -4,8 +4,10 @@ import '../homeScreen.dart';
 import '../customBottomNavigationBar.dart';
 import '../account/profile.dart';
 import '../cart/shoppingCart.dart';
-import '../orders/orders.dart'; // IMPORTACIÓN PARA LA PANTALLA DE ÓRDENES
+import '../orders/orders.dart';
 import '../../../auth/auth.dart';
+import '../models/productModel.dart'; // <--- IMPORTA ProductModel
+import '../models/cartItemModel.dart'; // <--- IMPORTA CartItemModel
 
 const primaryColor = Color(0xFFf05000);
 
@@ -17,7 +19,7 @@ class SubwayMenuScreen extends StatefulWidget {
 }
 
 class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
-  final int _selectedIndex = 1; // SubwayMenuScreen es parte del flujo de Home (índice 1)
+  final int _selectedIndex = 1;
   OverlayEntry? _overlayEntry;
   String _userAddress = "Loading address...";
 
@@ -29,7 +31,6 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
 
   @override
   void dispose() {
-    // Limpiar el overlay si aún está visible al salir de la pantalla
     _overlayEntry?.remove();
     _overlayEntry = null;
     super.dispose();
@@ -45,12 +46,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
   }
 
   void _onTabTapped(int index) {
-    // Si el índice seleccionado es el mismo que el actual Y es la pestaña Home (1),
-    // y ya estamos en una pantalla del flujo de Home, no hacer nada o ir a la HomeScreen principal.
-    // Si es otra pestaña, siempre navegar.
     if (_selectedIndex == index && index == 1) {
-      // Si el usuario está en SubwayMenuScreen y presiona "Home" de nuevo,
-      // lo llevamos a la HomeScreen principal, limpiando la pila.
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -58,35 +54,31 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
       );
       return;
     }
-    // Si se presiona una pestaña diferente a la actual (_selectedIndex), navegar.
     if (_selectedIndex == index) return;
 
     switch (index) {
-      case 0: // Cart
+      case 0:
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 1: // Home
-        // Si se llega aquí desde otra pestaña (Cart, Orders, Account),
-        // o si se presionó Home estando en SubwayMenuScreen (manejado arriba),
-        // ir a la HomeScreen principal.
+      case 1:
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 2: // Orders (ANTERIORMENTE Membership)
+      case 2:
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const OrdersScreen()), // NAVEGAR A OrdersScreen
+          MaterialPageRoute(builder: (context) => const OrdersScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 3: // Account (Profile)
+      case 3:
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const ProfileClient()),
@@ -97,12 +89,9 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
   }
 
   void _showAddedToCartOverlay(String productName) {
-    _overlayEntry?.remove(); // Elimina cualquier overlay anterior
-    _overlayEntry = null; // Asegura que la referencia se limpie
-
-    // Crear una clave única para el Dismissible
+    _overlayEntry?.remove();
+    _overlayEntry = null;
     final UniqueKey dismissibleKey = UniqueKey();
-
     _overlayEntry = OverlayEntry(
       builder:
           (context) => Positioned(
@@ -110,11 +99,9 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
             left: 20,
             right: 20,
             child: Dismissible(
-              // ENVOLVER CON DISMISSIBLE
-              key: dismissibleKey, // Usar la clave única
-              direction: DismissDirection.horizontal, // Permitir deslizar horizontalmente
+              key: dismissibleKey,
+              direction: DismissDirection.horizontal,
               onDismissed: (direction) {
-                // Cuando se descarta, eliminar el overlay
                 if (mounted && _overlayEntry != null) {
                   _overlayEntry?.remove();
                   _overlayEntry = null;
@@ -171,13 +158,8 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
             ),
           ),
     );
-
     Overlay.of(context).insert(_overlayEntry!);
-
-    // El temporizador para auto-eliminar sigue siendo útil como fallback
     Future.delayed(const Duration(seconds: 4), () {
-      // Solo remover si el overlay todavía existe (no fue descartado manually)
-      // y si el widget todavía está montado
       if (mounted && _overlayEntry != null) {
         _overlayEntry?.remove();
         _overlayEntry = null;
@@ -185,38 +167,44 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
     });
   }
 
-  void _addToCart(Map<String, String> product) {
-    final existingItemIndex = globalCartItems.indexWhere(
-      (item) => item.name == product['name'] && item.restaurant == 'Subway',
-    );
-
-    // Asegurarse de que el precio se parsea correctamente sin el símbolo de moneda
+  void _addToCart(Map<String, String> productDataFromList) {
+    // Extraer datos del mapa del producto
+    final String productName = productDataFromList['name']!;
     final double productPrice =
-        double.tryParse(product['price']!.replaceAll('€', '').replaceAll(',', '.')) ?? 0.0;
+        double.tryParse(productDataFromList['price']!.replaceAll('€', '').replaceAll(',', '.')) ??
+        0.0;
+    const String restaurantName = 'Subway'; // El restaurante es fijo para esta pantalla
+
+    // Crear un ID único para el ProductModel
+    final String productId = "${restaurantName}_$productName";
+
+    // Crear la instancia de ProductModel
+    final productToAdd = ProductModel(id: productId, name: productName, price: productPrice);
+
+    // Buscar si un CartItemModel con este ProductModel (basado en product.id) ya existe
+    final existingItemIndex = globalCartItems.indexWhere(
+      (cartItem) => cartItem.product.id == productToAdd.id,
+    );
 
     // No es necesario llamar a setState aquí si la UI de esta pantalla no depende directamente de globalCartItems
     // para reconstruirse al añadir un ítem. El cambio se reflejará en ShoppingCartScreen.
     if (existingItemIndex != -1) {
-      globalCartItems[existingItemIndex].quantity++;
+      globalCartItems[existingItemIndex].incrementQuantity();
     } else {
       globalCartItems.add(
-        CartItem(
-          name: product['name']!,
-          price: productPrice,
+        CartItemModel(
+          // <--- Cambiado de CartItem a CartItemModel
+          product: productToAdd, // Pasa la instancia de ProductModel
           quantity: 1,
-          imageUrl: product['image']!,
-          restaurant: 'Subway',
+          // imageUrl y restaurant ya no son parte de CartItemModel directamente,
+          // están en ProductModel (aunque imageUrl no lo estamos usando en el ProductModel MVP)
         ),
       );
     }
-    _showAddedToCartOverlay(product['name']!);
-    // print('Added to cart: ${product['name']} from Subway');
-    // print('Current cart: $globalCartItems');
+    _showAddedToCartOverlay(productName);
   }
 
-  // Helper method to build cards for regular grid items
   Widget _buildRegularItemCard(BuildContext context, Map<String, String> item) {
-    // Asegurarse de que el precio se parsea correctamente sin el símbolo de moneda para la pantalla de detalle
     final double productPriceForDetail =
         double.tryParse(item['price']!.replaceAll('€', '').replaceAll(',', '.')) ?? 0.0;
     return Card(
@@ -246,7 +234,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                             (context) => ProductDetailSW(
                               productName: item['name']!,
                               productDescription: _getProductDescription(item['name']!),
-                              productPrice: productPriceForDetail, // Usar el precio parseado
+                              productPrice: productPriceForDetail,
                               imageUrl: item['image']!,
                             ),
                       ),
@@ -278,7 +266,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  '€${item['price']}', // Cambiado de $ a €
+                  '€${item['price']}',
                   style: const TextStyle(
                     color: primaryColor,
                     fontSize: 16,
@@ -287,7 +275,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                 ),
                 GestureDetector(
                   onTap: () {
-                    _addToCart(item);
+                    _addToCart(item); // Llama a la función _addToCart actualizada
                   },
                   child: Container(
                     padding: const EdgeInsets.all(4),
@@ -306,9 +294,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
     );
   }
 
-  // Helper method to build the spanning card for "Subs Footlong Bacon Melt"
   Widget _buildSpanningItemCard(BuildContext context, Map<String, String> item) {
-    // Asegurarse de que el precio se parsea correctamente sin el símbolo de moneda para la pantalla de detalle
     final double productPriceForDetail =
         double.tryParse(item['price']!.replaceAll('€', '').replaceAll(',', '.')) ?? 0.0;
     return Card(
@@ -339,7 +325,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                           (context) => ProductDetailSW(
                             productName: item['name']!,
                             productDescription: _getProductDescription(item['name']!),
-                            productPrice: productPriceForDetail, // Usar el precio parseado
+                            productPrice: productPriceForDetail,
                             imageUrl: item['image']!,
                           ),
                     ),
@@ -371,7 +357,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  '€${item['price']}', // Cambiado de $ a €
+                  '€${item['price']}',
                   style: const TextStyle(
                     color: primaryColor,
                     fontSize: 16,
@@ -380,7 +366,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                 ),
                 GestureDetector(
                   onTap: () {
-                    _addToCart(item);
+                    _addToCart(item); // Llama a la función _addToCart actualizada
                   },
                   child: Container(
                     padding: const EdgeInsets.all(4),
@@ -399,7 +385,6 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
     );
   }
 
-  // Method to build the list of product widgets with custom layout
   List<Widget> _buildProductLayoutWidgets(BuildContext context) {
     List<Widget> productLayoutWidgets = [];
     List<Map<String, String>> regularItemsBatch = [];
@@ -479,7 +464,6 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                 children: [
                   InkWell(
                     onTap: () {
-                      // Volver a la pantalla anterior (probablemente HomeScreen)
                       Navigator.pop(context);
                     },
                     child: Container(
@@ -514,7 +498,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 40), // Para balancear el botón de atrás
+                  const SizedBox(width: 40),
                 ],
               ),
             ),
@@ -547,7 +531,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
         ),
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _selectedIndex, // Sigue siendo 1 porque esta pantalla es del flujo "Home"
+        currentIndex: _selectedIndex,
         onTabChanged: _onTabTapped,
         backgroundColor: Colors.white,
       ),
@@ -558,19 +542,19 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
     {
       'name': 'Turkey and Ham Subs',
       'image': 'assets/images/cliente/subway/turkeyAndHamSubsFootlong.png',
-      'price': '6.50', // Mantenido sin símbolo, el símbolo se añade en la UI
+      'price': '6.50',
       'rating': '4.8',
     },
     {
       'name': 'Rotisserie Style Chicken Subs',
       'image': 'assets/images/cliente/subway/rotisserieStyleChickenSubs.png',
-      'price': '6.60', // Mantenido sin símbolo
+      'price': '6.60',
       'rating': '4.7',
     },
     {
       'name': 'Subs Footlong Bacon Melt',
       'image': 'assets/images/cliente/subway/subsFootlongBaconMelt.png',
-      'price': '5.50', // Mantenido sin símbolo
+      'price': '5.50',
       'rating': '4.6',
     },
   ];
@@ -584,7 +568,7 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
       case 'Subs Footlong Bacon Melt':
         return 'New Subway Melts! With Double Cheese and Grilled Melts. Try it with bacon and the touch of mayonnaise.';
       default:
-        return 'Freshly made sub with quality ingredients.'; // Descripción por defecto
+        return 'Freshly made sub with quality ingredients.';
     }
   }
 }

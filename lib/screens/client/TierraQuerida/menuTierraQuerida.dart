@@ -6,9 +6,11 @@ import '../account/profile.dart';
 import '../cart/shoppingCart.dart';
 import '../orders/orders.dart';
 import '../../../auth/auth.dart'; // Para _loadUserAddress
+import '../models/productModel.dart'; // <--- RUTA CONFIRMADA
+import '../models/cartItemModel.dart'; // <--- RUTA CONFIRMADA
 
-const primaryColor = Color(0xFFf05000); // Definir primaryColor si no está globalmente
-const lightAccentColor = Color(0xFFFEEAE6); // Definir lightAccentColor
+const primaryColor = Color(0xFFf05000);
+const lightAccentColor = Color(0xFFFEEAE6);
 
 class MenuTierraQuerida extends StatefulWidget {
   const MenuTierraQuerida({super.key});
@@ -18,9 +20,9 @@ class MenuTierraQuerida extends StatefulWidget {
 }
 
 class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
-  final int _selectedIndex = 1; // MenuTierraQuerida es parte del flujo de Home (índice 1)
-  String _userAddress = "Loading address..."; // Para la dirección del usuario
-  OverlayEntry? _overlayEntry; // Para el overlay de "añadido al carrito"
+  final int _selectedIndex = 1;
+  String _userAddress = "Loading address...";
+  OverlayEntry? _overlayEntry;
 
   @override
   void initState() {
@@ -30,14 +32,13 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
 
   @override
   void dispose() {
-    // Limpiar el overlay si aún está visible al salir de la pantalla
     _overlayEntry?.remove();
     _overlayEntry = null;
     super.dispose();
   }
 
   Future<void> _loadUserAddress() async {
-    final address = await getUserAddress(); // Asumiendo que tienes esta función en auth.dart
+    final address = await getUserAddress();
     if (mounted) {
       setState(() {
         _userAddress = address ?? "Address not found";
@@ -46,12 +47,7 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
   }
 
   void _onTabTapped(int index) {
-    // Si el índice seleccionado es el mismo que el actual Y es la pestaña Home (1),
-    // y ya estamos en una pantalla del flujo de Home, no hacer nada o ir a la HomeScreen principal.
-    // Si es otra pestaña, siempre navegar.
     if (_selectedIndex == index && index == 1) {
-      // Si el usuario está en MenuTierraQuerida y presiona "Home" de nuevo,
-      // lo llevamos a la HomeScreen principal, limpiando la pila.
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -59,36 +55,31 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
       );
       return;
     }
-    // Si se presiona una pestaña diferente a la actual (_selectedIndex), navegar.
     if (_selectedIndex == index) return;
 
     switch (index) {
-      case 0: // Cart
+      case 0:
         Navigator.pushAndRemoveUntil(
-          // Cambiado a pushAndRemoveUntil para consistencia
           context,
           MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 1: // Home
-        // Si se llega aquí desde otra pestaña (Cart, Orders, Account),
-        // o si se presionó Home estando en MenuTierraQuerida (manejado arriba),
-        // ir a la HomeScreen principal.
+      case 1:
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 2: // Orders (ANTERIORMENTE Membership)
+      case 2:
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const OrdersScreen()), // NAVEGAR A OrdersScreen
+          MaterialPageRoute(builder: (context) => const OrdersScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 3: // Account (Profile)
+      case 3:
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const ProfileClient()),
@@ -99,10 +90,9 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
   }
 
   void _showAddedToCartOverlay(String productName) {
-    _overlayEntry?.remove(); // Elimina cualquier overlay anterior
-    _overlayEntry = null; // Asegura que la referencia se limpie
+    _overlayEntry?.remove();
+    _overlayEntry = null;
 
-    // Crear una clave única para el Dismissible
     final UniqueKey dismissibleKey = UniqueKey();
 
     _overlayEntry = OverlayEntry(
@@ -112,11 +102,9 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
             left: 20,
             right: 20,
             child: Dismissible(
-              // ENVOLVER CON DISMISSIBLE
-              key: dismissibleKey, // Usar la clave única
-              direction: DismissDirection.horizontal, // Permitir deslizar horizontalmente
+              key: dismissibleKey,
+              direction: DismissDirection.horizontal,
               onDismissed: (direction) {
-                // Cuando se descarta, eliminar el overlay
                 if (mounted && _overlayEntry != null) {
                   _overlayEntry?.remove();
                   _overlayEntry = null;
@@ -176,10 +164,7 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
 
     Overlay.of(context).insert(_overlayEntry!);
 
-    // El temporizador para auto-eliminar sigue siendo útil como fallback
     Future.delayed(const Duration(seconds: 4), () {
-      // Solo remover si el overlay todavía existe (no fue descartado manualmente)
-      // y si el widget todavía está montado
       if (mounted && _overlayEntry != null) {
         _overlayEntry?.remove();
         _overlayEntry = null;
@@ -187,39 +172,32 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
     });
   }
 
-  void _addToCart(Map<String, String> product) {
-    const String restaurantName = 'Tierra Querida';
+  void _addToCart(Map<String, String> productDataFromList) {
+    final String productName = productDataFromList['name']!;
+    final double productPrice =
+        double.tryParse(productDataFromList['price']!.replaceAll('€', '').replaceAll(',', '.')) ??
+        0.0;
+    const String restaurantName = 'Tierra Querida'; // Fijo para esta pantalla
+
+    final String productId = "${restaurantName}_$productName";
+
+    final productToAdd = ProductModel(id: productId, name: productName, price: productPrice);
 
     final existingItemIndex = globalCartItems.indexWhere(
-      (item) => item.name == product['name'] && item.restaurant == restaurantName,
+      (cartItem) => cartItem.product.id == productToAdd.id,
     );
 
-    final double productPrice =
-        double.tryParse(product['price']!.replaceAll('€', '').replaceAll(',', '.')) ?? 0.0;
-
-    // No es necesario llamar a setState aquí si la UI de esta pantalla no depende directamente de globalCartItems
-    // para reconstruirse al añadir un ítem. El cambio se reflejará en ShoppingCartScreen.
     if (existingItemIndex != -1) {
-      globalCartItems[existingItemIndex].quantity++;
+      globalCartItems[existingItemIndex].incrementQuantity();
     } else {
-      globalCartItems.add(
-        CartItem(
-          name: product['name']!,
-          price: productPrice, // Usar el precio parseado
-          quantity: 1,
-          imageUrl: product['image']!,
-          restaurant: restaurantName,
-        ),
-      );
+      globalCartItems.add(CartItemModel(product: productToAdd, quantity: 1));
     }
 
     if (shoppingCartScreenKey.currentState != null && shoppingCartScreenKey.currentState!.mounted) {
       shoppingCartScreenKey.currentState!.setState(() {});
     }
 
-    _showAddedToCartOverlay(product['name']!);
-    // print('Added to cart: ${product['name']} from $restaurantName');
-    // print('Current cart: $globalCartItems');
+    _showAddedToCartOverlay(productName);
   }
 
   final List<Map<String, String>> _menuItems = [
@@ -269,9 +247,9 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
         double.tryParse(item['price']!.replaceAll('€', '').replaceAll(',', '.')) ?? 0.0;
     return Card(
       color: Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), // Similar a Popsy
-      elevation: 3, // Similar a Popsy
-      margin: const EdgeInsets.all(4), // Similar a Popsy
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      elevation: 3,
+      margin: const EdgeInsets.all(4),
       child: InkWell(
         onTap: () {
           Navigator.push(
@@ -281,38 +259,37 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
                   (context) => ProductDetailTQ(
                     productName: item['name']!,
                     productDescription: _getProductDescription(item['name']!),
-                    productPrice: itemPriceForDetail, // Usar el precio parseado
+                    productPrice: itemPriceForDetail,
                     imageUrl: item['image']!,
                   ),
             ),
           );
         },
         child: Padding(
-          padding: const EdgeInsets.all(12.0), // Similar a Popsy
+          padding: const EdgeInsets.all(12.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  const Icon(Icons.star, color: Colors.amber, size: 16), // Similar a Popsy
+                  const Icon(Icons.star, color: Colors.amber, size: 16),
                   const SizedBox(width: 4),
                   Text(
                     item['rating']!,
-                    style: const TextStyle(fontSize: 12, color: Colors.black54), // Similar a Popsy
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
                   ),
                 ],
               ),
               Expanded(
                 child: Center(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0), // Similar a Popsy
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Image.asset(
                       item['image']!,
                       fit: BoxFit.contain,
                       errorBuilder:
                           (context, error, stackTrace) => const Center(
-                            // Error builder como en Popsy
                             child: Icon(Icons.image_not_supported, size: 40, color: Colors.grey),
                           ),
                     ),
@@ -321,14 +298,11 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
               ),
               Text(
                 item['name']!,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ), // Similar a Popsy
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 4), // Similar a Popsy
+              const SizedBox(height: 4),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -337,14 +311,13 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
                     '€${item['price']}',
                     style: const TextStyle(
                       color: primaryColor,
-                      fontSize: 16, // Ajustado para ser igual a Popsy
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   InkWell(
                     onTap: () => _addToCart(item),
                     child: Container(
-                      // Botón de añadir similar a Popsy
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         color: primaryColor,
@@ -390,20 +363,15 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
                 children: [
                   InkWell(
                     onTap: () {
-                      // Volver a la pantalla anterior (probablemente HomeScreen)
                       Navigator.pop(context);
                     },
                     child: Container(
                       padding: const EdgeInsets.all(8.0),
                       decoration: const BoxDecoration(
-                        color: lightAccentColor, // Usar constante definida
+                        color: lightAccentColor,
                         borderRadius: BorderRadius.all(Radius.circular(8.0)),
                       ),
-                      child: const Icon(
-                        Icons.arrow_back_ios_new,
-                        color: primaryColor, // Usar constante definida
-                        size: 20,
-                      ),
+                      child: const Icon(Icons.arrow_back_ios_new, color: primaryColor, size: 20),
                     ),
                   ),
                   Expanded(
@@ -417,10 +385,10 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          _userAddress, // Mostrar la dirección del usuario
+                          _userAddress,
                           style: const TextStyle(
                             fontSize: 16,
-                            color: primaryColor, // Usar constante definida
+                            color: primaryColor,
                             fontWeight: FontWeight.bold,
                           ),
                           overflow: TextOverflow.ellipsis,
@@ -429,7 +397,7 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 40), // Espacio para balancear el botón de retroceso
+                  const SizedBox(width: 40),
                 ],
               ),
             ),
@@ -464,7 +432,7 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: 0.75,
+                childAspectRatio: 0.75, // Ajusta según el contenido de tus cards
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
               ),
@@ -474,11 +442,12 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
                 return _buildMenuItemCard(context, item);
               },
             ),
+            SizedBox(height: 60 + MediaQuery.of(context).padding.bottom),
           ],
         ),
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _selectedIndex, // Sigue siendo 1 porque esta pantalla es del flujo "Home"
+        currentIndex: _selectedIndex,
         onTabChanged: _onTabTapped,
         backgroundColor: Colors.white,
       ),

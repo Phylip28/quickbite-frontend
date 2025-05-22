@@ -6,6 +6,8 @@ import '../account/profile.dart';
 import '../cart/shoppingCart.dart';
 import '../orders/orders.dart';
 import '../../../auth/auth.dart';
+import '../models/productModel.dart'; // <--- RUTA CONFIRMADA
+import '../models/cartItemModel.dart'; // <--- RUTA CONFIRMADA
 
 // Definición de colores consistentes
 const primaryColor = Color(0xFFf05000);
@@ -48,12 +50,7 @@ class _PopsyMenuScreenState extends State<PopsyMenuScreen> {
   }
 
   void _onTabTapped(int index) {
-    // Si el índice seleccionado es el mismo que el actual Y es la pestaña Home (1),
-    // y ya estamos en una pantalla del flujo de Home, no hacer nada o ir a la HomeScreen principal.
-    // Si es otra pestaña, siempre navegar.
     if (_selectedIndex == index && index == 1) {
-      // Si el usuario está en PopsyMenuScreen y presiona "Home" de nuevo,
-      // lo llevamos a la HomeScreen principal, limpiando la pila.
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -61,32 +58,27 @@ class _PopsyMenuScreenState extends State<PopsyMenuScreen> {
       );
       return;
     }
-    // Si se presiona una pestaña diferente a la actual (_selectedIndex), navegar.
     if (_selectedIndex == index) return;
 
     switch (index) {
       case 0: // Cart
         Navigator.pushAndRemoveUntil(
-          // Cambiado a pushAndRemoveUntil para consistencia
           context,
           MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
           (Route<dynamic> route) => false,
         );
         break;
       case 1: // Home
-        // Si se llega aquí desde otra pestaña (Cart, Orders, Account),
-        // o si se presionó Home estando en PopsyMenuScreen (manejado arriba),
-        // ir a la HomeScreen principal.
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 2: // Orders (ANTERIORMENTE Membership)
+      case 2: // Orders
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const OrdersScreen()), // NAVEGAR A OrdersScreen
+          MaterialPageRoute(builder: (context) => const OrdersScreen()),
           (Route<dynamic> route) => false,
         );
         break;
@@ -137,7 +129,7 @@ class _PopsyMenuScreenState extends State<PopsyMenuScreen> {
         return defaultDescription;
       case 'M&M Milshake':
         return defaultDescription;
-      case 'Cereza Italiana Milkshake': // Usamos el nombre del _popsyMenuItems
+      case 'Cereza Italiana Milkshake':
         return defaultDescription;
       default:
         return 'Description not available.';
@@ -145,10 +137,9 @@ class _PopsyMenuScreenState extends State<PopsyMenuScreen> {
   }
 
   void _showAddedToCartOverlay(String productName) {
-    _overlayEntry?.remove(); // Elimina cualquier overlay anterior
-    _overlayEntry = null; // Asegura que la referencia se limpie
+    _overlayEntry?.remove();
+    _overlayEntry = null;
 
-    // Crear una clave única para el Dismissible
     final UniqueKey dismissibleKey = UniqueKey();
 
     _overlayEntry = OverlayEntry(
@@ -158,11 +149,9 @@ class _PopsyMenuScreenState extends State<PopsyMenuScreen> {
             left: 20,
             right: 20,
             child: Dismissible(
-              // ENVOLVER CON DISMISSIBLE
-              key: dismissibleKey, // Usar la clave única
-              direction: DismissDirection.horizontal, // Permitir deslizar horizontalmente
+              key: dismissibleKey,
+              direction: DismissDirection.horizontal,
               onDismissed: (direction) {
-                // Cuando se descarta, eliminar el overlay
                 if (mounted && _overlayEntry != null) {
                   _overlayEntry?.remove();
                   _overlayEntry = null;
@@ -222,10 +211,7 @@ class _PopsyMenuScreenState extends State<PopsyMenuScreen> {
 
     Overlay.of(context).insert(_overlayEntry!);
 
-    // El temporizador para auto-eliminar sigue siendo útil como fallback
     Future.delayed(const Duration(seconds: 4), () {
-      // Solo remover si el overlay todavía existe (no fue descartado manualmente)
-      // y si el widget todavía está montado
       if (mounted && _overlayEntry != null) {
         _overlayEntry?.remove();
         _overlayEntry = null;
@@ -233,34 +219,48 @@ class _PopsyMenuScreenState extends State<PopsyMenuScreen> {
     });
   }
 
-  void _addToCart(Map<String, String> product) {
-    const String restaurantName = 'Popsy';
-    final existingItemIndex = globalCartItems.indexWhere(
-      (item) => item.name == product['name'] && item.restaurant == restaurantName,
+  void _addToCart(Map<String, String> productDataFromList) {
+    final String productName = productDataFromList['name']!;
+    final double productPrice =
+        double.tryParse(productDataFromList['price']!.replaceAll('€', '').replaceAll(',', '.')) ??
+        0.0;
+    const String restaurantName = 'Popsy'; // Fijo para esta pantalla
+
+    // Crear un ID único para el ProductModel
+    final String productId = "${restaurantName}_$productName";
+
+    // Crear la instancia de ProductModel
+    final productToAdd = ProductModel(
+      id: productId,
+      name: productName,
+      price: productPrice,
+      // imageUrl no es parte del ProductModel simplificado, se usa productDataFromList['image'] para la UI
     );
 
-    final double productPrice =
-        double.tryParse(product['price']!.replaceAll('€', '').replaceAll(',', '.')) ?? 0.0;
+    // Buscar si un CartItemModel con este ProductModel (basado en product.id) ya existe
+    final existingItemIndex = globalCartItems.indexWhere(
+      (cartItem) => cartItem.product.id == productToAdd.id, // Compara por product.id
+    );
 
     // No es necesario llamar a setState aquí si la UI de esta pantalla no depende directamente de globalCartItems
-    // para reconstruirse al añadir un ítem. El cambio se reflejará en ShoppingCartScreen.
     if (existingItemIndex != -1) {
-      globalCartItems[existingItemIndex].quantity++;
+      globalCartItems[existingItemIndex].incrementQuantity();
     } else {
       globalCartItems.add(
-        CartItem(
-          name: product['name']!,
-          price: productPrice, // Usar el precio parseado
+        CartItemModel(
+          // Usa CartItemModel
+          product: productToAdd, // Pasa la instancia de ProductModel
           quantity: 1,
-          imageUrl: product['image']!,
-          restaurant: restaurantName,
         ),
       );
     }
+
+    // Actualizar la UI del carrito si la clave global está disponible y el widget montado
     if (shoppingCartScreenKey.currentState != null && shoppingCartScreenKey.currentState!.mounted) {
       shoppingCartScreenKey.currentState!.setState(() {});
     }
-    _showAddedToCartOverlay(product['name']!);
+
+    _showAddedToCartOverlay(productName);
   }
 
   Widget _buildHeader(BuildContext context) {
@@ -320,14 +320,13 @@ class _PopsyMenuScreenState extends State<PopsyMenuScreen> {
                           textAlign: TextAlign.center,
                         ),
                       ),
-                      // Icon(Icons.arrow_drop_down, color: primaryColor, size: 18), // Opcional
                     ],
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 48), // Espacio para balancear el botón de retroceso
+          const SizedBox(width: 48),
         ],
       ),
     );
@@ -350,7 +349,7 @@ class _PopsyMenuScreenState extends State<PopsyMenuScreen> {
                   (context) => ProductDetailPSY(
                     productName: item['name']!,
                     productDescription: _getProductDescription(item['name']!),
-                    productPrice: itemPriceForDetail, // Usar el precio parseado
+                    productPrice: itemPriceForDetail,
                     imageUrl: item['image']!,
                   ),
             ),
@@ -399,7 +398,7 @@ class _PopsyMenuScreenState extends State<PopsyMenuScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    '€${item['price']}', // Cambiado de $ a €
+                    '€${item['price']}',
                     style: const TextStyle(
                       color: primaryColor,
                       fontSize: 16,
@@ -407,7 +406,7 @@ class _PopsyMenuScreenState extends State<PopsyMenuScreen> {
                     ),
                   ),
                   InkWell(
-                    onTap: () => _addToCart(item),
+                    onTap: () => _addToCart(item), // Llama a la función _addToCart actualizada
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
@@ -429,7 +428,7 @@ class _PopsyMenuScreenState extends State<PopsyMenuScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100], // Fondo general
+      backgroundColor: Colors.grey[100],
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -468,7 +467,7 @@ class _PopsyMenuScreenState extends State<PopsyMenuScreen> {
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    childAspectRatio: 0.70, // Ajusta según el contenido de tus cards
+                    childAspectRatio: 0.70,
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
                   ),
@@ -478,7 +477,7 @@ class _PopsyMenuScreenState extends State<PopsyMenuScreen> {
                   },
                 ),
               ),
-              const SizedBox(height: 20), // Espacio antes de la barra de navegación
+              const SizedBox(height: 20),
             ],
           ),
         ),

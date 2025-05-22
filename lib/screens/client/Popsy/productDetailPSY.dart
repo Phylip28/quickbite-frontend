@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../customBottomNavigationBar.dart';
-import '../cart/shoppingCart.dart';
+import '../cart/shoppingCart.dart'; // Para globalCartItems y shoppingCartScreenKey
 import '../account/profile.dart';
 import '../homeScreen.dart';
-import '../orders/orders.dart'; // IMPORTACIÓN CORRECTA PARA LA PANTALLA DE ÓRDENES
+import '../orders/orders.dart';
+import '../models/productModel.dart'; // <--- RUTA CONFIRMADA
+import '../models/cartItemModel.dart'; // <--- RUTA CONFIRMADA
 
 const primaryColor = Color(0xFFf05000);
 const lightAccentColor = Color(0xFFFEEAE6);
@@ -29,12 +31,11 @@ class ProductDetailPSY extends StatefulWidget {
 
 class _ProductDetailPSYState extends State<ProductDetailPSY> {
   int _quantity = 1;
-  final int _selectedIndex = 1; // ProductDetailPSY es parte del flujo de Home (índice 1)
+  final int _selectedIndex = 1;
   OverlayEntry? _overlayEntry;
 
   @override
   void dispose() {
-    // Limpiar el overlay si aún está visible al salir de la pantalla
     _overlayEntry?.remove();
     _overlayEntry = null;
     super.dispose();
@@ -57,12 +58,7 @@ class _ProductDetailPSYState extends State<ProductDetailPSY> {
   }
 
   void _onTabTapped(int index) {
-    // Si el índice seleccionado es el mismo que el actual Y es la pestaña Home (1),
-    // y ya estamos en una pantalla del flujo de Home, no hacer nada o ir a la HomeScreen principal.
-    // Si es otra pestaña, siempre navegar.
     if (_selectedIndex == index && index == 1) {
-      // Si el usuario está en ProductDetailPSY y presiona "Home" de nuevo,
-      // lo llevamos a la HomeScreen principal, limpiando la pila.
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -70,34 +66,31 @@ class _ProductDetailPSYState extends State<ProductDetailPSY> {
       );
       return;
     }
-    // Si se presiona una pestaña diferente a la actual (_selectedIndex), navegar.
     if (_selectedIndex == index) return;
 
     switch (index) {
-      case 0: // Cart
+      case 0:
         Navigator.pushAndRemoveUntil(
-          // Cambiado a pushAndRemoveUntil para consistencia
           context,
           MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 1: // Home
-        // Navegar a la pantalla principal de Home, limpiando la pila.
+      case 1:
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 2: // Orders (ANTERIORMENTE Membership)
+      case 2:
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const OrdersScreen()), // NAVEGAR A OrdersScreen
+          MaterialPageRoute(builder: (context) => const OrdersScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 3: // Account (Profile)
+      case 3:
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const ProfileClient()),
@@ -108,10 +101,9 @@ class _ProductDetailPSYState extends State<ProductDetailPSY> {
   }
 
   void _showAddedToCartOverlay(String productName, int quantity) {
-    _overlayEntry?.remove(); // Elimina cualquier overlay anterior
-    _overlayEntry = null; // Asegura que la referencia se limpie
+    _overlayEntry?.remove();
+    _overlayEntry = null;
 
-    // Crear una clave única para el Dismissible
     final UniqueKey dismissibleKey = UniqueKey();
 
     _overlayEntry = OverlayEntry(
@@ -121,11 +113,9 @@ class _ProductDetailPSYState extends State<ProductDetailPSY> {
             left: 20,
             right: 20,
             child: Dismissible(
-              // ENVOLVER CON DISMISSIBLE
-              key: dismissibleKey, // Usar la clave única
-              direction: DismissDirection.horizontal, // Permitir deslizar horizontalmente
+              key: dismissibleKey,
+              direction: DismissDirection.horizontal,
               onDismissed: (direction) {
-                // Cuando se descarta, eliminar el overlay
                 if (mounted && _overlayEntry != null) {
                   _overlayEntry?.remove();
                   _overlayEntry = null;
@@ -185,10 +175,7 @@ class _ProductDetailPSYState extends State<ProductDetailPSY> {
 
     Overlay.of(context).insert(_overlayEntry!);
 
-    // El temporizador para auto-eliminar sigue siendo útil como fallback
     Future.delayed(const Duration(seconds: 4), () {
-      // Solo remover si el overlay todavía existe (no fue descartado manualmente)
-      // y si el widget todavía está montado
       if (mounted && _overlayEntry != null) {
         _overlayEntry?.remove();
         _overlayEntry = null;
@@ -197,39 +184,47 @@ class _ProductDetailPSYState extends State<ProductDetailPSY> {
   }
 
   void _handleAddToCart() {
-    final String name = widget.productName;
-    final double price = widget.productPrice;
-    final String imageUrl = widget.imageUrl;
-    final int quantityToAdd = _quantity;
-    const String restaurantName = 'Popsy';
+    const String restaurantName = 'Popsy'; // Fijo para esta pantalla de detalle
+    final String productId = "${restaurantName}_${widget.productName}";
 
-    final existingItemIndex = globalCartItems.indexWhere(
-      (item) => item.name == name && item.restaurant == restaurantName,
+    // Crear la instancia de ProductModel
+    final productToAdd = ProductModel(
+      id: productId,
+      name: widget.productName,
+      price: widget.productPrice,
+      // imageUrl no es parte del ProductModel simplificado, widget.imageUrl se usa para la UI
     );
 
-    if (existingItemIndex != -1) {
+    // Buscar si un CartItemModel con este ProductModel (basado en product.id) ya existe
+    final existingItemIndex = globalCartItems.indexWhere(
+      (cartItem) => cartItem.product.id == productToAdd.id, // Compara por product.id
+    );
+
+    if (mounted) {
+      // setState es necesario para actualizar la UI local si depende de _quantity
       setState(() {
-        globalCartItems[existingItemIndex].quantity += quantityToAdd;
-      });
-    } else {
-      setState(() {
-        globalCartItems.add(
-          CartItem(
-            name: name,
-            price: price,
-            quantity: quantityToAdd,
-            imageUrl: imageUrl,
-            restaurant: restaurantName,
-          ),
-        );
+        if (existingItemIndex != -1) {
+          // Si existe, solo incrementa la cantidad
+          globalCartItems[existingItemIndex].quantity += _quantity;
+        } else {
+          // Si no existe, añade un nuevo CartItemModel
+          globalCartItems.add(
+            CartItemModel(
+              // Usa CartItemModel
+              product: productToAdd, // Pasa la instancia de ProductModel
+              quantity: _quantity,
+            ),
+          );
+        }
       });
     }
 
+    // Notificar a ShoppingCartScreen para que se actualice, si es necesario y está visible
     if (shoppingCartScreenKey.currentState != null && shoppingCartScreenKey.currentState!.mounted) {
       shoppingCartScreenKey.currentState!.setState(() {});
     }
 
-    _showAddedToCartOverlay(name, quantityToAdd);
+    _showAddedToCartOverlay(widget.productName, _quantity);
   }
 
   @override
@@ -338,7 +333,7 @@ class _ProductDetailPSYState extends State<ProductDetailPSY> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          '€${(widget.productPrice * _quantity).toStringAsFixed(2)}', // Cambiado de $ a €
+                          '€${(widget.productPrice * _quantity).toStringAsFixed(2)}',
                           style: const TextStyle(
                             fontSize: 30,
                             fontWeight: FontWeight.bold,

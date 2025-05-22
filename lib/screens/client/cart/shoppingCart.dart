@@ -4,42 +4,21 @@ import '../homeScreen.dart';
 import '../account/profile.dart';
 import '../orders/orders.dart';
 import 'paymentScreen.dart';
+import '../models/cartItemModel.dart'; // <--- IMPORTANTE: Importa tu CartItemModel
+import '../models/productModel.dart'; // <--- IMPORTANTE: Importa tu ProductModel
 
 // --- Lista de ítems del carrito accesible estáticamente ---
 // Esto permite que otras pantallas añadan productos al carrito.
 // Para aplicaciones más grandes, considera un gestor de estado como Provider o Riverpod.
-List<CartItem> globalCartItems = [];
+List<CartItemModel> globalCartItems = [];
 
 // --- GlobalKey para acceder al estado del ShoppingCartScreen si es necesario ---
 final GlobalKey<ShoppingCartScreenState> shoppingCartScreenKey =
     GlobalKey<ShoppingCartScreenState>();
 
-class CartItem {
-  // Asegúrate que esta es tu definición actualizada
-  String name;
-  double price;
-  int quantity;
-  String imageUrl;
-  final String restaurant; // CAMBIO: Campo para el restaurante
-
-  CartItem({
-    required this.name,
-    required this.price,
-    required this.quantity,
-    required this.imageUrl,
-    required this.restaurant, // CAMBIO: Parámetro requerido
-  });
-
-  @override
-  String toString() {
-    return 'CartItem(name: $name, price: $price, quantity: $quantity, imageUrl: $imageUrl, restaurant: $restaurant)';
-  }
-}
-
 class ShoppingCartScreen extends StatefulWidget {
   // AÑADE const SI ES POSIBLE Y NO TIENES PARÁMETROS VARIABLES
-  ShoppingCartScreen({Key? key})
-    : super(key: key ?? shoppingCartScreenKey); // CAMBIO AQUÍ: Se eliminó 'const'
+  ShoppingCartScreen({Key? key}) : super(key: key ?? shoppingCartScreenKey);
 
   @override
   ShoppingCartScreenState createState() => ShoppingCartScreenState();
@@ -68,11 +47,9 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
     // Si no está activa, los cambios en globalCartItems se reflejarán cuando se abra.
     if (mounted) {
       setState(() {
-        // CAMBIO: Pasar 'restaurant'
         _addProductInternal(name, price, imageUrl, restaurant, quantity: quantity);
       });
     } else {
-      // CAMBIO: Pasar 'restaurant'
       _addProductInternal(name, price, imageUrl, restaurant, quantity: quantity);
     }
     print(
@@ -80,29 +57,34 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
     );
   }
 
-  // CAMBIO: Añadir parámetro 'restaurant'
+  // CAMBIO: Ajustado para usar ProductModel y CartItemModel consistentemente
   void _addProductInternal(
     String name,
     double price,
-    String imageUrl,
-    String restaurant, {
+    String imageUrl, // Se recibe, pero no se almacena en el ProductModel simple
+    String restaurant, { // Se usa para generar el ID del producto
     int quantity = 1,
   }) {
+    // Crear un ID de producto consistente
+    final String productId = "${restaurant}_$name";
+
     final existingItemIndex = globalCartItems.indexWhere(
-      (item) =>
-          item.name == name &&
-          item.restaurant == restaurant, // Considerar el restaurante para unicidad si es necesario
+      (item) => item.product.id == productId, // CORRECTO: Compara por item.product.id
     );
+
     if (existingItemIndex != -1) {
       globalCartItems[existingItemIndex].quantity += quantity;
     } else {
       globalCartItems.add(
-        CartItem(
-          name: name,
-          price: price,
+        CartItemModel(
+          product: ProductModel(
+            // CORRECTO: Usa la definición de ProductModel (id, name, price)
+            id: productId,
+            name: name,
+            price: price,
+            // imageUrl y restaurant no son parte de este ProductModel según tu definición
+          ),
           quantity: quantity,
-          imageUrl: imageUrl,
-          restaurant: restaurant, // CAMBIO: Usar el parámetro 'restaurant'
         ),
       );
     }
@@ -177,7 +159,7 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
             child: ListBody(
               children: <Widget>[
                 Text(
-                  'Are you sure you want to remove ${globalCartItems[index].name} from the cart?',
+                  'Are you sure you want to remove ${globalCartItems[index].product.name} from the cart?', // Accede a product.name
                 ),
               ],
             ),
@@ -207,9 +189,9 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
     setState(() {
       final item = globalCartItems[index];
       globalCartItems.removeAt(index);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('${item.name} removed from cart')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${item.product.name} removed from cart')),
+      ); // Accede a product.name
     });
   }
 
@@ -235,7 +217,10 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
   @override
   Widget build(BuildContext context) {
     // --- CÁLCULOS AUTOMÁTICOS ---
-    double subtotal = globalCartItems.fold(0, (sum, item) => sum + (item.price * item.quantity));
+    double subtotal = globalCartItems.fold(
+      0,
+      (sum, item) => sum + (item.product.price * item.quantity),
+    );
 
     // --- LÓGICA DE TARIFA DE ENVÍO DINÁMICA ---
     double deliveryFee;
@@ -338,8 +323,7 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
                                     final item = globalCartItems[index];
                                     return Dismissible(
                                       key: Key(
-                                        item.name +
-                                            item.price.toString() +
+                                        item.product.id + // Usar ID del producto para la key
                                             DateTime.now().millisecondsSinceEpoch.toString(),
                                       ),
                                       direction: DismissDirection.startToEnd,
@@ -364,18 +348,20 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
                                               height: 80,
                                               child: ClipRRect(
                                                 borderRadius: BorderRadius.circular(8.0),
+                                                // --- MODIFICACIÓN AQUÍ ---
                                                 child: Image.asset(
-                                                  item.imageUrl.isNotEmpty
-                                                      ? item.imageUrl
-                                                      : 'assets/images/default_product.png',
+                                                  'assets/images/default_product.png', // Siempre usa la imagen de placeholder
                                                   fit: BoxFit.cover,
                                                   errorBuilder: (context, error, stackTrace) {
-                                                    return Image.asset(
-                                                      'assets/images/default_product.png',
-                                                      fit: BoxFit.cover,
+                                                    // Opcional: puedes mantener el errorBuilder si quieres
+                                                    // un fallback en caso de que 'default_product.png' no se encuentre.
+                                                    print(
+                                                      "Error cargando imagen placeholder: $error",
                                                     );
+                                                    return const Icon(Icons.broken_image, size: 40);
                                                   },
                                                 ),
+                                                // --- FIN DE LA MODIFICACIÓN ---
                                               ),
                                             ),
                                             const SizedBox(width: 16),
@@ -384,14 +370,14 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    item.name,
+                                                    item.product.name, // CORRECTO
                                                     style: const TextStyle(
                                                       fontWeight: FontWeight.bold,
                                                       fontSize: 16,
                                                     ),
                                                   ),
                                                   Text(
-                                                    '€${item.price.toStringAsFixed(2)}', // Cambiado de $ a €
+                                                    '€${item.product.price.toStringAsFixed(2)}', // CORRECTO
                                                     style: const TextStyle(
                                                       color: Color(0xFFf05000),
                                                       fontWeight: FontWeight.bold,

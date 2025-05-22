@@ -6,6 +6,8 @@ import '../account/profile.dart';
 import '../cart/shoppingCart.dart';
 import '../orders/orders.dart';
 import '../../../auth/auth.dart';
+import '../models/productModel.dart'; // <--- RUTA CONFIRMADA
+import '../models/cartItemModel.dart'; // <--- RUTA CONFIRMADA
 
 const primaryColor = Color(0xFFf05000);
 const lightAccentColor = Color(0xFFFEEAE6);
@@ -18,7 +20,7 @@ class StarbucksMenuScreen extends StatefulWidget {
 }
 
 class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
-  final int _selectedIndex = 1; // StarbucksMenuScreen es parte del flujo de Home (índice 1)
+  final int _selectedIndex = 1;
   String _userAddress = "Loading address...";
   OverlayEntry? _overlayEntry;
 
@@ -30,7 +32,6 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
 
   @override
   void dispose() {
-    // Limpiar el overlay si aún está visible al salir de la pantalla
     _overlayEntry?.remove();
     _overlayEntry = null;
     super.dispose();
@@ -46,12 +47,7 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
   }
 
   void _onTabTapped(int index) {
-    // Si el índice seleccionado es el mismo que el actual Y es la pestaña Home (1),
-    // y ya estamos en una pantalla del flujo de Home, no hacer nada o ir a la HomeScreen principal.
-    // Si es otra pestaña, siempre navegar.
     if (_selectedIndex == index && index == 1) {
-      // Si el usuario está en StarbucksMenuScreen y presiona "Home" de nuevo,
-      // lo llevamos a la HomeScreen principal, limpiando la pila.
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -59,36 +55,31 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
       );
       return;
     }
-    // Si se presiona una pestaña diferente a la actual (_selectedIndex), navegar.
     if (_selectedIndex == index) return;
 
     switch (index) {
-      case 0: // Cart
+      case 0:
         Navigator.pushAndRemoveUntil(
-          // Cambiado a pushAndRemoveUntil para consistencia
           context,
           MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 1: // Home
-        // Si se llega aquí desde otra pestaña (Cart, Orders, Account),
-        // o si se presionó Home estando en StarbucksMenuScreen (manejado arriba),
-        // ir a la HomeScreen principal.
+      case 1:
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 2: // Orders (ANTERIORMENTE Membership)
+      case 2:
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const OrdersScreen()), // NAVEGAR A OrdersScreen
+          MaterialPageRoute(builder: (context) => const OrdersScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 3: // Account (Profile)
+      case 3:
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const ProfileClient()),
@@ -99,10 +90,9 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
   }
 
   void _showAddedToCartOverlay(String productName) {
-    _overlayEntry?.remove(); // Elimina cualquier overlay anterior
-    _overlayEntry = null; // Asegura que la referencia se limpie
+    _overlayEntry?.remove();
+    _overlayEntry = null;
 
-    // Crear una clave única para el Dismissible
     final UniqueKey dismissibleKey = UniqueKey();
 
     _overlayEntry = OverlayEntry(
@@ -112,11 +102,9 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
             left: 20,
             right: 20,
             child: Dismissible(
-              // ENVOLVER CON DISMISSIBLE
-              key: dismissibleKey, // Usar la clave única
-              direction: DismissDirection.horizontal, // Permitir deslizar horizontalmente
+              key: dismissibleKey,
+              direction: DismissDirection.horizontal,
               onDismissed: (direction) {
-                // Cuando se descarta, eliminar el overlay
                 if (mounted && _overlayEntry != null) {
                   _overlayEntry?.remove();
                   _overlayEntry = null;
@@ -176,10 +164,7 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
 
     Overlay.of(context).insert(_overlayEntry!);
 
-    // El temporizador para auto-eliminar sigue siendo útil como fallback
     Future.delayed(const Duration(seconds: 4), () {
-      // Solo remover si el overlay todavía existe (no fue descartado manualmente)
-      // y si el widget todavía está montado
       if (mounted && _overlayEntry != null) {
         _overlayEntry?.remove();
         _overlayEntry = null;
@@ -187,28 +172,38 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
     });
   }
 
-  void _addToCart(Map<String, String> product) {
-    const String restaurantName = 'Starbucks';
+  void _addToCart(Map<String, String> productDataFromList) {
+    final String productName = productDataFromList['name']!;
+    final double productPrice =
+        double.tryParse(productDataFromList['price']!.replaceAll('€', '').replaceAll(',', '.')) ??
+        0.0;
+    const String restaurantName = 'Starbucks'; // Fijo para esta pantalla
 
-    final existingItemIndex = globalCartItems.indexWhere(
-      (item) => item.name == product['name'] && item.restaurant == restaurantName,
+    // Crear un ID único para el ProductModel
+    final String productId = "${restaurantName}_$productName";
+
+    // Crear la instancia de ProductModel
+    final productToAdd = ProductModel(
+      id: productId,
+      name: productName,
+      price: productPrice,
+      // imageUrl no es parte del ProductModel simplificado
     );
 
-    final double productPrice =
-        double.tryParse(product['price']!.replaceAll('€', '').replaceAll(',', '.')) ?? 0.0;
+    // Buscar si un CartItemModel con este ProductModel (basado en product.id) ya existe
+    final existingItemIndex = globalCartItems.indexWhere(
+      (cartItem) => cartItem.product.id == productToAdd.id, // Accede a cartItem.product.id
+    );
 
     // No es necesario llamar a setState aquí si la UI de esta pantalla no depende directamente de globalCartItems
-    // para reconstruirse al añadir un ítem. El cambio se reflejará en ShoppingCartScreen.
     if (existingItemIndex != -1) {
-      globalCartItems[existingItemIndex].quantity++;
+      globalCartItems[existingItemIndex].incrementQuantity();
     } else {
       globalCartItems.add(
-        CartItem(
-          name: product['name']!,
-          price: productPrice, // Usar el precio parseado
+        CartItemModel(
+          // Usa CartItemModel
+          product: productToAdd, // Pasa la instancia de ProductModel
           quantity: 1,
-          imageUrl: product['image']!,
-          restaurant: restaurantName,
         ),
       );
     }
@@ -218,9 +213,7 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
       shoppingCartScreenKey.currentState!.setState(() {});
     }
 
-    _showAddedToCartOverlay(product['name']!);
-    // print('Added to cart: ${product['name']} from $restaurantName');
-    // print('Current cart: $globalCartItems');
+    _showAddedToCartOverlay(productName);
   }
 
   final List<Map<String, String>> _starbucksMenuItems = [
@@ -295,7 +288,6 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
                   InkWell(
                     onTap: () {
                       Navigator.pushReplacement(
-                        // O Navigator.pop(context) si es más apropiado
                         context,
                         MaterialPageRoute(builder: (context) => const HomeScreen()),
                       );
@@ -321,7 +313,7 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
                         const SizedBox(height: 2),
                         InkWell(
                           onTap: () {
-                            print("Change address tapped - Starbucks");
+                            // Acción para cambiar dirección si es necesario
                           },
                           child: Text(
                             _userAddress,
@@ -456,7 +448,9 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
                                     ),
                                     InkWell(
                                       onTap: () {
-                                        _addToCart(item);
+                                        _addToCart(
+                                          item,
+                                        ); // Llama a la función _addToCart actualizada
                                       },
                                       child: Container(
                                         padding: const EdgeInsets.all(4),
@@ -476,6 +470,7 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
                       );
                     },
                   ),
+                  SizedBox(height: 60 + MediaQuery.of(context).padding.bottom),
                 ],
               ),
             ),

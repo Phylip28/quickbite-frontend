@@ -4,6 +4,8 @@ import '../customBottomNavigationBar.dart';
 import '../account/profile.dart';
 import '../cart/shoppingCart.dart';
 import '../orders/orders.dart';
+import '../models/productModel.dart'; // <--- RUTA CONFIRMADA
+import '../models/cartItemModel.dart'; // <--- RUTA CONFIRMADA
 
 // Definición de colores consistentes
 const primaryColor = Color(0xFFf05000);
@@ -15,7 +17,6 @@ class ProductDetailTQ extends StatefulWidget {
   final String productDescription;
   final double productPrice;
   final String imageUrl;
-  final Function(String, double, int)? onAddToCart; // Callback function
 
   const ProductDetailTQ({
     super.key,
@@ -23,7 +24,6 @@ class ProductDetailTQ extends StatefulWidget {
     required this.productDescription,
     required this.productPrice,
     required this.imageUrl,
-    this.onAddToCart, // Make the callback optional
   });
 
   @override
@@ -31,25 +31,19 @@ class ProductDetailTQ extends StatefulWidget {
 }
 
 class _ProductDetailTQState extends State<ProductDetailTQ> {
-  final int _selectedIndex = 1; // ProductDetailTQ es parte del flujo de Home (índice 1)
+  final int _selectedIndex = 1;
   int _quantity = 1;
-  OverlayEntry? _overlayEntry; // Para el overlay
+  OverlayEntry? _overlayEntry;
 
   @override
   void dispose() {
-    // Limpiar el overlay si aún está visible al salir de la pantalla
     _overlayEntry?.remove();
     _overlayEntry = null;
     super.dispose();
   }
 
   void _onTabTapped(int index) {
-    // Si el índice seleccionado es el mismo que el actual Y es la pestaña Home (1),
-    // y ya estamos en una pantalla del flujo de Home, no hacer nada o ir a la HomeScreen principal.
-    // Si es otra pestaña, siempre navegar.
     if (_selectedIndex == index && index == 1) {
-      // Si el usuario está en ProductDetailTQ y presiona "Home" de nuevo,
-      // lo llevamos a la HomeScreen principal, limpiando la pila.
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -57,34 +51,31 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
       );
       return;
     }
-    // Si se presiona una pestaña diferente a la actual (_selectedIndex), navegar.
     if (_selectedIndex == index) return;
 
     switch (index) {
-      case 0: // Cart
+      case 0:
         Navigator.pushAndRemoveUntil(
-          // Cambiado a pushAndRemoveUntil para consistencia
           context,
           MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 1: // Home
-        // Navegar a la pantalla principal de Home, limpiando la pila.
+      case 1:
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 2: // Orders (ANTERIORMENTE Membership)
+      case 2:
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const OrdersScreen()), // NAVEGAR A OrdersScreen
+          MaterialPageRoute(builder: (context) => const OrdersScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 3: // Account (Profile)
+      case 3:
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const ProfileClient()),
@@ -96,7 +87,6 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
 
   void _incrementQuantity() {
     if (_quantity < 10) {
-      // Límite de cantidad, ajusta si es necesario
       setState(() {
         _quantity++;
       });
@@ -112,10 +102,9 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
   }
 
   void _showAddedToCartOverlay(String productName, int quantity) {
-    _overlayEntry?.remove(); // Elimina cualquier overlay anterior
-    _overlayEntry = null; // Asegura que la referencia se limpie
+    _overlayEntry?.remove();
+    _overlayEntry = null;
 
-    // Crear una clave única para el Dismissible
     final UniqueKey dismissibleKey = UniqueKey();
 
     _overlayEntry = OverlayEntry(
@@ -125,11 +114,9 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
             left: 20,
             right: 20,
             child: Dismissible(
-              // ENVOLVER CON DISMISSIBLE
-              key: dismissibleKey, // Usar la clave única
-              direction: DismissDirection.horizontal, // Permitir deslizar horizontalmente
+              key: dismissibleKey,
+              direction: DismissDirection.horizontal,
               onDismissed: (direction) {
-                // Cuando se descarta, eliminar el overlay
                 if (mounted && _overlayEntry != null) {
                   _overlayEntry?.remove();
                   _overlayEntry = null;
@@ -189,10 +176,7 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
 
     Overlay.of(context).insert(_overlayEntry!);
 
-    // El temporizador para auto-eliminar sigue siendo útil como fallback
     Future.delayed(const Duration(seconds: 4), () {
-      // Solo remover si el overlay todavía existe (no fue descartado manualmente)
-      // y si el widget todavía está montado
       if (mounted && _overlayEntry != null) {
         _overlayEntry?.remove();
         _overlayEntry = null;
@@ -201,53 +185,56 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
   }
 
   void _handleAddToCart() {
-    final String name = widget.productName;
-    final double price = widget.productPrice;
-    final String imageUrl = widget.imageUrl;
-    final int quantityToAdd = _quantity;
-    const String restaurantName = 'Tierra Querida'; // O el nombre del restaurante
+    const String restaurantName = 'Tierra Querida'; // Fijo para esta pantalla de detalle
+    final String productId = "${restaurantName}_${widget.productName}";
 
-    // Lógica para añadir al carrito global
-    final existingItemIndex = globalCartItems.indexWhere(
-      (item) => item.name == name && item.restaurant == restaurantName,
+    // Crear la instancia de ProductModel
+    final productToAdd = ProductModel(
+      id: productId,
+      name: widget.productName,
+      price: widget.productPrice,
+      // imageUrl no es parte del ProductModel simplificado, widget.imageUrl se usa para la UI
     );
 
-    if (existingItemIndex != -1) {
+    // Buscar si un CartItemModel con este ProductModel (basado en product.id) ya existe
+    final existingItemIndex = globalCartItems.indexWhere(
+      (cartItem) => cartItem.product.id == productToAdd.id, // Compara por product.id
+    );
+
+    if (mounted) {
       setState(() {
-        // Asegúrate de que esto esté dentro de un setState si actualizas la UI localmente
-        globalCartItems[existingItemIndex].quantity += quantityToAdd;
-      });
-    } else {
-      setState(() {
-        globalCartItems.add(
-          CartItem(
-            name: name,
-            price: price,
-            quantity: quantityToAdd,
-            imageUrl: imageUrl,
-            restaurant: restaurantName,
-          ),
-        );
+        // setState es necesario si la UI de esta pantalla depende de _quantity o algo que cambie
+        if (existingItemIndex != -1) {
+          // Si existe, solo incrementa la cantidad
+          globalCartItems[existingItemIndex].quantity += _quantity;
+        } else {
+          // Si no existe, añade un nuevo CartItemModel
+          globalCartItems.add(
+            CartItemModel(
+              // Usa CartItemModel
+              product: productToAdd, // Pasa la instancia de ProductModel
+              quantity: _quantity,
+            ),
+          );
+        }
       });
     }
 
-    // Actualizar el estado del ShoppingCartScreen si está montado
+    // Notificar a ShoppingCartScreen para que se actualice, si es necesario y está visible
     if (shoppingCartScreenKey.currentState != null && shoppingCartScreenKey.currentState!.mounted) {
       shoppingCartScreenKey.currentState!.setState(() {});
     }
 
-    // Mostrar overlay
-    _showAddedToCartOverlay(name, quantityToAdd);
-
-    // Llamar al callback si existe (para la pantalla de menú)
-    widget.onAddToCart?.call(name, price, quantityToAdd);
+    _showAddedToCartOverlay(widget.productName, _quantity);
+    // El callback onAddToCart ya no es necesario si la lógica se centraliza aquí
+    // widget.onAddToCart?.call(widget.productName, widget.productPrice, _quantity);
   }
 
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final imageSectionHeight = screenHeight * 0.40;
-    const double overlapAmount = 30.0; // Cantidad de superposición, igual al radio del borde
+    const double overlapAmount = 30.0;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -263,7 +250,7 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
             child: Container(
               padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
-                color: lightAccentColor.withOpacity(0.8), // Fondo semitransparente
+                color: lightAccentColor.withOpacity(0.8),
                 borderRadius: BorderRadius.circular(8.0),
               ),
               child: const Icon(Icons.arrow_back_ios_new, color: primaryColor, size: 20),
@@ -273,7 +260,6 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
       ),
       body: Stack(
         children: [
-          // Sección de la imagen
           Positioned(
             top: 0,
             left: 0,
@@ -293,22 +279,15 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
               ),
             ),
           ),
-
-          // Sección de detalles del producto
           Positioned(
-            top:
-                imageSectionHeight +
-                MediaQuery.of(context).padding.top -
-                overlapAmount, // Modificado aquí
+            top: imageSectionHeight + MediaQuery.of(context).padding.top - overlapAmount,
             left: 0,
             right: 0,
             bottom: 0,
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(overlapAmount),
-                ), // Usar overlapAmount para el radio
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(overlapAmount)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.12),
@@ -357,7 +336,7 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          '€${(widget.productPrice * _quantity).toStringAsFixed(2)}', // Cambiado de $ a €
+                          '€${(widget.productPrice * _quantity).toStringAsFixed(2)}',
                           style: const TextStyle(
                             fontSize: 30,
                             fontWeight: FontWeight.bold,
@@ -404,7 +383,7 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: _handleAddToCart, // Usar el nuevo método
+                        onPressed: _handleAddToCart,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor,
                           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -421,20 +400,16 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
                         ),
                       ),
                     ),
-                    SizedBox(
-                      height: 60 + MediaQuery.of(context).padding.bottom,
-                    ), // Espacio para la barra de navegación
+                    SizedBox(height: 60 + MediaQuery.of(context).padding.bottom),
                   ],
                 ),
               ),
             ),
           ),
-
-          // Barra de navegación inferior
           Align(
             alignment: Alignment.bottomCenter,
             child: CustomBottomNavigationBar(
-              currentIndex: _selectedIndex, // Asegúrate que sea 1
+              currentIndex: _selectedIndex,
               onTabChanged: _onTabTapped,
               backgroundColor: Colors.white,
             ),
