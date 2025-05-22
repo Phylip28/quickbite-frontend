@@ -89,7 +89,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
               'If you have any questions about these Terms, please contact us at legal@quickbite.app or by post to:',
             ),
             _buildParagraph(
-              'QuickBite Technologies Inc.\n123 Culinary Lane\nFoodie City, FS 98765\nUnited States',
+              'QuickBite Technologies Inc.\n123 Culinary Lane\nFoodie City, FS 98765\nthe United Kingdom',
             ),
             const SizedBox(height: 24.0), // Espacio antes de la fecha de "Last Updated"
             Padding(

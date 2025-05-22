@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import './faqs.dart'; // Placeholder: Debería ser DeliveryFaqsScreen
-import './terms&conditions.dart'; // Placeholder: Debería ser DeliveryTermsAndConditionsScreen
-import './privacy&policy.dart'; // Placeholder: Debería ser DeliveryPrivacyPolicyScreen
-import './contactUs.dart'; // Placeholder: Debería ser DeliveryContactUsScreen
+import './faqs.dart'; // Este archivo debe definir DeliveryFaqsScreen
+import 'terms&conditions.dart'; // Este archivo debe definir DeliveryTermsAndConditionsScreen
+import 'privacy&policy.dart'; // Este archivo debe definir DeliveryPrivacyPolicyScreen
+import 'contactUs.dart'; // Este archivo debe definir DeliveryContactUsScreen
+import 'bestPractices.dart'; // Asegúrate que este archivo define DeliveryGuidelinesScreen
 
 const Color primaryColor = Color(0xFFf05000);
 
@@ -36,62 +37,58 @@ class DeliveryHelpCenterScreen extends StatelessWidget {
             title: 'Delivery FAQs',
             subtitle: 'Common questions about deliveries and app usage.',
             onTap: () {
-              // TODO: Implement navigation to DeliveryFaqsScreen
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const DeliveryFaqsScreen()),
-              ); // Placeholder
+              );
             },
           ),
           _buildHelpItem(
             context,
-            icon: Icons.contact_support_outlined, // Icono más específico para soporte
+            icon: Icons.contact_support_outlined,
             title: 'Support & Contact',
             subtitle: 'Reach out for delivery-related assistance.',
             onTap: () {
-              // TODO: Implement navigation to DeliveryContactUsScreen
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const DeliveryContactUsScreen()),
-              ); // Placeholder
+              );
             },
           ),
           _buildHelpItem(
             context,
             icon: Icons.article_outlined,
-            title: 'Delivery Partner Agreement', // Más específico para repartidores
+            title: 'Delivery Partner Agreement',
             subtitle: 'Review the terms of your partnership.',
             onTap: () {
-              // TODO: Implement navigation to DeliveryTermsAndConditionsScreen
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const DeliveryTermsAndConditionsScreen()),
-              ); // Placeholder
+              );
             },
           ),
           _buildHelpItem(
             context,
-            icon: Icons.shield_outlined, // Icono para privacidad/seguridad
+            icon: Icons.shield_outlined,
             title: 'Data & Privacy (Delivery)',
             subtitle: 'How we handle your information as a delivery partner.',
             onTap: () {
-              // TODO: Implement navigation to DeliveryPrivacyPolicyScreen
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const DeliveryPrivacyPolicyScreen()),
-              ); // Placeholder
+              );
             },
           ),
           _buildHelpItem(
             context,
-            icon: Icons.school_outlined, // Icono para guías/tutoriales
+            icon: Icons.school_outlined,
             title: 'Delivery Guidelines & Best Practices',
             subtitle: 'Tips and rules for successful deliveries.',
             onTap: () {
-              // TODO: Implement navigation to a DeliveryGuidelinesScreen or similar
-              ScaffoldMessenger.of(
+              Navigator.push(
                 context,
-              ).showSnackBar(const SnackBar(content: Text('Delivery Guidelines - Coming Soon!')));
+                MaterialPageRoute(builder: (context) => const DeliveryGuidelinesScreen()),
+              );
             },
           ),
         ],
@@ -119,52 +116,6 @@ class DeliveryHelpCenterScreen extends StatelessWidget {
         trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
         onTap: onTap,
       ),
-    );
-  }
-}
-
-// Placeholder Screens (deberás crear estos archivos y widgets)
-
-class DeliveryFaqsScreen extends StatelessWidget {
-  const DeliveryFaqsScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Delivery FAQs')),
-      body: const Center(child: Text('Delivery FAQs Content')),
-    );
-  }
-}
-
-class DeliveryContactUsScreen extends StatelessWidget {
-  const DeliveryContactUsScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Contact Us (Delivery)')),
-      body: const Center(child: Text('Delivery Contact Us Content')),
-    );
-  }
-}
-
-class DeliveryTermsAndConditionsScreen extends StatelessWidget {
-  const DeliveryTermsAndConditionsScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Delivery Partner Agreement')),
-      body: const Center(child: Text('Delivery Terms Content')),
-    );
-  }
-}
-
-class DeliveryPrivacyPolicyScreen extends StatelessWidget {
-  const DeliveryPrivacyPolicyScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Data & Privacy (Delivery)')),
-      body: const Center(child: Text('Delivery Privacy Policy Content')),
     );
   }
 }

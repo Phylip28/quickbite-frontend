@@ -101,27 +101,4 @@ class PrivacyPolicyScreen extends StatelessWidget {
       ),
     );
   }
-
-  // Si tu política de privacidad también usa listas con viñetas:
-  Widget _buildListItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 16.0, top: 4.0, bottom: 4.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: Text('•', style: TextStyle(fontSize: 15, color: Colors.grey[800])),
-          ),
-          Expanded(
-            child: Text(
-              text,
-              textAlign: TextAlign.justify,
-              style: TextStyle(fontSize: 15, color: Colors.grey[800], height: 1.5),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

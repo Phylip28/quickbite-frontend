@@ -131,7 +131,7 @@ $message
                 icon: Icons.location_on_outlined,
                 title: 'Our Office',
                 content:
-                    'QuickBite Technologies Inc.\n123 Culinary Lane\nFoodie City, FS 98765\nUnited States',
+                    'QuickBite Technologies Inc.\n123 Culinary Lane\nFoodie City, FS 98765\nthe United Kingdom',
               ),
               const SizedBox(height: 24),
               const Text(

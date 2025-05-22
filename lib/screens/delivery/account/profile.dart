@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../loginScreen.dart'; // Para el logout
-import '../../../auth/auth.dart'; // Para getUserName, getUserEmail, deleteAuthToken
+import '../../../auth/auth.dart'; // Para getUserName, getUserEmail, deleteAuthToken, getUserId
 import '../homeScreen.dart'; // Para DeliveryHomeScreen
 import 'accountInformation.dart'; // Importa la nueva pantalla de información de cuenta del repartidor
 import './changePassword.dart'; // Importa la pantalla de cambio de contraseña
+import './help/helpCenter.dart'; // Importa la pantalla principal del Centro de Ayuda
+import './help/terms&conditions.dart'; // Importa la pantalla de Términos y Condiciones del Repartidor
+import './help/privacy&policy.dart'; // Importa la pantalla de Política de Privacidad del Repartidor
 
 class ProfileDelivery extends StatefulWidget {
   // static const String routeName = '/delivery-profile'; // No es necesario si es parte del IndexedStack
@@ -15,9 +18,9 @@ class ProfileDelivery extends StatefulWidget {
 }
 
 class _ProfileDeliveryState extends State<ProfileDelivery> {
-  // _selectedIndex y _onTabTapped NO son necesarios aquí
   String? _userName;
   String? _userEmail;
+  int? _userId; // Para pasar al HomeScreen si es necesario
 
   @override
   void initState() {
@@ -28,10 +31,12 @@ class _ProfileDeliveryState extends State<ProfileDelivery> {
   Future<void> _loadUserProfile() async {
     final userName = await getUserName();
     final userEmail = await getUserEmail();
+    final userId = await getUserId(); // Cargar el ID del usuario
     if (mounted) {
       setState(() {
         _userName = userName;
         _userEmail = userEmail;
+        _userId = userId;
       });
     }
   }
@@ -57,29 +62,20 @@ class _ProfileDeliveryState extends State<ProfileDelivery> {
             },
           ),
           SafeArea(
-            // Ya no necesitamos la Column externa para fijar el encabezado.
-            // El SingleChildScrollView será el hijo directo del SafeArea.
             child: SingleChildScrollView(
-              // El padding general se aplica aquí
-              padding: const EdgeInsets.all(
-                16.0,
-              ), // Padding general para todo el contenido desplazable
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  // Encabezado Personalizado (AHORA DENTRO de SingleChildScrollView, se desplazará)
                   Padding(
-                    // Quitamos el padding individual del encabezado si el padding general de SingleChildScrollView es suficiente,
-                    // o lo ajustamos si es necesario. Por ahora, lo dejamos para mantener la estructura.
-                    padding: const EdgeInsets.only(
-                      bottom: 8.0,
-                    ), // Ajusta el padding según sea necesario, ej. solo inferior
+                    padding: const EdgeInsets.only(bottom: 8.0),
                     child: Row(
                       children: [
                         InkWell(
                           onTap: () {
                             final String repartidorNombre = _userName ?? "Repartidor";
-                            final int repartidorId = 0; // Placeholder - DEBES OBTENER EL ID REAL
+                            // Usa el _userId cargado, o un valor por defecto si aún no está disponible
+                            final int repartidorId = _userId ?? 0;
 
                             Navigator.pushAndRemoveUntil(
                               context,
@@ -113,13 +109,10 @@ class _ProfileDeliveryState extends State<ProfileDelivery> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 40), // Para balancear el botón de retroceso
+                        const SizedBox(width: 40),
                       ],
                     ),
                   ),
-                  // const SizedBox(height: 10), // Espacio después del encabezado si es necesario
-
-                  // Información del Usuario
                   Container(
                     padding: const EdgeInsets.all(16.0),
                     decoration: BoxDecoration(
@@ -164,8 +157,6 @@ class _ProfileDeliveryState extends State<ProfileDelivery> {
                     ),
                   ),
                   const SizedBox(height: 24),
-
-                  // Sección de Cuenta
                   _buildSectionContainer(
                     context,
                     title: 'Account',
@@ -178,7 +169,6 @@ class _ProfileDeliveryState extends State<ProfileDelivery> {
                         icon: Icons.person_outline,
                         iconColor: iconColor,
                         onTap: () {
-                          // Navegar a DeliveryAccountInformationScreen
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -194,7 +184,6 @@ class _ProfileDeliveryState extends State<ProfileDelivery> {
                         icon: Icons.lock_outline,
                         iconColor: iconColor,
                         onTap: () {
-                          // Navegar a DeliveryChangePasswordScreen
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -203,15 +192,12 @@ class _ProfileDeliveryState extends State<ProfileDelivery> {
                           );
                         },
                       ),
-                      // "Invite your friends" OMITIDO para el repartidor
                     ],
                   ),
                   const SizedBox(height: 24),
-
-                  // Sección de Soporte (QuickBite en la imagen del cliente)
                   _buildSectionContainer(
                     context,
-                    title: 'Support', // O 'QuickBite Support'
+                    title: 'Support',
                     cardBackgroundColor: cardBackgroundColor,
                     children: [
                       _buildListTile(
@@ -221,8 +207,11 @@ class _ProfileDeliveryState extends State<ProfileDelivery> {
                         icon: Icons.help_outline,
                         iconColor: iconColor,
                         onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Help Center (Delivery) - Coming Soon')),
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const DeliveryHelpCenterScreen(),
+                            ),
                           );
                         },
                       ),
@@ -233,9 +222,10 @@ class _ProfileDeliveryState extends State<ProfileDelivery> {
                         icon: Icons.shield_outlined,
                         iconColor: iconColor,
                         onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Privacy & Policy (Delivery) - Coming Soon'),
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const DeliveryPrivacyPolicyScreen(),
                             ),
                           );
                         },
@@ -247,9 +237,10 @@ class _ProfileDeliveryState extends State<ProfileDelivery> {
                         icon: Icons.description_outlined,
                         iconColor: iconColor,
                         onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Terms & Conditions (Delivery) - Coming Soon'),
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const DeliveryTermsAndConditionsScreen(),
                             ),
                           );
                         },
@@ -257,20 +248,17 @@ class _ProfileDeliveryState extends State<ProfileDelivery> {
                     ],
                   ),
                   const SizedBox(height: 24),
-
-                  // Botones de Acción
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         Flexible(
-                          // Envuelve el botón "Delete Account"
                           child: OutlinedButton.icon(
                             icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
                             label: const Text(
                               'Delete Account',
-                              textAlign: TextAlign.center, // Centra el texto si se envuelve
+                              textAlign: TextAlign.center,
                               style: TextStyle(color: Colors.redAccent),
                             ),
                             onPressed: () {
@@ -287,18 +275,17 @@ class _ProfileDeliveryState extends State<ProfileDelivery> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8.0), // Espacio pequeño entre botones
+                        const SizedBox(width: 8.0),
                         Flexible(
-                          // Envuelve el botón "Log Out"
                           child: ElevatedButton.icon(
                             icon: const Icon(Icons.logout, color: Colors.white),
                             label: const Text(
                               'Log Out',
-                              textAlign: TextAlign.center, // Centra el texto si se envuelve
+                              textAlign: TextAlign.center,
                               style: TextStyle(color: Colors.white),
                             ),
                             onPressed: () async {
-                              await deleteAuthToken();
+                              await deleteAuthToken(); // Elimina todos los datos de SharedPreferences
                               if (mounted) {
                                 Navigator.pushAndRemoveUntil(
                                   context,
@@ -317,7 +304,7 @@ class _ProfileDeliveryState extends State<ProfileDelivery> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20), // Espacio para la navbar ya no es necesario aquí
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -327,7 +314,6 @@ class _ProfileDeliveryState extends State<ProfileDelivery> {
     );
   }
 
-  // Widget helper para crear los contenedores de sección
   Widget _buildSectionContainer(
     BuildContext context, {
     required String title,
@@ -355,7 +341,7 @@ class _ProfileDeliveryState extends State<ProfileDelivery> {
             child: Text(
               title,
               style: const TextStyle(
-                fontSize: 20, // Coincide con la imagen del cliente
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
@@ -393,23 +379,17 @@ class _ProfileDeliveryState extends State<ProfileDelivery> {
                   Text(
                     title,
                     style: const TextStyle(
-                      fontSize: 16, // Coincide con la imagen del cliente
-                      fontWeight: FontWeight.w500, // Un poco más de peso
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
                       color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[600],
-                    ), // Ligeramente más pequeño
-                  ),
+                  Text(subtitle, style: TextStyle(fontSize: 13, color: Colors.grey[600])),
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios, color: Colors.grey.shade400, size: 16), // Más pequeño
+            Icon(Icons.arrow_forward_ios, color: Colors.grey.shade400, size: 16),
           ],
         ),
       ),
