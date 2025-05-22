@@ -11,8 +11,12 @@ class DeliveryGuidelinesScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
-          'Guidelines & Best Practices',
-          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+          'Best Practices', // Título acortado
+          style: TextStyle(
+            color: primaryColor,
+            fontWeight: FontWeight.bold,
+            // fontSize: 18.0, // Puedes ajustar el tamaño si es necesario también
+          ),
         ),
         centerTitle: true,
         backgroundColor: Colors.white,
@@ -177,6 +181,9 @@ class DeliveryGuidelinesScreen extends StatelessWidget {
     required String description,
   }) {
     return Card(
+      // --- INICIO DE CAMBIOS ---
+      color: Colors.white, // Asegura que el fondo de la Card sea blanco
+      // --- FIN DE CAMBIOS ---
       elevation: 1.5,
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),

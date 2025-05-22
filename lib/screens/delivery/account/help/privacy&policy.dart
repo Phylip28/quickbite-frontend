@@ -12,7 +12,13 @@ class DeliveryPrivacyPolicyScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Delivery Partner Privacy Policy', // Título específico
-          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+          // --- INICIO DE CAMBIOS ---
+          style: TextStyle(
+            color: primaryColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 15.0, // Reducir el tamaño de la fuente
+          ),
+          // --- FIN DE CAMBIOS ---
         ),
         centerTitle: true,
         backgroundColor: Colors.white,

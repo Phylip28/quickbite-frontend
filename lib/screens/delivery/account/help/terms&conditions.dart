@@ -12,7 +12,13 @@ class DeliveryTermsAndConditionsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Delivery Partner Agreement', // Título específico para repartidores
-          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+          // --- INICIO DE CAMBIOS ---
+          style: TextStyle(
+            color: primaryColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 16.0, // Reducir el tamaño de la fuente
+          ),
+          // --- FIN DE CAMBIOS ---
         ),
         centerTitle: true,
         backgroundColor: Colors.white,
