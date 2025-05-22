@@ -44,9 +44,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
           MaterialPageRoute(builder: (context) => const HomeScreen()),
         );
         break;
-      case 2: // Orders - Ya estamos aquí
-        // No es necesario hacer nada si ya estamos en la pantalla de pedidos.
-        break;
+      // case 2: // Orders - Ya estamos aquí, no se necesita acción.
+      //   break;
       case 3: // Account (Profile)
         Navigator.pushReplacement(
           context,
@@ -54,8 +53,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
         );
         break;
       default:
-        // Opcional: manejar índices inesperados, aunque no debería ocurrir
-        // con una BottomNavigationBar bien configurada.
         break;
     }
   }
@@ -63,19 +60,34 @@ class _OrdersScreenState extends State<OrdersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // --- INICIO DE CAMBIOS ---
+      backgroundColor: Colors.white, // Fondo del Scaffold blanco
       appBar: AppBar(
-        title: const Text('My Orders'),
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white, // Para el color del texto del título y los iconos
-        automaticallyImplyLeading: false, // Para no mostrar el botón de "atrás" por defecto
+        title: const Text(
+          'My Orders',
+          style: TextStyle(
+            color: primaryColor,
+            fontWeight: FontWeight.bold,
+          ), // Texto naranja y negrita
+        ),
+        centerTitle: true, // Título centrado
+        backgroundColor: Colors.white, // AppBar blanca
+        elevation: 1.0, // Sutil elevación para distinguir del cuerpo
+        automaticallyImplyLeading: false, // No mostrar botón de retroceso
+        // iconTheme: const IconThemeData(color: primaryColor), // Si tuvieras otros iconos en el AppBar
       ),
+      // --- FIN DE CAMBIOS ---
       body: Center(
         // TODO: Reemplazar esto con la lógica para mostrar la lista de pedidos.
         // Por ahora, un placeholder.
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.receipt_long, size: 80, color: Colors.grey[400]),
+            Icon(
+              Icons.receipt_long_outlined,
+              size: 80,
+              color: Colors.grey[400],
+            ), // Icono actualizado
             const SizedBox(height: 20),
             Text(
               'You have no orders yet.', // O 'Loading orders...'
@@ -93,9 +105,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: _selectedIndex,
         onTabChanged: _onTabTapped,
-        // Asegúrate de que CustomBottomNavigationBar no requiera parámetros
-        // que no estés pasando aquí, o pásalos según sea necesario.
-        // Ejemplo: backgroundColor: Colors.white,
+        // backgroundColor: Colors.white, // Puedes definir el color de fondo aquí también si es necesario
       ),
     );
   }

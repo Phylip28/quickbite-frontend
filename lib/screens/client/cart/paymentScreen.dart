@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import '../../../auth/auth.dart';
 import 'shoppingCart.dart'; // Para globalCartItems y shoppingCartScreenKey
 import '../homeScreen.dart';
-// import '../membership/membership.dart'; // YA NO SE USA DIRECTAMENTE AQUÍ PARA LA NAVBAR
 import '../orders/orders.dart';
 import '../account/profile.dart';
 import '../customBottomNavigationBar.dart';
+import './paymentSuccesfull.dart'; // <--- AÑADIR ESTE IMPORT
 
 const Color primaryColor = Color(0xFFf05000); // Color principal de la app
 
@@ -43,14 +43,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   void _onTabTapped(int index) {
-    // Si ya estamos en PaymentScreen (que es parte del flujo del carrito, índice 0)
-    // y se tapea el ícono del carrito, vamos a ShoppingCartScreen.
     if (index == 0) {
-      // Solo navegar a ShoppingCartScreen si no estamos ya en una subpantalla del carrito
-      // que debería volver al carrito principal.
-      // Si PaymentScreen es la "raíz" del flujo del carrito para la navbar,
-      // este comportamiento podría necesitar ajuste.
-      // Por ahora, si se presiona "Cart" (índice 0), se va a ShoppingCartScreen.
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => ShoppingCartScreen()),
@@ -58,25 +51,22 @@ class _PaymentScreenState extends State<PaymentScreen> {
       );
       return;
     }
-
-    // Para las otras pestañas, siempre navegamos y limpiamos la pila.
     switch (index) {
-      // case 0 ya manejado arriba
-      case 1: // Home
+      case 1:
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 2: // Orders (ANTERIORMENTE Membership)
+      case 2:
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const OrdersScreen()), // NAVEGAR A OrdersScreen
+          MaterialPageRoute(builder: (context) => const OrdersScreen()),
           (Route<dynamic> route) => false,
         );
         break;
-      case 3: // Account (Profile)
+      case 3:
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const ProfileClient()),
@@ -97,14 +87,28 @@ class _PaymentScreenState extends State<PaymentScreen> {
     print('Address: $_userAddress');
     globalCartItems.clear();
 
-    // Actualizar ShoppingCartScreen si está montado y es accesible mediante la key
     if (shoppingCartScreenKey.currentState != null && shoppingCartScreenKey.currentState!.mounted) {
       shoppingCartScreenKey.currentState!.setState(() {});
     }
 
+    // --- INICIO DE CAMBIOS ---
+    // Navegar directamente a PaymentSuccessfulScreen
+    // Se elimina el AlertDialog y la navegación a HomeScreen desde aquí.
+    // Si deseas mantener un mensaje breve, puedes usar un SnackBar antes de navegar,
+    // pero PaymentSuccessfulScreen ya cumple la función de confirmación.
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const PaymentSuccessfulScreen()),
+      (Route<dynamic> route) => false, // Limpia la pila hasta PaymentSuccessfulScreen
+    );
+    // --- FIN DE CAMBIOS ---
+
+    // El código del AlertDialog anterior se elimina o se comenta:
+    /*
     showDialog(
       context: context,
-      barrierDismissible: false, // El usuario debe presionar OK
+      barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: const Text('Order Placed!'),
@@ -113,11 +117,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
             TextButton(
               child: const Text('OK'),
               onPressed: () {
-                Navigator.of(dialogContext).pop(); // Cierra el diálogo
+                Navigator.of(dialogContext).pop();
                 Navigator.pushAndRemoveUntil(
-                  context, // Usa el context original de _PaymentScreenState
+                  context,
                   MaterialPageRoute(builder: (context) => const HomeScreen()),
-                  (Route<dynamic> route) => false, // Limpia la pila hasta HomeScreen
+                  (Route<dynamic> route) => false,
                 );
               },
             ),
@@ -125,6 +129,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         );
       },
     );
+    */
   }
 
   Widget _buildPaymentOption({
@@ -181,10 +186,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   child: Row(
                     children: [
                       InkWell(
-                        onTap:
-                            () => Navigator.pop(
-                              context,
-                            ), // Botón para ir atrás (a ShoppingCartScreen)
+                        onTap: () => Navigator.pop(context),
                         child: Container(
                           padding: const EdgeInsets.all(10.0),
                           decoration: BoxDecoration(
@@ -198,19 +200,18 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           ),
                         ),
                       ),
-                      // Puedes añadir un título aquí si lo deseas, centrado
-                      // const Expanded(
-                      //   child: Text(
-                      //     'Confirm Payment',
-                      //     textAlign: TextAlign.center,
-                      //     style: TextStyle(
-                      //       fontSize: 20,
-                      //       fontWeight: FontWeight.bold,
-                      //       color: Colors.black87, // O el color que prefieras
-                      //     ),
-                      //   ),
-                      // ),
-                      // const SizedBox(width: 40), // Para balancear el botón de retroceso si hay título
+                      const Expanded(
+                        child: Text(
+                          'Confirm Payment',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 40), // Para balancear el botón de retroceso
                     ],
                   ),
                 ),
@@ -318,14 +319,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           value: PaymentMethod.cash,
                           isIconAsset: false,
                         ),
-                        const SizedBox(height: 30), // Espacio antes del botón
+                        const SizedBox(height: 30),
                       ],
                     ),
                   ),
                 ),
                 Padding(
-                  // Botón de finalizar orden
-                  padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0), // Ajustar padding
+                  padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 20.0),
                   child: SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
@@ -348,7 +348,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         ],
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _selectedIndex, // Siempre 0 para el flujo del carrito
+        currentIndex: _selectedIndex,
         onTabChanged: _onTabTapped,
         backgroundColor: Colors.white.withOpacity(0.95),
       ),
