@@ -139,15 +139,20 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     // Extraer datos del mapa del producto
     final String productName = productDataFromList['name']!;
     final double productPrice = _parsePrice(productDataFromList['price']);
-    // final String imageUrl = productDataFromList['image']!; // No se usa en ProductModel MVP
+    final String imageUrl = productDataFromList['image']!; // <--- AÑADE O DESCOMENTA ESTA LÍNEA
     final String restaurantName =
         productDataFromList['restaurantName']!; // Usado para el ID del producto
 
     // Crear un ID único para el ProductModel
     final String productId = "${restaurantName}_$productName";
 
-    // Crear la instancia de ProductModel
-    final productToAdd = ProductModel(id: productId, name: productName, price: productPrice);
+    // Crear la instancia de ProductModel, AHORA INCLUYENDO imageUrl
+    final productToAdd = ProductModel(
+      id: productId,
+      name: productName,
+      price: productPrice,
+      imageUrl: imageUrl, // <--- PASAR LA URL DE LA IMAGEN AQUÍ
+    );
 
     // Buscar si un CartItemModel con este ProductModel (basado en product.id) ya existe
     final existingItemIndex = globalCartItems.indexWhere(

@@ -237,6 +237,7 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
     final double productPrice =
         double.tryParse(productDataFromList['price']!.replaceAll('€', '').replaceAll(',', '.')) ??
         0.0;
+    final String imageUrl = productDataFromList['image']!; // <--- AÑADE ESTA LÍNEA
     const String restaurantName = 'KFC'; // Fijo para esta pantalla
 
     // Crear un ID único para el ProductModel
@@ -247,7 +248,7 @@ class _KfcMenuScreenState extends State<KfcMenuScreen> {
       id: productId,
       name: productName,
       price: productPrice,
-      // imageUrl no es parte del ProductModel simplificado, se usa productDataFromList['image'] para la UI
+      imageUrl: imageUrl, // <--- PASAR LA URL DE LA IMAGEN AQUÍ
     );
 
     // Buscar si un CartItemModel con este ProductModel (basado en product.id) ya existe

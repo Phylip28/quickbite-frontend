@@ -192,7 +192,7 @@ class _ProductDetailPSYState extends State<ProductDetailPSY> {
       id: productId,
       name: widget.productName,
       price: widget.productPrice,
-      // imageUrl no es parte del ProductModel simplificado, widget.imageUrl se usa para la UI
+      imageUrl: widget.imageUrl, // <--- PASAR widget.imageUrl AQUÍ
     );
 
     // Buscar si un CartItemModel con este ProductModel (basado en product.id) ya existe

@@ -173,13 +173,19 @@ class _SubwayMenuScreenState extends State<SubwayMenuScreen> {
     final double productPrice =
         double.tryParse(productDataFromList['price']!.replaceAll('€', '').replaceAll(',', '.')) ??
         0.0;
+    final String imageUrl = productDataFromList['image']!; // <--- AÑADE ESTA LÍNEA
     const String restaurantName = 'Subway'; // El restaurante es fijo para esta pantalla
 
     // Crear un ID único para el ProductModel
     final String productId = "${restaurantName}_$productName";
 
     // Crear la instancia de ProductModel
-    final productToAdd = ProductModel(id: productId, name: productName, price: productPrice);
+    final productToAdd = ProductModel(
+      id: productId,
+      name: productName,
+      price: productPrice,
+      imageUrl: imageUrl, // <--- PASAR LA URL DE LA IMAGEN AQUÍ
+    );
 
     // Buscar si un CartItemModel con este ProductModel (basado en product.id) ya existe
     final existingItemIndex = globalCartItems.indexWhere(

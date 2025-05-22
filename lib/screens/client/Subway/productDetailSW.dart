@@ -192,7 +192,7 @@ class _ProductDetailSubwayState extends State<ProductDetailSW> {
       id: productId,
       name: widget.productName,
       price: widget.productPrice,
-      // imageUrl no es parte del ProductModel simplificado
+      imageUrl: widget.imageUrl, // <--- PASAR widget.imageUrl AQUÍ
     );
 
     // Buscar si un CartItemModel con este ProductModel (basado en product.id) ya existe

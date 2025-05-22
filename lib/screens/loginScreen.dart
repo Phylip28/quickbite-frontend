@@ -29,7 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // URL base de tu API (ajusta la IP y puerto si es necesario)
   final String _apiBaseUrl =
-      'http://192.168.1.7:8000'; // Asegúrate que esta IP sea accesible desde tu emulador/dispositivo
+      'http://192.168.246.36:8000'; // Asegúrate que esta IP sea accesible desde tu emulador/dispositivo
 
   Future<void> _attemptLogin(BuildContext context) async {
     final String email = _emailController.text.trim();

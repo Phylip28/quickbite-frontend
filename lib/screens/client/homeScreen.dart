@@ -448,16 +448,19 @@ class _HomeScreenState extends State<HomeScreen> {
     // Extraer datos del mapa del producto de _allProducts
     final String productName = productDataFromList['name']!;
     final double productPrice = _parsePrice(productDataFromList['price']);
-    // final String imageUrl = productDataFromList['image']!; // No se usa en ProductModel MVP
-    // final String restaurantName = productDataFromList['restaurantName']!; // No se usa en ProductModel MVP
+    final String imageUrl = productDataFromList['image']!; // <--- DESCOMENTA Y USA ESTA LÍNEA
+    // final String restaurantName = productDataFromList['restaurantName']!; // No se usa directamente en ProductModel si el ID ya lo incluye
 
-    // Crear un ID único para el ProductModel (puedes hacerlo más robusto si es necesario)
-    // Para el MVP, combinamos nombre y restaurante para la unicidad del ID del producto.
-    // Si tus nombres de producto son únicos globalmente, solo productName podría bastar.
+    // Crear un ID único para el ProductModel
     final String productId = "${productDataFromList['restaurantName']!}_$productName";
 
-    // Crear la instancia de ProductModel
-    final productToAdd = ProductModel(id: productId, name: productName, price: productPrice);
+    // Crear la instancia de ProductModel, AHORA INCLUYENDO imageUrl
+    final productToAdd = ProductModel(
+      id: productId,
+      name: productName,
+      price: productPrice,
+      imageUrl: imageUrl, // <--- PASAR LA URL DE LA IMAGEN AQUÍ
+    );
 
     // Buscar si un CartItemModel con este ProductModel (basado en product.id) ya existe
     final existingItemIndex = globalCartItems.indexWhere(

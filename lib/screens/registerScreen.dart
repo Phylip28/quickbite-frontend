@@ -47,7 +47,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final String correo = _correoController.text.trim();
     final String contrasenia = _contraseniaController.text.trim();
 
-    final Uri url = Uri.parse('http://192.168.1.7:8000/users/register');
+    final Uri url = Uri.parse('http://192.168.246.36:8000/users/register');
 
     try {
       final response = await http.post(

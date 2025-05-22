@@ -177,11 +177,17 @@ class _MenuTierraQueridaState extends State<MenuTierraQuerida> {
     final double productPrice =
         double.tryParse(productDataFromList['price']!.replaceAll('€', '').replaceAll(',', '.')) ??
         0.0;
+    final String imageUrl = productDataFromList['image']!; // <--- AÑADE ESTA LÍNEA
     const String restaurantName = 'Tierra Querida'; // Fijo para esta pantalla
 
     final String productId = "${restaurantName}_$productName";
 
-    final productToAdd = ProductModel(id: productId, name: productName, price: productPrice);
+    final productToAdd = ProductModel(
+      id: productId,
+      name: productName,
+      price: productPrice,
+      imageUrl: imageUrl, // <--- PASAR LA URL DE LA IMAGEN AQUÍ
+    );
 
     final existingItemIndex = globalCartItems.indexWhere(
       (cartItem) => cartItem.product.id == productToAdd.id,

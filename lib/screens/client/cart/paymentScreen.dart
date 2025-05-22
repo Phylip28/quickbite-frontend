@@ -19,7 +19,7 @@ enum PaymentMethod {
 }
 
 const Color primaryColor = Color(0xFFf05000);
-const String yourApiBaseUrl = "http://192.168.1.7:8000"; // Tu URL base
+const String yourApiBaseUrl = "http://192.168.246.36:8000"; // Tu URL base
 const int genericRestaurantIdForMvp = 1;
 
 class PaymentScreen extends StatefulWidget {

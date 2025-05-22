@@ -4,7 +4,7 @@ import '../models/orderModel.dart'; // Asegúrate que la ruta sea correcta
 import '../../../auth/auth.dart'; // Para getAuthToken y getUserId
 
 // DEFINE TU URL BASE AQUÍ
-const String yourApiBaseUrl = 'http://192.168.1.7:8000'; // REEMPLAZA CON TU URL REAL
+const String yourApiBaseUrl = 'http://192.168.246.36:8000'; // REEMPLAZA CON TU URL REAL
 
 class OrderService {
   Future<List<Order>> getOrdersByClientId() async {

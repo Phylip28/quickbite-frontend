@@ -78,11 +78,10 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
       globalCartItems.add(
         CartItemModel(
           product: ProductModel(
-            // CORRECTO: Usa la definición de ProductModel (id, name, price)
             id: productId,
             name: name,
             price: price,
-            // imageUrl y restaurant no son parte de este ProductModel según tu definición
+            imageUrl: imageUrl, // <--- AÑADE ESTO AQUÍ
           ),
           quantity: quantity,
         ),
@@ -321,6 +320,7 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
                                   itemCount: globalCartItems.length,
                                   itemBuilder: (context, index) {
                                     final item = globalCartItems[index];
+                                    // final product = item.product; // Puedes usar esta variable si prefieres
                                     return Dismissible(
                                       key: Key(
                                         item.product.id + // Usar ID del producto para la key
@@ -350,15 +350,24 @@ class ShoppingCartScreenState extends State<ShoppingCartScreen> {
                                                 borderRadius: BorderRadius.circular(8.0),
                                                 // --- MODIFICACIÓN AQUÍ ---
                                                 child: Image.asset(
-                                                  'assets/images/default_product.png', // Siempre usa la imagen de placeholder
+                                                  item
+                                                      .product
+                                                      .imageUrl, // <--- USA LA IMAGEN DEL PRODUCTO
                                                   fit: BoxFit.cover,
                                                   errorBuilder: (context, error, stackTrace) {
-                                                    // Opcional: puedes mantener el errorBuilder si quieres
-                                                    // un fallback en caso de que 'default_product.png' no se encuentre.
+                                                    // Fallback a una imagen por defecto si la del producto falla
                                                     print(
-                                                      "Error cargando imagen placeholder: $error",
+                                                      "Error cargando imagen ${item.product.imageUrl}: $error",
                                                     );
-                                                    return const Icon(Icons.broken_image, size: 40);
+                                                    return Image.asset(
+                                                      'assets/images/default_product.png', // Imagen placeholder
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder:
+                                                          (ctx, err, st) => const Icon(
+                                                            Icons.broken_image,
+                                                            size: 40,
+                                                          ), // Fallback final
+                                                    );
                                                   },
                                                 ),
                                                 // --- FIN DE LA MODIFICACIÓN ---

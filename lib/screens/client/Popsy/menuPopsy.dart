@@ -224,6 +224,7 @@ class _PopsyMenuScreenState extends State<PopsyMenuScreen> {
     final double productPrice =
         double.tryParse(productDataFromList['price']!.replaceAll('€', '').replaceAll(',', '.')) ??
         0.0;
+    final String imageUrl = productDataFromList['image']!; // <--- AÑADE ESTA LÍNEA
     const String restaurantName = 'Popsy'; // Fijo para esta pantalla
 
     // Crear un ID único para el ProductModel
@@ -234,7 +235,7 @@ class _PopsyMenuScreenState extends State<PopsyMenuScreen> {
       id: productId,
       name: productName,
       price: productPrice,
-      // imageUrl no es parte del ProductModel simplificado, se usa productDataFromList['image'] para la UI
+      imageUrl: imageUrl, // <--- PASAR LA URL DE LA IMAGEN AQUÍ
     );
 
     // Buscar si un CartItemModel con este ProductModel (basado en product.id) ya existe

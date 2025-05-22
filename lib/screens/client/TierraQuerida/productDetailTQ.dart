@@ -193,7 +193,7 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
       id: productId,
       name: widget.productName,
       price: widget.productPrice,
-      // imageUrl no es parte del ProductModel simplificado, widget.imageUrl se usa para la UI
+      imageUrl: widget.imageUrl, // <--- PASAR widget.imageUrl AQUÍ
     );
 
     // Buscar si un CartItemModel con este ProductModel (basado en product.id) ya existe
@@ -226,8 +226,6 @@ class _ProductDetailTQState extends State<ProductDetailTQ> {
     }
 
     _showAddedToCartOverlay(widget.productName, _quantity);
-    // El callback onAddToCart ya no es necesario si la lógica se centraliza aquí
-    // widget.onAddToCart?.call(widget.productName, widget.productPrice, _quantity);
   }
 
   @override

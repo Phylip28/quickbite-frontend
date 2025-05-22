@@ -177,6 +177,7 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
     final double productPrice =
         double.tryParse(productDataFromList['price']!.replaceAll('€', '').replaceAll(',', '.')) ??
         0.0;
+    final String imageUrl = productDataFromList['image']!; // <--- AÑADE ESTA LÍNEA
     const String restaurantName = 'Starbucks'; // Fijo para esta pantalla
 
     // Crear un ID único para el ProductModel
@@ -187,7 +188,7 @@ class _StarbucksMenuScreenState extends State<StarbucksMenuScreen> {
       id: productId,
       name: productName,
       price: productPrice,
-      // imageUrl no es parte del ProductModel simplificado
+      imageUrl: imageUrl, // <--- PASAR LA URL DE LA IMAGEN AQUÍ
     );
 
     // Buscar si un CartItemModel con este ProductModel (basado en product.id) ya existe
